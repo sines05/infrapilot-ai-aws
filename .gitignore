@@ -1,0 +1,26 @@
+# Môi trường ảo của Python và Poetry
+.venv
+.env
+__pycache__/
+*.pyc
+
+# Môi trường hệ điều hành
+.DS_Store
+Thumbs.db
+
+# File cấu hình chứa thông tin nhạy cảm
+# Mặc dù .env đã có ở trên, thêm lại để chắc chắn
+.env*
+!/.env.example
+
+# Thư mục build của Frontend (Node.js)
+/web/node_modules
+/web/build
+/web/.pnp
+/web/.pnp.js
+/web/.yarn
+
+# IDE files
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,79 @@
+{
+    "executionPlan": [
+        {
+            "id": "step-get-default-vpc",
+            "name": "Get Default VPC",
+            "mcpTool": "get-default-vpc",
+            "toolParameters": {}
+        },
+        {
+            "id": "step-list-subnets",
+            "name": "List Subnets in Default VPC",
+            "mcpTool": "list-subnets",
+            "toolParameters": {
+                "vpc_id": "{{step-get-default-vpc.vpcId}}"
+            },
+            "dependsOn": ["step-get-default-vpc"]
+        },
+        {
+            "id": "step-get-amazon-linux-ami",
+            "name": "Get Latest Amazon Linux AMI",
+            "mcpTool": "get-latest-amazon-linux-ami",
+            "toolParameters": {}
+        },
+        {
+            "id": "step-create-key-pair",
+            "name": "Create EC2 Key Pair",
+            "mcpTool": "create-key-pair",
+            "toolParameters": {
+                "key_name": "my-ec2-key-pair-{{timestamp}}"
+            }
+        },
+        {
+            "id": "step-create-security-group",
+            "name": "Create Security Group for EC2",
+            "mcpTool": "create-security-group",
+            "toolParameters": {
+                "description": "Security group for EC2 SSH access",
+                "group_name": "ec2-ssh-sg-{{timestamp}}",
+                "vpc_id": "{{step-get-default-vpc.vpcId}}"
+            },
+            "dependsOn": ["step-get-default-vpc"]
+        },
+        {
+            "id": "step-add-ssh-ingress-rule",
+            "name": "Add SSH Ingress Rule",
+            "mcpTool": "add-security-group-ingress-rule",
+            "toolParameters": {
+                "group_id": "{{step-create-security-group.groupId}}",
+                "protocol": "tcp",
+                "from_port": 22,
+                "to_port": 22,
+                "cidr_block": "0.0.0.0/0"
+            },
+            "dependsOn": ["step-create-security-group"]
+        },
+        {
+            "id": "step-create-ec2-instance",
+            "name": "Create EC2 Instance",
+            "mcpTool": "create-ec2-instance",
+            "toolParameters": {
+                "image_id": "{{step-get-amazon-linux-ami.amiId}}",
+                "instance_type": "t3.micro",
+                "key_name": "{{step-create-key-pair.KeyName}}",
+                "tags": [
+                    { "Key": "Name", "Value": "ai-agent-server-{{timestamp}}" }
+                ],
+                "security_group_ids": ["{{step-create-security-group.groupId}}"],
+                "subnet_id": "{{step-list-subnets.subnets[0].SubnetId}}"
+            },
+            "dependsOn": [
+                "step-get-amazon-linux-ami",
+                "step-list-subnets",
+                "step-create-security-group",
+                "step-add-ssh-ingress-rule",
+                "step-create-key-pair"
+            ]
+        }
+    ]
+}

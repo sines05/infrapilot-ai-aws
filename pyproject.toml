@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "ai-infra-agent"
+version = "0.1.0"
+description = "An AI agent for managing infrastructure, migrated from Go to Python."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+fastapi = "^0.104.1"
+uvicorn = {extras = ["standard"], version = "^0.37.0"}
+pydantic = "^2.4.2"
+pydantic-settings = "^2.2.1"
+python-dotenv = "^1.0.0"
+boto3 = "^1.29.7"
+loguru = "^0.7.2"
+langchain = "^0.0.339"
+ruamel-yaml = "^0.18.5"
+websockets = "^12.0"
+pyyaml = "^6.0.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "websockets (>=12.0,<13.0)"
+]
