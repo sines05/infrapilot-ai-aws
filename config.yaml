@@ -4,7 +4,7 @@ server:
   host: "localhost"
 
 aws:
-  region: "ap-southeast-5"
+  region: "ap-southeast-1"
 
 mcp:
   server_name: "aws-infrastructure-server"
@@ -18,6 +18,7 @@ agent:
   dry_run: true
   auto_resolve_conflicts: false
   enable_debug: false
+  template_path: "settings/templates/decision-plan-prompt-optimized.txt" # Path to the main prompt template
   # Note: Set GEMINI_API_KEY environment variable
 
 logging:

@@ -40,7 +40,7 @@ class GetDefaultVPCTool(BaseTool):
             
             default_vpc_id = vpcs[0]['VpcId']
             self.logger.info(f"Found default VPC ID: {default_vpc_id}")
-            return {"vpcId": default_vpc_id}
+            return {"vpc_id": default_vpc_id}
         except Exception as e:
             self.logger.error(f"Failed to get default VPC: {e}")
             return {"error": str(e)}
@@ -76,9 +76,23 @@ class ListSubnetsTool(BaseTool):
                     {'Name': 'vpc-id', 'Values': [vpc_id]}
                 ]
             )
+            self.logger.debug(f"Raw describe_subnets response: {response}")
             subnets = response.get('Subnets', [])
             self.logger.info(f"Found {len(subnets)} subnets in VPC {vpc_id}.")
-            return {"subnets": subnets}
+            
+            # Convert keys to snake_case for consistency
+            formatted_subnets = [
+                {
+                    "subnet_id": subnet.get("SubnetId"),
+                    "availability_zone": subnet.get("AvailabilityZone"),
+                    "cidr_block": subnet.get("CidrBlock"),
+                    "state": subnet.get("State"),
+                    "vpc_id": subnet.get("VpcId"),
+                    "tags": subnet.get("Tags", [])
+                }
+                for subnet in subnets
+            ]
+            return {"subnets": formatted_subnets}
         except Exception as e:
             self.logger.error(f"Failed to list subnets for VPC {vpc_id}: {e}")
             return {"error": str(e)}

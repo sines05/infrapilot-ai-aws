@@ -33,6 +33,10 @@ class AgentSettings(BaseModel):
     """Configuration for the AI agent"""
     provider: str = Field("openai", description="LLM provider")
     model: str = Field("gpt-4", description="Default LLM model")
+    api_key: Optional[SecretStr] = Field(None, description="API key for the LLM provider")
+    template_path: str = Field("settings/templates/decision-plan-prompt-optimized.txt", description="Path to the prompt template file")
+    max_tokens: int = Field(10000, description="Maximum number of tokens for LLM response")
+    temperature: float = Field(0.1, description="Temperature for LLM response generation")
     # Add other agent settings if needed
 
 class LoggingSettings(BaseModel):
@@ -85,6 +89,9 @@ def load_app_settings() -> Settings:
             "region": os.getenv("AWS_REGION"),
             "access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
             "secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
+        },
+        "agent": {
+            "api_key": os.getenv("GEMINI_API_KEY"),
         },
         "web": {
             "host": os.getenv("WEB_HOST"),

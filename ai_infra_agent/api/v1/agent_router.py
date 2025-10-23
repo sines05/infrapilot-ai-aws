@@ -43,7 +43,11 @@ async def process_request(
         return plan
     except Exception as e:
         # Catch unexpected errors during agent processing
+        import traceback
         agent.logger.error(f"Failed to process request: {e}", exc_info=True)
+        print("--- FULL SERVER TRACEBACK ---")
+        traceback.print_exc()
+        print("-----------------------------")
         raise HTTPException(
             status_code=500, detail=f"An unexpected error occurred: {str(e)}"
         )

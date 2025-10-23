@@ -45,72 +45,100 @@ class PlanExecutor:
         """Sends a JSON message to the client via WebSocket using the custom serializer."""
         await self.websocket.send_text(json.dumps(data, default=json_serializer))
 
+    def _get_value_from_context(self, path: str) -> Any:
+        """
+        Retrieves a value from the context using a dot-separated path.
+        Example: "step-id.output_key.nested_key[0]"
+        """
+        keys = re.split(r'\.|\[|\]', path)
+        keys = [k for k in keys if k]  # Remove empty strings
+
+        value = self.context
+        for i, key in enumerate(keys):
+            try:
+                if isinstance(value, list) and key.isdigit():
+                    value = value[int(key)]
+                elif isinstance(value, dict):
+                    try:
+                        value = value[key]
+                    except KeyError:
+                        # Special handling for image_id/ami_id discrepancy
+                        if key == "image_id" and "ami_id" in value:
+                            value = value["ami_id"]
+                        elif key == "ami_id" and "image_id" in value:
+                            value = value["image_id"]
+                        else:
+                            # Try converting snake_case to camelCase for common AWS identifiers
+                            camel_case_key = "".join(word.capitalize() if i > 0 else word for i, word in enumerate(key.split('_')))
+                            if camel_case_key in value:
+                                value = value[camel_case_key]
+                            else:
+                                # If still not found, try converting camelCase to snake_case
+                                snake_case_key = re.sub(r'([A-Z])', r'_\1', key).lower()
+                                if snake_case_key in value:
+                                    value = value[snake_case_key]
+                                else:
+                                    raise  # Re-raise if neither snake_case nor camelCase works
+                else:
+                    raise KeyError(f"Cannot access key '{key}' on non-dict/list value.")
+            except (KeyError, IndexError, TypeError) as e:
+                self.logger.error(f"Could not resolve path '{path}' in context. Failed at key '{key}'.")
+                raise ValueError(f"Could not resolve variable path '{path}' in context. Error: {e}")
+        return value
+
     async def _resolve_params(self, tool_params: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Resolves placeholder variables (e.g., {{step-id.key}}) in the parameters
-        of a step using the current execution context.
-
-        Args:
-            tool_params (Dict[str, Any]): The raw parameters for a tool call.
-
-        Returns:
-            Dict[str, Any]: The parameters with all placeholders replaced by actual values.
+        Resolves placeholder variables (e.g., {{step-id.key}} or {timestamp})
+        in the parameters of a step using the current execution context.
         """
         resolved_params = {}
         for key, value in tool_params.items():
-            if isinstance(value, str) and value.startswith("{{") and value.endswith("}}"):
-                # Handle simple string placeholders
-                resolved_params[key] = self._resolve_single_placeholder(value)
+            if isinstance(value, str):
+                # Process a single string value
+                resolved_params[key] = self._resolve_string_placeholders(value)
             elif isinstance(value, list):
-                # Handle lists that may contain placeholders
-                resolved_list = []
-                for item in value:
-                    if isinstance(item, str) and item.startswith("{{") and item.endswith("}}"):
-                        resolved_list.append(self._resolve_single_placeholder(item))
-                    else:
-                        resolved_list.append(item)
+                # Process a list of values
+                resolved_list = [
+                    self._resolve_string_placeholders(item) if isinstance(item, str) else item
+                    for item in value
+                ]
                 resolved_params[key] = resolved_list
             else:
                 # Value is a literal, no resolution needed
                 resolved_params[key] = value
         return resolved_params
 
-    def _resolve_single_placeholder(self, placeholder: str) -> Any:
-        """
-        Resolves a single placeholder string like '{{step-id.data.key[0]}}'.
-        
-        Args:
-            placeholder (str): The placeholder string.
-            
-        Returns:
-            Any: The resolved value from the context.
-            
-        Raises:
-            ValueError: If the path cannot be resolved in the context.
-        """
-        var_path = placeholder[2:-2].strip()
-        self.logger.debug(f"Resolving variable path: '{var_path}'")
-        
-        # Use regex to split the path, handling array access like [0]
-        parts = re.split(r'\.|\[|\]', var_path)
-        parts = [p for p in parts if p]  # Remove empty strings from split
+    def _resolve_string_placeholders(self, value: str) -> str:
+        """Resolves all placeholders within a single string."""
+        self.logger.debug(f"_resolve_string_placeholders: Initial value: {value}")
+        # 1. Handle timestamp placeholders first
+        timestamp_placeholders = re.findall(r"(\{\{timestamp\}\}|\{timestamp\})", value)
+        if timestamp_placeholders:
+            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            for placeholder in set(timestamp_placeholders):
+                value = value.replace(placeholder, timestamp)
+            self.logger.debug(f"_resolve_string_placeholders: After timestamp resolution: {value}")
 
-        resolved_value = self.context
-        for part in parts:
-            try:
-                if isinstance(resolved_value, dict):
-                    resolved_value = resolved_value[part]
-                elif isinstance(resolved_value, list) and part.isdigit():
-                    resolved_value = resolved_value[int(part)]
-                else:
-                    raise KeyError(f"Invalid key or index '{part}'")
-            except (KeyError, IndexError, TypeError):
-                self.logger.error(f"Failed to resolve part '{part}' in path '{var_path}'")
-                self.logger.error(f"Current context: {self.context}")
-                raise ValueError(f"Could not resolve variable path '{var_path}' in context.")
+        # 2. Handle context variable placeholders
+        def resolve_match(match):
+            self.logger.debug(f"resolve_match: Found match: {match.group(0)}")
+            # Determine if it's single or double brace and get the path
+            path = match.group(1) or match.group(2)
+            self.logger.debug(f"resolve_match: Path extracted: {path}")
+            if path:
+                try:
+                    resolved_value = str(self._get_value_from_context(path))
+                    self.logger.debug(f"resolve_match: Resolved value from context: {resolved_value}")
+                    return resolved_value
+                except (ValueError, KeyError) as e:
+                    self.logger.warning(f"Could not resolve placeholder {match.group(0)}: {e}")
+                    return match.group(0)  # Return original placeholder on failure
+            return match.group(0)
 
-        self.logger.debug(f"Resolved '{var_path}' to value: {str(resolved_value)[:100]}...")
-        return resolved_value
+        # Regex to find {{path}} or {path}
+        value = re.sub(r"\{\{([^{}]+?)\}\}|\{([^{}]+?)\}", resolve_match, value)
+        self.logger.debug(f"_resolve_string_placeholders: Final value: {value}")
+        return value
 
 
     async def execute_plan(self, execution_plan: List[Dict[str, Any]]) -> None:

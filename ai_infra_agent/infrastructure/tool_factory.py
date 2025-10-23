@@ -10,7 +10,7 @@ from ai_infra_agent.infrastructure.aws.tools.ec2 import (
     ListEC2InstancesTool,
     TerminateEC2InstanceTool,
 )
-from ai_infra_agent.infrastructure.aws.tools.ami import GetLatestAmazonLinuxAMITool
+from ai_infra_agent.infrastructure.aws.tools.ami import GetLatestAmazonLinuxAMITool, GetLatestUbuntuAmiTool
 from ai_infra_agent.infrastructure.aws.tools.keypair import CreateKeyPairTool, ListKeyPairsTool
 
 

@@ -39,3 +39,35 @@ class GetLatestAmazonLinuxAMITool(BaseTool):
         except Exception as e:
             self.logger.error(f"Failed to get latest Amazon Linux 2023 AMI: {e}")
             return {"error": str(e)}
+
+class GetLatestUbuntuAmiTool(BaseTool):
+    """
+    Tool to find the latest Ubuntu AMI.
+    """
+
+    def __init__(self, logger, adapter):
+        """
+        Initializes the GetLatestUbuntuAmiTool.
+        """
+        super().__init__(logger=logger, adapter=adapter)
+        self.name = "get-latest-ubuntu-ami"
+        self.description = "Find the latest Ubuntu AMI ID to use for launching EC2 instances."
+
+    def execute(self, **kwargs) -> Dict[str, Any]:
+        """
+        Executes the tool to get the latest Ubuntu AMI.
+        """
+        self.logger.info("Getting latest Ubuntu AMI...")
+        try:
+            # Ubuntu AMIs are typically owned by '099720109477' (Canonical)
+            # The name pattern usually includes the release version and 'hvm-ssd'
+            ami_info = self.adapter.get_latest_ubuntu_ami()
+            self.logger.info(f"Found latest Ubuntu AMI: {ami_info['ImageId']}")
+            return {
+                "ami_id": ami_info.get("ImageId"),
+                "description": ami_info.get("Description"),
+                "name": ami_info.get("Name"),
+            }
+        except Exception as e:
+            self.logger.error(f"Failed to get latest Ubuntu AMI: {e}")
+            return {"error": str(e)}

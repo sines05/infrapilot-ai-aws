@@ -20,40 +20,40 @@ These steps MUST be placed FIRST in your execution plan.
 If you encounter a resource not explicitly documented below, follow these patterns:
 
 TOOL NAMING PATTERNS:
-├─ Discovery: get-default-{resource}, list-{resources}, get-latest-{type}
-├─ Creation: create-{resource}
-└─ Management: start-{resource}, stop-{resource}, delete-{resource}
+├─ Discovery: get-default-{{resource}}, list-{{resources}}, get-latest-{{type}}
+├─ Creation: create-{{resource}}
+└─ Management: start-{{resource}}, stop-{{resource}}, delete-{{resource}}
 
 PARAMETER STYLE:
-├─ Always camelCase: vpcId, bucketName, functionName (NOT vpc_id, bucket_name)
+├─ Always snake_case: vpc_id, bucket_name, function_name (NOT vpcId, bucketName)
 ├─ No filters in list tools: list-vpcs, list-subnets (NOT list-vpcs with filters)
-└─ Arrays when multiple: subnetIds, securityGroupIds
+└─ Arrays when multiple: subnet_ids, security_group_ids
 
-OUTPUT FIELDS:
-├─ IDs: {resource}Id → vpcId, subnetId, instanceId
-├─ ARNs: {resource}Arn → roleArn, functionArn, topicArn
-└─ Names: {resource}Name → bucketName, tableName
+OUTPUT FIELDS (from tool execution):
+├─ IDs: {{resource}}_id → vpc_id, subnet_id, instance_id
+├─ ARNs: {{resource}}_arn → role_arn, function_arn, topic_arn
+└─ Names: {{resource}}_name → bucket_name, table_name
 
 COMMON PATTERNS BY CATEGORY:
 
 Storage (S3, EFS, EBS):
   Tools: create-s3-bucket, create-file-system, create-volume
-  Params: bucketName, fileSystemName, volumeId, size
+  Params: bucket_name, file_system_name, volume_id, size
   No network dependencies
 
 Compute (EC2, Lambda, ECS):
   Tools: create-ec2-instance, create-lambda-function, create-ecs-cluster
-  Params: imageId/functionName, instanceType/runtime, vpcId, subnetId, securityGroupId
+  Params: image_id/function_name, instance_type/runtime, vpc_id, subnet_id, security_group_id
   Requires: VPC, Subnet, Security Group
 
 Database (RDS, DynamoDB):
   Tools: create-db-instance, create-table
-  Params: dbInstanceIdentifier/tableName, engine/attributes, vpcId, subnetIds
+  Params: db_instance_identifier/table_name, engine/attributes, vpc_id, subnet_ids
   Requires: VPC, Subnets (multiple AZs), Security Group, DB subnet group
 
 Network (ALB, VPC, CloudFront):
   Tools: create-load-balancer, create-vpc, create-distribution
-  Params: name, scheme, vpcId, subnetIds, securityGroupIds
+  Params: name, scheme, vpc_id, subnet_ids, security_group_ids
   Requires: VPC, Subnets (2+ AZs for ALB)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -92,7 +92,7 @@ METHOD B: List all VPCs:
   "status": "pending"
 }
 
-Output: Returns vpcId field
+Output: Returns vpc_id field
 
 PATTERN 2: SUBNET DISCOVERY
 Discover subnets within a VPC
@@ -106,7 +106,7 @@ METHOD A: List subnets in VPC:
   "resourceId": "subnets",
   "mcpTool": "list-subnets",
   "toolParameters": {
-    "vpcId": "{{step-discover-vpc.resourceId}}"
+    "vpc_id": "{{step-discover-vpc.vpc_id}}"
   },
   "dependsOn": ["step-discover-vpc"],
   "status": "pending"
@@ -121,9 +121,9 @@ METHOD B: Select subnets for ALB (auto-selects 2+ subnets in different AZs):
   "resourceId": "alb-subnets",
   "mcpTool": "list-subnets-for-alb",
   "toolParameters": {
-    "vpcId": "{{step-discover-vpc.resourceId}}",
-    "minAZs": 2,
-    "requireMultiAZ": true
+    "vpc_id": "{{step-discover-vpc.vpc_id}}",
+    "min_azs": 2,
+    "require_multi_az": true
   },
   "dependsOn": ["step-discover-vpc"],
   "status": "pending"
@@ -174,48 +174,7 @@ METHOD A: Get latest Ubuntu AMI:
   "status": "pending"
 }
 
-METHOD B: Get latest Amazon Linux AMI:
-{
-  "id": "step-get-amzn-ami",
-  "name": "Get latest Amazon Linux AMI",
-  "description": "Find latest Amazon Linux image",
-  "action": "query",
-  "resourceId": "amzn-ami",
-  "mcpTool": "get-latest-amazon-linux-ami",
-  "toolParameters": {},
-  "dependsOn": [],
-  "status": "pending"
-}
-
-METHOD C: Get latest Windows AMI:
-{
-  "id": "step-get-windows-ami",
-  "name": "Get latest Windows AMI",
-  "description": "Find latest Windows Server image",
-  "action": "query",
-  "resourceId": "windows-ami",
-  "mcpTool": "get-latest-windows-ami",
-  "toolParameters": {
-    "version": "2022"
-  },
-  "dependsOn": [],
-  "status": "pending"
-}
-
-Output: Returns amiId field
-Architecture options: "x86_64" (default) or "arm64"
-Windows versions: "2016", "2019", "2022"
-
-Common AMI patterns:
-- Ubuntu 22.04: "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
-- Amazon Linux 2: "amzn2-ami-hvm-*-x86_64-gp2"
-- Ubuntu 20.04: "ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"
-
-Always use:
-- "state": "available"
-- "sort": "creation-date"
-- "order": "desc"
-- "maxResults": 1
+Output: Returns imageId field
 
 PATTERN 5: INSTANCE DISCOVERY
 Discover existing EC2 instances
@@ -233,56 +192,6 @@ Discover existing EC2 instances
 }
 
 Output: Returns instanceId field
-Lists all instances in the region with their status
-
-PATTERN 6: LOAD BALANCER DISCOVERY
-Discover existing load balancers
-
-METHOD A: List all load balancers:
-{
-  "id": "step-list-albs",
-  "name": "List load balancers",
-  "description": "Find existing ALBs",
-  "action": "query",
-  "resourceId": "albs",
-  "mcpTool": "list-load-balancers",
-  "toolParameters": {},
-  "dependsOn": [],
-  "status": "pending"
-}
-
-METHOD B: Get target groups:
-{
-  "id": "step-list-tg",
-  "name": "List target groups",
-  "description": "Find target groups",
-  "action": "query",
-  "resourceId": "target-groups",
-  "mcpTool": "list-target-groups",
-  "toolParameters": {},
-  "dependsOn": [],
-  "status": "pending"
-}
-
-Output: Returns loadBalancerArn and targetGroupArn fields
-
-PATTERN 7: RDS INSTANCE DISCOVERY
-Discover existing RDS instances
-
-{
-  "id": "step-list-databases",
-  "name": "List RDS instances",
-  "description": "Find existing databases",
-  "action": "query",
-  "resourceId": "databases",
-  "mcpTool": "list-db-instances",
-  "toolParameters": {},
-  "dependsOn": [],
-  "status": "pending"
-}
-
-Output: Returns dbInstanceIdentifier and endpoint fields
-Lists all RDS instances in the region
 
 ═══════════════════════════════════════════════════════════════════
 🎯 PARAMETER RESOLUTION PATTERNS
@@ -293,9 +202,9 @@ When a tool requires a single resource ID, reference the discovery step output:
 
 {
   "toolParameters": {
-    "vpcId": "{{step-discover-vpc.vpcId}}",
-    "subnetId": "{{step-discover-subnet.subnetId}}",
-    "imageId": "{{step-discover-ami.imageId}}"
+    "vpc_id": "{{step-discover-vpc.vpc_id}}",
+    "subnet_id": "{{step-discover-subnet.subnetId}}",
+    "image_id": "{{step-discover-ami.imageId}}"
   }
 }
 
@@ -304,35 +213,13 @@ When a tool accepts multiple IDs (subnets, security groups):
 
 {
   "toolParameters": {
-    "subnetIds": [
+    "subnet_ids": [
       "{{step-discover-subnet-1.subnetId}}",
       "{{step-discover-subnet-2.subnetId}}"
     ],
-    "securityGroupIds": [
+    "security_group_ids": [
       "{{step-discover-sg.securityGroupId}}"
     ]
-  }
-}
-
-ARN REFERENCE:
-For resources that use ARNs (load balancers, target groups):
-
-{
-  "toolParameters": {
-    "loadBalancerArn": "{{step-create-alb.loadBalancerArn}}",
-    "targetGroupArn": "{{step-create-tg.targetGroupArn}}"
-  }
-}
-
-NESTED OBJECT REFERENCE:
-For complex action parameters:
-
-{
-  "toolParameters": {
-    "defaultActions": [{
-      "type": "forward",
-      "targetGroupArn": "{{step-create-tg.targetGroupArn}}"
-    }]
   }
 }
 
@@ -341,7 +228,7 @@ For complex action parameters:
 ═══════════════════════════════════════════════════════════════════
 
 PATTERN 1: EC2 INSTANCE
-Requires: AMI, VPC, Subnet, Security Group
+Requires: AMI, VPC, Subnet, Security Group, Key Pair
 
 Discovery Phase (steps 1-4):
 - Discover VPC
@@ -354,11 +241,12 @@ Creation Phase (step 5):
   "action": "create",
   "mcpTool": "create-ec2-instance",
   "toolParameters": {
-    "imageId": "{{step-discover-ami.imageId}}",
-    "instanceType": "t3.micro",
-    "subnetId": "{{step-discover-subnet.subnetId}}",
-    "securityGroupIds": ["{{step-discover-sg.securityGroupId}}"],
-    "name": "web-server"
+    "image_id": "{{step-discover-ami.imageId}}",
+    "instance_type": "t3.micro", // Prioritize use t3.micro
+    "key_name": "your-key-pair-name",
+    "subnet_id": "{{step-discover-subnet.subnetId}}",
+    "security_group_ids": ["{{step-discover-sg.securityGroupId}}"],
+    "tags": [{"Key": "Name", "Value": "web-server"}]
   },
   "dependsOn": ["step-discover-ami", "step-discover-subnet", "step-discover-sg"]
 }
@@ -371,9 +259,9 @@ Step 1 - Create Security Group:
   "action": "create",
   "mcpTool": "create-security-group",
   "toolParameters": {
-    "groupName": "web-sg",
+    "group_name": "web-sg",
     "description": "Allow web traffic",
-    "vpcId": "{{step-discover-vpc.vpcId}}"
+    "vpc_id": "{{step-discover-vpc.vpc_id}}"
   },
   "dependsOn": ["step-discover-vpc"]
 }
@@ -381,31 +269,19 @@ Step 1 - Create Security Group:
 Step 2 - Add Ingress Rules:
 {
   "action": "create",
-  "mcpTool": "authorize-security-group-ingress",
+  "mcpTool": "add-security-group-ingress-rule",
   "toolParameters": {
-    "groupId": "{{step-create-sg.securityGroupId}}",
-    "ipPermissions": [{
-      "ipProtocol": "tcp",
-      "fromPort": 80,
-      "toPort": 80,
-      "ipRanges": [{"cidrIp": "0.0.0.0/0"}]
-    }]
+    "group_id": "{{step-create-sg.groupId}}",
+    "protocol": "tcp",
+    "from_port": 80,
+    "to_port": 80,
+    "cidr_block": "0.0.0.0/0"
   },
   "dependsOn": ["step-create-sg"]
 }
 
 PATTERN 3: APPLICATION LOAD BALANCER
 Requires: VPC, Subnets (2+ in different AZs), Security Group, Target Group
-
-Discovery Phase:
-- Discover VPC
-- Discover Subnets
-
-Creation Phase:
-1. Create Security Group (with HTTP rules)
-2. Create Target Group
-3. Create Load Balancer
-4. Create Listener
 
 Load Balancer Creation:
 {
@@ -415,11 +291,11 @@ Load Balancer Creation:
     "name": "web-alb",
     "type": "application",
     "scheme": "internet-facing",
-    "subnetIds": [
+    "subnet_ids": [
       "{{step-discover-subnet-1.subnetId}}",
       "{{step-discover-subnet-2.subnetId}}"
     ],
-    "securityGroupIds": ["{{step-create-sg.securityGroupId}}"]
+    "security_group_ids": ["{{step-create-sg.securityGroupId}}"]
   },
   "dependsOn": ["step-discover-subnet-1", "step-discover-subnet-2", "step-create-sg"]
 }
@@ -427,23 +303,14 @@ Load Balancer Creation:
 PATTERN 4: RDS DATABASE
 Requires: VPC, Subnets (2+ in different AZs), DB Subnet Group, Security Group
 
-Discovery Phase:
-- Discover VPC
-- Discover Subnets
-
-Creation Phase:
-1. Create DB Subnet Group
-2. Create Security Group (with database port rules)
-3. Create RDS Instance
-
 DB Subnet Group Creation:
 {
   "action": "create",
   "mcpTool": "create-db-subnet-group",
   "toolParameters": {
-    "dbSubnetGroupName": "db-subnet-group",
-    "dbSubnetGroupDescription": "Subnet group for RDS",
-    "subnetIds": [
+    "db_subnet_group_name": "db-subnet-group",
+    "db_subnet_group_description": "Subnet group for RDS",
+    "subnet_ids": [
       "{{step-discover-subnet-1.subnetId}}",
       "{{step-discover-subnet-2.subnetId}}"
     ]
@@ -456,15 +323,15 @@ RDS Instance Creation:
   "action": "create",
   "mcpTool": "create-db-instance",
   "toolParameters": {
-    "dbInstanceIdentifier": "mysql-db",
-    "dbInstanceClass": "db.t3.micro",
+    "db_instance_identifier": "mysql-db",
+    "db_instance_class": "db.t3.micro",
     "engine": "mysql",
-    "engineVersion": "8.0",
-    "masterUsername": "admin",
-    "masterUserPassword": "SecurePass123!",
-    "allocatedStorage": 20,
-    "dbSubnetGroupName": "{{step-create-db-subnet-group.dbSubnetGroupName}}",
-    "vpcSecurityGroupIds": ["{{step-create-db-sg.securityGroupId}}"]
+    "engine_version": "8.0",
+    "master_username": "admin",
+    "master_user_password": "SecurePass123!",
+    "allocated_storage": 20,
+    "db_subnet_group_name": "{{step-create-db-subnet-group.dbSubnetGroupName}}",
+    "vpc_security_group_ids": ["{{step-create-db-sg.securityGroupId}}"]
   },
   "dependsOn": ["step-create-db-subnet-group", "step-create-db-sg"]
 }

@@ -13,14 +13,15 @@ class CreateEC2InstanceTool(BaseTool):
 
     def execute(
         self,
-        image_id: str,
-        instance_type: str,
-        key_name: str,
+        image_id: str = None,
+        instance_type: str = None,
+        key_name: str = None,
         min_count: int = 1,
         max_count: int = 1,
         tags: List[Dict[str, str]] = None,
         security_group_ids: Optional[List[str]] = None,
         subnet_id: Optional[str] = None,
+        **kwargs # Accept additional kwargs to handle LLM inconsistencies
     ) -> Dict[str, Any]:
         """
         Executes the tool to create an EC2 instance.
@@ -37,8 +38,17 @@ class CreateEC2InstanceTool(BaseTool):
             Dict[str, Any]: The response from the create_instance call.
         """
         self.logger.info(f"Executing tool: {self.name}")
+
+        # Handle LLM inconsistency: if image_id is not provided, check for imageId
+        final_image_id = image_id
+        if not final_image_id and "imageId" in kwargs:
+            final_image_id = kwargs["imageId"]
+        
+        if not final_image_id:
+            raise ValueError("image_id (or imageId) is a required argument.")
+
         return self.adapter.create_instance(
-            image_id=image_id,
+            image_id=final_image_id,
             instance_type=instance_type,
             key_name=key_name,
             min_count=min_count,
