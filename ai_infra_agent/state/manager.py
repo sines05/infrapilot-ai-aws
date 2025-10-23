@@ -70,3 +70,19 @@ class StateManager:
             return resource
         self.logger.warning(f"Attempted to remove non-existent resource with ID '{resource_id}'.")
         return None
+
+    def get_current_state_formatted(self) -> str:
+        """
+        Returns a formatted string representation of the current state for the LLM prompt.
+        """
+        if not self.state.resources:
+            return "No managed resources found."
+
+        formatted_output = []
+        for resource_id, resource_state in self.state.resources.items():
+            # Assuming ResourceState has 'id', 'type', and 'properties' (a dict)
+            # Adjust this formatting based on the actual structure of ResourceState
+            properties_str = ", ".join([f"{k}:{v}" for k, v in resource_state.properties.items()])
+            formatted_output.append(f"- {resource_id} ({resource_state.type}): {resource_state.status} [{properties_str}]")
+        
+        return "\n".join(formatted_output)

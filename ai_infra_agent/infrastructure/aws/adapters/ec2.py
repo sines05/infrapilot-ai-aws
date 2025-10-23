@@ -113,7 +113,7 @@ class EC2Adapter(AWSAdapterBase):
             self.logger.error(f"Error terminating EC2 instance '{instance_id}': {e}")
             raise
 
-    def get_latest_ami(self, owner: str, name_pattern: str) -> Dict[str, Any]: # <--- Sửa ở đây
+    def get_latest_ami(self, owner: str, name_pattern: str) -> Dict[str, Any]:
         """
         Gets the latest AMI based on owner and name pattern.
 
@@ -127,11 +127,11 @@ class EC2Adapter(AWSAdapterBase):
         self.logger.info(f"Searching for latest AMI with owner '{owner}' and pattern: {name_pattern}")
         try:
             response = self.client.describe_images(
-                Owners=[owner], # <--- Sửa ở đây
+                Owners=[owner],
                 Filters=[
-                    {"Name": "name", "Values": [name_pattern]}, # <--- Sửa ở đây
+                    {"Name": "name", "Values": [name_pattern]},
                     {"Name": "state", "Values": ["available"]},
-                    {"Name": "architecture", "Values": ["x86_64"]} # Thêm bộ lọc kiến trúc cho chắc chắn
+                    {"Name": "architecture", "Values": ["x86_64"]}
                 ],
             )
             images = sorted(response["Images"], key=lambda x: x["CreationDate"], reverse=True)
@@ -140,6 +140,37 @@ class EC2Adapter(AWSAdapterBase):
             return images[0]
         except Exception as e:
             self.logger.error(f"Error getting latest AMI: {e}")
+            raise
+
+    def get_latest_ubuntu_ami(self) -> Dict[str, Any]:
+        """
+        Gets the latest Ubuntu Server 22.04 LTS (HVM), SSD Volume Type AMI for x86_64 architecture.
+        Owner ID for Canonical (Ubuntu) is '099720109477'.
+        """
+        self.logger.info("Searching for latest Ubuntu Server 22.04 LTS AMI...")
+        try:
+            # Canonical (Ubuntu) owner ID
+            ubuntu_owner_id = "099720109477"
+            # Pattern for Ubuntu Server 22.04 LTS, HVM, SSD Volume Type, x86_64
+            # The name pattern often includes the build date, e.g., "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-20230126"
+            ubuntu_name_pattern = "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"
+
+            response = self.client.describe_images(
+                Owners=[ubuntu_owner_id],
+                Filters=[
+                    {"Name": "name", "Values": [ubuntu_name_pattern]},
+                    {"Name": "state", "Values": ["available"]},
+                    {"Name": "architecture", "Values": ["x86_64"]},
+                    {"Name": "virtualization-type", "Values": ["hvm"]},
+                    {"Name": "root-device-type", "Values": ["ebs"]}
+                ],
+            )
+            images = sorted(response["Images"], key=lambda x: x["CreationDate"], reverse=True)
+            if not images:
+                raise ValueError(f"No matching Ubuntu AMI found for pattern '{ubuntu_name_pattern}'")
+            return images[0]
+        except Exception as e:
+            self.logger.error(f"Error getting latest Ubuntu AMI: {e}")
             raise
 
     def create_key_pair(self, key_name: str) -> Dict[str, Any]:

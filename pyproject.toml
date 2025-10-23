@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "ai-infra-agent"
 version = "0.1.0"
-description = "An AI agent for managing infrastructure, migrated from Go to Python."
+description = "An AI agent for managing infrastructure"
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
 
@@ -18,6 +18,7 @@ langchain = "^0.0.339"
 ruamel-yaml = "^0.18.5"
 websockets = "^12.0"
 pyyaml = "^6.0.3"
+google-generativeai = "^0.3.2"
 
 [build-system]
 requires = ["poetry-core"]

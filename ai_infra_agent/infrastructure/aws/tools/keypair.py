@@ -38,7 +38,8 @@ class CreateKeyPairTool(BaseTool):
             raise ValueError("key_name is a required argument.")
 
         self.logger.info(f"Executing CreateKeyPairTool with key_name: {key_name}")
-        return self.adapter.create_key_pair(key_name=key_name)
+        response = self.adapter.create_key_pair(key_name=key_name)
+        return {"key_name": response.get("KeyName"), "key_material": response.get("KeyMaterial")}
 
 
 class ListKeyPairsTool(BaseTool):

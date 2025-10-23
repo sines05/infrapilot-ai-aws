@@ -1,6 +1,7 @@
 import json
 import asyncio
 import datetime # Import datetime for timestamp
+import re # Import re for regex operations
 from typing import Dict, Any, List
 
 from langchain.llms.base import BaseLLM
@@ -13,26 +14,7 @@ from ai_infra_agent.infrastructure.tool_factory import ToolFactory
 from ai_infra_agent.agent.prompt_builder import PromptBuilder
 from ai_infra_agent.core.logging import logger
 
-# Placeholder for a real LLM class
-class SimpleMockLLM(BaseLLM):
-    def _generate(self, prompts: List[str], stop: List[str] = None) -> LLMResult:
-        # This mock will return a predefined plan for a specific request.
-        # This is for MVP testing without a real LLM call.
-        logger.info("Using Mock LLM. Returning a predefined plan from sample_data.json.")
-        
-        with open('sample_data.json', 'r') as f:
-            data = json.load(f)
-
-        response_text = json.dumps(data)
-        
-        generations = [[Generation(text=response_text)] for _ in prompts]
-
-        # The _generate method must return an LLMResult object.
-        return LLMResult(generations=generations)
-
-    @property
-    def _llm_type(self) -> str:
-        return "simple_mock"
+from ai_infra_agent.agent.llms.gemini import GeminiLLM
 
 
 class StateAwareAgent:
@@ -49,15 +31,62 @@ class StateAwareAgent:
             state_manager (StateManager): The manager for infrastructure state.
             tool_factory (ToolFactory): The factory to create tools.
             logger: The logger instance.
-            llm (BaseLLM, optional): The language model to use. Defaults to a mock LLM for MVP.
+            llm (BaseLLM, optional): The language model to use. If None, it will be initialized based on settings.
         """
         self.settings = settings
         self.state_manager = state_manager
         self.tool_factory = tool_factory
-        self.llm = llm or SimpleMockLLM() # Use a mock LLM for now
-        self.prompt_builder = PromptBuilder()
         self.logger = logger
+
+        if llm:
+            self.llm = llm
+        else:
+            self.llm = self._initialize_llm()
+
+        self.prompt_builder = PromptBuilder()
         self.logger.info("StateAwareAgent initialized.")
+
+    def _initialize_llm(self) -> BaseLLM:
+        """
+        Initializes the appropriate LLM based on settings.
+        """
+        provider = self.settings.provider
+        model_name = self.settings.model
+        temperature = self.settings.temperature
+        max_tokens = self.settings.max_tokens
+
+        if provider == "gemini":
+            # GEMINI_API_KEY is loaded via pydantic_settings from .env or env vars
+            api_key = self.settings.api_key.get_secret_value() if self.settings.api_key else None
+            if not api_key:
+                self.logger.error("GEMINI_API_KEY not found in environment variables. Gemini LLM cannot be initialized.")
+                raise ValueError("GEMINI_API_KEY is required for Gemini provider.")
+            return GeminiLLM(
+                model_name=model_name,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                api_key=api_key,
+                logger=self.logger
+            )
+        # Add other LLM providers here (e.g., "openai", "claude", "awsbedrock")
+        # elif provider == "openai":
+        #     # Initialize OpenAI LLM
+        #     pass
+        else:
+            self.logger.warning(f"Unknown LLM provider: {provider}. Falling back to a mock LLM.")
+            # Fallback to a simple mock LLM if provider is unknown or not configured
+            class SimpleMockLLM(BaseLLM):
+                def _generate(self, prompts: List[str], stop: List[str] = None) -> LLMResult:
+                    self.logger.info("Using Mock LLM. Returning a predefined plan from sample_data.json.")
+                    with open('sample_data.json', 'r') as f:
+                        data = json.load(f)
+                    response_text = json.dumps(data)
+                    generations = [[Generation(text=response_text)] for _ in prompts]
+                    return LLMResult(generations=generations)
+                @property
+                def _llm_type(self) -> str:
+                    return "simple_mock"
+            return SimpleMockLLM()
 
     def _resolve_placeholders(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -86,27 +115,43 @@ class StateAwareAgent:
         logger.info(f"Processing request: '{request}'")
 
         # 1. Gather context
-        current_state = self.state_manager.state.dict()
-        # For MVP, we only care about EC2 tools.
-        available_tools = self.tool_factory.get_tool_names()
-        logger.debug(f"Available tools: {available_tools}")
+        # Get formatted current state from StateManager
+        current_state_formatted = self.state_manager.get_current_state_formatted()
+        logger.debug(f"Formatted current state:\n{current_state_formatted}")
+
+        # Get formatted tool definitions from PromptBuilder
+        tools_context = self.prompt_builder.tools_context_template
+        logger.debug(f"Formatted tool definitions:\n{tools_context}") # Corrected f-string
 
         # 2. Build the prompt
         prompt = self.prompt_builder.build(
-            state=current_state,
-            tools=available_tools,
-            request=request
+            request=request,
+            tools_context=tools_context,
+            current_state_formatted=current_state_formatted
         )
-        logger.debug(f"Generated Prompt:\n{prompt}")
+        logger.debug(f"Generated Prompt:\n{prompt}\n")
 
         # 3. Interact with the LLM
         try:
             logger.info("Sending prompt to LLM...")
+            # Log the full prompt to a file for debugging
+            with open("llm_request.log", "w", encoding="utf-8") as f:
+                f.write(prompt)
+            logger.debug("Full LLM prompt saved to llm_request.log")
             # Run the synchronous LLM call in a separate thread
             llm_response = await asyncio.to_thread(self.llm, prompt)
             logger.debug(f"Raw LLM response:\n{llm_response}") # Added debug log for raw response
             try:
-                plan = json.loads(llm_response)
+                # Remove markdown code block if present
+                json_match = re.search(r"```json\s*(.*?)\s*```", llm_response, re.DOTALL)
+                if json_match:
+                    cleaned_llm_response = json_match.group(1)
+                    logger.debug("Removed markdown code block from LLM response.")
+                else:
+                    cleaned_llm_response = llm_response
+                    logger.debug("No markdown code block found in LLM response.")
+
+                plan = json.loads(cleaned_llm_response)
                 logger.debug(f"Parsed LLM plan:\n{json.dumps(plan, indent=2)}") # Added debug log for parsed plan
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to decode LLM response into JSON: {e}")
