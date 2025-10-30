@@ -86,60 +86,36 @@ class PlanExecutor:
                 raise ValueError(f"Could not resolve variable path '{path}' in context. Error: {e}")
         return value
 
-    async def _resolve_params(self, tool_params: Dict[str, Any]) -> Dict[str, Any]:
+    def _resolve_placeholders_recursively(self, data: Any) -> Any:
         """
-        Resolves placeholder variables (e.g., {{step-id.key}} or {timestamp})
-        in the parameters of a step using the current execution context.
+        Recursively traverses a data structure (dict, list) and resolves all placeholders in strings.
         """
-        resolved_params = {}
-        for key, value in tool_params.items():
-            if isinstance(value, str):
-                # Process a single string value
-                resolved_params[key] = self._resolve_string_placeholders(value)
-            elif isinstance(value, list):
-                # Process a list of values
-                resolved_list = [
-                    self._resolve_string_placeholders(item) if isinstance(item, str) else item
-                    for item in value
-                ]
-                resolved_params[key] = resolved_list
-            else:
-                # Value is a literal, no resolution needed
-                resolved_params[key] = value
-        return resolved_params
+        if isinstance(data, dict):
+            return {key: self._resolve_placeholders_recursively(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [self._resolve_placeholders_recursively(item) for item in data]
+        elif isinstance(data, str):
+            # First, handle the timestamp placeholder
+            timestamp_placeholders = re.findall(r"(\{\{timestamp\}\}|\{timestamp\})", data)
+            if timestamp_placeholders:
+                timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+                for placeholder in set(timestamp_placeholders):
+                    data = data.replace(placeholder, timestamp)
 
-    def _resolve_string_placeholders(self, value: str) -> str:
-        """Resolves all placeholders within a single string."""
-        self.logger.debug(f"_resolve_string_placeholders: Initial value: {value}")
-        # 1. Handle timestamp placeholders first
-        timestamp_placeholders = re.findall(r"(\{\{timestamp\}\}|\{timestamp\})", value)
-        if timestamp_placeholders:
-            timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
-            for placeholder in set(timestamp_placeholders):
-                value = value.replace(placeholder, timestamp)
-            self.logger.debug(f"_resolve_string_placeholders: After timestamp resolution: {value}")
+            # Second, handle context variable placeholders
+            def resolve_match(match):
+                path = match.group(1) or match.group(2)
+                if path:
+                    try:
+                        return str(self._get_value_from_context(path))
+                    except (ValueError, KeyError) as e:
+                        self.logger.warning(f"Could not resolve placeholder {match.group(0)}: {e}")
+                        return match.group(0)  # Return original placeholder on failure
+                return match.group(0)
 
-        # 2. Handle context variable placeholders
-        def resolve_match(match):
-            self.logger.debug(f"resolve_match: Found match: {match.group(0)}")
-            # Determine if it's single or double brace and get the path
-            path = match.group(1) or match.group(2)
-            self.logger.debug(f"resolve_match: Path extracted: {path}")
-            if path:
-                try:
-                    resolved_value = str(self._get_value_from_context(path))
-                    self.logger.debug(f"resolve_match: Resolved value from context: {resolved_value}")
-                    return resolved_value
-                except (ValueError, KeyError) as e:
-                    self.logger.warning(f"Could not resolve placeholder {match.group(0)}: {e}")
-                    return match.group(0)  # Return original placeholder on failure
-            return match.group(0)
-
-        # Regex to find {{path}} or {path}
-        value = re.sub(r"\{\{([^{}]+?)\}\}|\{([^{}]+?)\}", resolve_match, value)
-        self.logger.debug(f"_resolve_string_placeholders: Final value: {value}")
-        return value
-
+            return re.sub(r"\{\{([^{}]+?)\}\}|\{([^{}]+?)\}", resolve_match, data)
+        else:
+            return data
 
     async def execute_plan(self, execution_plan: List[Dict[str, Any]]) -> None:
         """
@@ -175,8 +151,8 @@ class PlanExecutor:
             })
 
             try:
-                # 1. Resolve parameters for the current step
-                resolved_params = await self._resolve_params(tool_params)
+                # 1. Resolve parameters for the current step using the new recursive method
+                resolved_params = self._resolve_placeholders_recursively(tool_params)
                 self.logger.info(f"Executing tool '{tool_name}' with resolved params: {resolved_params}")
                 
                 # 2. Execute the tool via the agent

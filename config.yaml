@@ -2,10 +2,7 @@
 server:
   port: 3000
   host: "localhost"
-
-aws:
-  region: "ap-southeast-1"
-
+  
 mcp:
   server_name: "aws-infrastructure-server"
   version: "1.0.0"
