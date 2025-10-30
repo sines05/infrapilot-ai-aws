@@ -19,7 +19,7 @@ agent:
   # Note: Set GEMINI_API_KEY environment variable
 
 logging:
-  level: "info"
+  level: "debug"
   format: "text"
   output: "stdout"
 

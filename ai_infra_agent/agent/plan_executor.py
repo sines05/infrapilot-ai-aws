@@ -34,6 +34,14 @@ def _convert_datetime_to_iso(obj: Any) -> Any:
         return [_convert_datetime_to_iso(elem) for elem in obj]
     return obj
 
+def _snake_to_pascal_case(snake_str: str) -> str:
+    """
+    Converts a snake_case string to PascalCase.
+    Example: 'db_subnet_group_name' -> 'DBSubnetGroupName'
+    """
+    components = snake_str.split('_')
+    return "".join(x.capitalize() for x in components)
+
 
 class PlanExecutor:
     """
@@ -70,35 +78,52 @@ class PlanExecutor:
 
         value = self.context
         for i, key in enumerate(keys):
+            self.logger.debug(f"Current value: {value}, Current key: {key}")
             try:
                 if isinstance(value, list) and key.isdigit():
                     value = value[int(key)]
                 elif isinstance(value, dict):
                     try:
-                        value = value[key]
+                        value = value[key] # Try direct access first
                     except KeyError:
+                        self.logger.debug(f"KeyError for key: {key}. Attempting casing conversions.")
                         # Special handling for image_id/ami_id discrepancy
                         if key == "image_id" and "ami_id" in value:
                             value = value["ami_id"]
                         elif key == "ami_id" and "image_id" in value:
                             value = value["image_id"]
                         else:
-                            # Try converting snake_case to camelCase for common AWS identifiers
-                            camel_case_key = "".join(word.capitalize() if i > 0 else word for i, word in enumerate(key.split('_')))
-                            if camel_case_key in value:
-                                value = value[camel_case_key]
+                            # Try converting snake_case to PascalCase (e.g., db_subnet_group_name -> DBSubnetGroupName)
+                            pascal_case_from_snake = _snake_to_pascal_case(key)
+                            if pascal_case_from_snake in value:
+                                value = value[pascal_case_from_snake]
+                                self.logger.debug(f"  Found value using PascalCase: {pascal_case_from_snake}")
+                            elif key == "group_id" and "groupId" in value:
+                                value = value["groupId"]
+                                self.logger.debug(f"  Found groupId for key 'group_id'")
+                            elif key == "db_subnet_group_name" and ("DBSubnetGroupName" in value or "dbSubnetGroupName" in value or "name" in value):
+                                value = value.get("DBSubnetGroupName") or value.get("dbSubnetGroupName") or value.get("name")
+                                self.logger.debug(f"  Found DBSubnetGroupName for key 'db_subnet_group_name'")
+                            elif key == "vpc_security_group_ids" and isinstance(value, list) and all(isinstance(item, dict) and "groupId" in item for item in value):
+                                value = [item["groupId"] for item in value]
+                                self.logger.debug(f"  Extracted groupId from list of security groups for 'vpc_security_group_ids'")
                             else:
-                                # If still not found, try converting camelCase to snake_case
-                                snake_case_key = re.sub(r'([A-Z])', r'_\1', key).lower()
-                                if snake_case_key in value:
-                                    value = value[snake_case_key]
-                                else:
-                                    raise  # Re-raise if neither snake_case nor camelCase works
+                                self.logger.debug(f"  snake_to_pascal_case: {key} -> {pascal_case_from_snake}")
+                                self.logger.debug(f"  Value keys: {value.keys()}")
+                                # If still not found, re-raise the KeyError
+                                raise KeyError(f"Key '{key}' not found after casing conversions or special handling.")
                 else:
                     raise KeyError(f"Cannot access key '{key}' on non-dict/list value.")
             except (KeyError, IndexError, TypeError) as e:
                 self.logger.error(f"Could not resolve path '{path}' in context. Failed at key '{key}'.")
-                raise ValueError(f"Could not resolve variable path '{path}' in context. Error: {e}")
+                # Temporarily raise a custom exception with debug info
+                debug_info = {
+                    "failed_key": key,
+                    "current_value_type": type(value).__name__,
+                    "current_value_keys": list(value.keys()) if isinstance(value, dict) else None,
+                    "attempted_pascal_case": _snake_to_pascal_case(key) if isinstance(value, dict) else None
+                }
+                raise ValueError(f"Could not resolve variable path '{path}' in context. Debug Info: {debug_info}")
         return value
 
     def _resolve_placeholders_recursively(self, data: Any) -> Any:
@@ -118,19 +143,36 @@ class PlanExecutor:
                     data = data.replace(placeholder, timestamp)
 
             # Second, handle context variable placeholders
-            def resolve_match(match):
+            # Check if the string is *only* a placeholder
+            match = re.fullmatch(r"\{\{([^{}]+?)\}\}|\{([^{}]+?)\}", data)
+            if match:
                 path = match.group(1) or match.group(2)
+                if path:
+                    try:
+                        # If it's a standalone placeholder, return the raw value
+                        return self._get_value_from_context(path)
+                    except (ValueError, KeyError) as e:
+                        self.logger.warning(f"Could not resolve placeholder {match.group(0)}: {e}")
+                        return data  # Return original placeholder on failure
+            
+            # If not a standalone placeholder, or if it contains other text, resolve and convert to string
+            def resolve_match_func(match_obj): # Renamed to avoid conflict with outer 'match'
+                path = match_obj.group(1) or match_obj.group(2)
                 if path:
                     try:
                         return str(self._get_value_from_context(path))
                     except (ValueError, KeyError) as e:
-                        self.logger.warning(f"Could not resolve placeholder {match.group(0)}: {e}")
-                        return match.group(0)  # Return original placeholder on failure
-                return match.group(0)
+                        self.logger.warning(f"Could not resolve placeholder {match_obj.group(0)}: {e}")
+                        return match_obj.group(0)  # Return original placeholder on failure
+                return match_obj.group(0)
 
-            return re.sub(r"\{\{([^{}]+?)\}\}|\{([^{}]+?)\}", resolve_match, data)
+            resolved_string = re.sub(r"\{\{([^{}]+?)\}\}|\{([^{}]+?)\}", resolve_match_func, data)
+            self.logger.debug(f"Resolved string: {data} -> {resolved_string}")
+            return resolved_string
         else:
             return data
+
+            
 
     def _update_state_after_creation(self, tool_name: str, result: Dict[str, Any]):
         """
@@ -225,10 +267,19 @@ class PlanExecutor:
 
             except Exception as e:
                 self.logger.error(f"Execution failed at step '{step_name}': {e}", exc_info=True)
+                error_details = {"error": str(e)}
+                if isinstance(e, ValueError) and "Debug Info:" in str(e):
+                    try:
+                        # Extract debug info from the custom ValueError message
+                        debug_info_str = str(e).split("Debug Info:")[1].strip()
+                        error_details["debug_info"] = json.loads(debug_info_str)
+                    except (IndexError, json.JSONDecodeError):
+                        pass # Fallback to just the error string if parsing fails
+
                 await self._send_update({
                     "status": "Step Failed",
                     "step": step_name,
-                    "error": str(e)
+                    "result": error_details # Send error_details instead of just str(e)
                 })
                 # Re-raise the exception to stop the entire plan execution
                 raise

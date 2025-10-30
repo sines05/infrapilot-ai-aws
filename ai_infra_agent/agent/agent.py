@@ -227,5 +227,8 @@ class StateAwareAgent:
         # to avoid blocking the asyncio event loop.
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(None, lambda: tool.execute(**resolved_kwargs))
+        if "error" in result:
+            self.logger.error(f"Tool '{tool_name}' execution failed with error: {result["error"]}")
+            raise ValueError(f"Tool '{tool_name}' execution failed: {result["error"]}")
         self.logger.info(f"Tool '{tool_name}' executed successfully.")
         return result

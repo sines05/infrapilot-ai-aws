@@ -96,21 +96,21 @@ class EC2Adapter(AWSAdapterBase):
             raise
 
 
-    def terminate_instance(self, instance_id: str) -> Dict[str, Any]:
+    def terminate_instance(self, instance_ids: List[str]) -> Dict[str, Any]:
         """
-        Terminates an EC2 instance.
+        Terminates one or more EC2 instances.
 
         Args:
-            instance_id (str): The ID of the instance to terminate.
+            instance_ids (List[str]): A list of instance IDs to terminate.
 
         Returns:
             Dict[str, Any]: The response from the terminate_instances call.
         """
-        self.logger.info(f"Terminating EC2 instance: {instance_id}")
+        self.logger.info(f"Terminating EC2 instances: {instance_ids}")
         try:
-            return self.client.terminate_instances(InstanceIds=[instance_id])
+            return self.client.terminate_instances(InstanceIds=instance_ids)
         except Exception as e:
-            self.logger.error(f"Error terminating EC2 instance '{instance_id}': {e}")
+            self.logger.error(f"Error terminating EC2 instances '{instance_ids}': {e}")
             raise
 
     def get_latest_ami(self, owner: str, name_pattern: str) -> Dict[str, Any]:
@@ -173,37 +173,6 @@ class EC2Adapter(AWSAdapterBase):
             self.logger.error(f"Error getting latest Ubuntu AMI: {e}")
             raise
 
-    def create_key_pair(self, key_name: str) -> Dict[str, Any]:
-        """
-        Creates a new EC2 key pair.
-
-        Args:
-            key_name (str): The name for the new key pair.
-
-        Returns:
-            Dict[str, Any]: The response from the create_key_pair call.
-        """
-        self.logger.info(f"Creating key pair: {key_name}")
-        try:
-            return self.client.create_key_pair(KeyName=key_name)
-        except Exception as e:
-            self.logger.error(f"Error creating key pair '{key_name}': {e}")
-            raise
-
-    def list_key_pairs(self) -> Dict[str, Any]:
-        """
-        Lists all EC2 key pairs.
-
-        Returns:
-            Dict[str, Any]: The response from the describe_key_pairs call.
-        """
-        self.logger.info("Listing all key pairs")
-        try:
-            return self.client.describe_key_pairs()
-        except Exception as e:
-            self.logger.error(f"Error listing key pairs: {e}")
-            raise
-
     def start_instance(self, instance_id: str) -> Dict[str, Any]:
         """
         Starts an EC2 instance.
@@ -236,4 +205,34 @@ class EC2Adapter(AWSAdapterBase):
             return self.client.stop_instances(InstanceIds=[instance_id])
         except Exception as e:
             self.logger.error(f"Error stopping EC2 instance '{instance_id}': {e}")
+            raise
+
+    def create_volume(self, availability_zone: str, size: int, volume_type: str = 'gp3', tags: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
+        """
+        Creates a new EBS volume.
+
+        Args:
+            availability_zone (str): The AZ to create the volume in.
+            size (int): The size of the volume in GiB.
+            volume_type (str, optional): The volume type (e.g., 'gp3', 'io2'). Defaults to 'gp3'.
+            tags (Optional[List[Dict[str, str]]], optional): Tags to apply. Defaults to None.
+
+        Returns:
+            Dict[str, Any]: The response from the create_volume call.
+        """
+        self.logger.info(f"Creating new {size}GiB EBS volume of type '{volume_type}' in {availability_zone}.")
+        try:
+            params = {
+                'AvailabilityZone': availability_zone,
+                'Size': size,
+                'VolumeType': volume_type
+            }
+            if tags:
+                params['TagSpecifications'] = [{'ResourceType': 'volume', 'Tags': tags}]
+            
+            response = self.client.create_volume(**params)
+            self.logger.info(f"Volume created: {response.get('VolumeId')}")
+            return response
+        except Exception as e:
+            self.logger.error(f"Error creating volume: {e}")
             raise
