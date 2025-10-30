@@ -13,10 +13,13 @@ from ai_infra_agent.infrastructure.tool_factory import ToolFactory
 from ai_infra_agent.agent.prompt_builder import PromptBuilder
 from ai_infra_agent.core.logging import logger
 from ai_infra_agent.services.discovery.scanner import DiscoveryScanner # Import DiscoveryScanner
+from ai_infra_agent.core.config import settings # Import settings
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic # Import ChatAnthropic
+from langchain_aws.chat_models.bedrock import ChatBedrockConverse # Import ChatBedrockConverse
+import boto3 # Import boto3
 
 
 class StateAwareAgent:
@@ -59,6 +62,9 @@ class StateAwareAgent:
         temperature = self.settings.temperature
         max_tokens = self.settings.max_tokens
 
+        self.logger.info(f"LLM Provider configured: {provider}")
+        self.logger.info(f"LLM Model configured: {model_name}")
+
         if provider == "gemini":
             api_key = os.getenv("GOOGLE_API_KEY")
             if not api_key:
@@ -91,6 +97,18 @@ class StateAwareAgent:
                 temperature=temperature,
                 max_tokens=max_tokens,
                 anthropic_api_key=api_key
+            )
+        elif provider == "bedrock":
+            # Create a boto3 client explicitly
+            boto3_client = boto3.client(
+                "bedrock-runtime",
+                region_name=settings.aws.region
+            )
+            return ChatBedrockConverse(
+                client=boto3_client,
+                model=model_name, # Use model_name from settings
+                temperature=temperature,
+                max_tokens=max_tokens,
             )
         else:
             self.logger.warning(f"Unknown LLM provider: {provider}. Falling back to a mock LLM.")
