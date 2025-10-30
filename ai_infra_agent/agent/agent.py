@@ -7,16 +7,16 @@ from typing import Dict, Any, List
 
 from langchain_core.language_models import BaseLanguageModel
 from langchain.schema import Generation, LLMResult
-# A placeholder for a real LLM integration, e.g., from langchain.chat_models import ChatOpenAI
-# For MVP, we might use a mock or a simple LLM wrapper.
 
 from ai_infra_agent.state.manager import StateManager
 from ai_infra_agent.infrastructure.tool_factory import ToolFactory
 from ai_infra_agent.agent.prompt_builder import PromptBuilder
 from ai_infra_agent.core.logging import logger
+from ai_infra_agent.services.discovery.scanner import DiscoveryScanner # Import DiscoveryScanner
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic # Import ChatAnthropic
 
 
 class StateAwareAgent:
@@ -24,7 +24,7 @@ class StateAwareAgent:
     The AI agent that understands the infrastructure state and processes user requests.
     """
 
-    def __init__(self, settings, state_manager: StateManager, tool_factory: ToolFactory, logger, llm: BaseLanguageModel = None):
+    def __init__(self, settings, state_manager: StateManager, tool_factory: ToolFactory, logger, scanner: DiscoveryScanner, llm: BaseLanguageModel = None):
         """
         Initializes the StateAwareAgent.
 
@@ -33,12 +33,14 @@ class StateAwareAgent:
             state_manager (StateManager): The manager for infrastructure state.
             tool_factory (ToolFactory): The factory to create tools.
             logger: The logger instance.
+            scanner (DiscoveryScanner): The scanner for discovering AWS resources.
             llm (BaseLanguageModel, optional): The language model to use. If None, it will be initialized based on settings.
         """
         self.settings = settings
         self.state_manager = state_manager
         self.tool_factory = tool_factory
         self.logger = logger
+        self.scanner = scanner # Store the scanner instance
 
         if llm:
             self.llm = llm
@@ -78,6 +80,17 @@ class StateAwareAgent:
                 temperature=temperature,
                 max_tokens=max_tokens,
                 api_key=api_key
+            )
+        elif provider == "claude":
+            api_key = os.getenv("ANTHROPIC_API_KEY")
+            if not api_key:
+                self.logger.error("ANTHROPIC_API_KEY not found in environment variables. Claude LLM cannot be initialized.")
+                raise ValueError("ANTHROPIC_API_KEY is required for Claude provider.")
+            return ChatAnthropic(
+                model=model_name,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                anthropic_api_key=api_key
             )
         else:
             self.logger.warning(f"Unknown LLM provider: {provider}. Falling back to a mock LLM.")
@@ -121,8 +134,14 @@ class StateAwareAgent:
         """
         logger.info(f"Processing request: '{request}'")
 
+        # 0. Perform a fresh discovery before processing the request
+        self.logger.info("Triggering automatic AWS resource discovery before processing request...")
+        discovered_infra_state = await self.scanner.scan_aws_resources()
+        self.state_manager.set_discovered_state(discovered_infra_state)
+        self.logger.info("Automatic AWS resource discovery completed.")
+
         # 1. Gather context
-        # Get formatted current state from StateManager
+        # Get formatted current state from StateManager (now includes discovered state)
         current_state_formatted = self.state_manager.get_current_state_formatted()
         logger.debug(f"Formatted current state:\n{current_state_formatted}")
 
