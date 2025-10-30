@@ -29,6 +29,9 @@ from ai_infra_agent.infrastructure.aws.tools.debug import DebugEchoTool
 # --- Agent Imports ---
 from ai_infra_agent.agent.agent import StateAwareAgent
 
+# --- Discovery Imports ---
+from ai_infra_agent.services.discovery.scanner import DiscoveryScanner
+
 
 # The @lru_cache(maxsize=None) decorator turns these functions into singleton factories.
 # The first time a function is called, it computes and caches the result.
@@ -50,7 +53,7 @@ def get_state_manager() -> StateManager:
     """
     log = get_logger()
     log.info("Initializing StateManager singleton...")
-    return StateManager(settings.state.file_path, log)
+    return StateManager(log)
 
 
 @lru_cache(maxsize=None)
@@ -103,6 +106,16 @@ def get_tool_factory() -> ToolFactory:
     log.info(f"ToolFactory initialized with {len(factory.get_tool_names())} tools.")
     return factory
 
+@lru_cache(maxsize=None)
+def get_scanner() -> DiscoveryScanner:
+    """
+    Dependency function that provides a singleton DiscoveryScanner instance.
+    """
+    log = get_logger()
+    tool_factory = get_tool_factory() # Scanner needs tool_factory for adapters
+    log.info("Initializing DiscoveryScanner singleton...")
+    return DiscoveryScanner(tool_factory=tool_factory)
+
 
 @lru_cache(maxsize=None)
 def get_agent() -> StateAwareAgent:
@@ -115,5 +128,6 @@ def get_agent() -> StateAwareAgent:
         settings=settings.agent,
         state_manager=get_state_manager(),
         tool_factory=get_tool_factory(),
-        logger=log
+        logger=log,
+        scanner=get_scanner()
     )

@@ -9,7 +9,7 @@ API_BASE_URL = "http://127.0.0.1:8000/api/v1/agent"
 WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/v1/agent/execute"
 
 # Yêu cầu ngôn ngữ tự nhiên bạn muốn gửi đến agent
-USER_REQUEST = "create an ec2 instance" #create a t3.micro ec2 instance in ap-southeast-1 with SSH access
+USER_REQUEST = "create an ec2 instance named NguyenQueSon, using a new sg for web" #create a t3.micro ec2 instance in ap-southeast-1 with SSH access
 
 # --- Hàm lấy kế hoạch từ API ---
 def get_execution_plan(request_text: str) -> dict:

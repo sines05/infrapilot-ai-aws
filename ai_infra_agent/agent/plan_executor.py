@@ -8,8 +8,9 @@ from fastapi import WebSocket
 from loguru import logger
 
 from ai_infra_agent.agent.agent import StateAwareAgent
+from ai_infra_agent.state.schemas import ResourceState
 
-# --- Helper Function ---
+# --- Helper Functions ---
 def json_serializer(obj: Any) -> str:
     """
     Custom JSON serializer for objects not serializable by default, like datetime.
@@ -18,6 +19,20 @@ def json_serializer(obj: Any) -> str:
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
     raise TypeError(f"Type {type(obj)} not serializable for JSON")
+
+def _convert_datetime_to_iso(obj: Any) -> Any:
+    """
+    Recursively converts datetime objects within a dictionary or list to ISO 8601 strings.
+    """
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, date):
+        return obj.isoformat()
+    elif isinstance(obj, dict):
+        return {k: _convert_datetime_to_iso(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [_convert_datetime_to_iso(elem) for elem in obj]
+    return obj
 
 
 class PlanExecutor:
@@ -117,6 +132,45 @@ class PlanExecutor:
         else:
             return data
 
+    def _update_state_after_creation(self, tool_name: str, result: Dict[str, Any]):
+        """
+        Transforms the result of a creation tool into a ResourceState object and saves it.
+        This is a simplified implementation and should be expanded.
+        """
+        resource_type = "unknown"
+        resource_id = None
+        resource_name = ""
+        
+        # Convert all datetime objects in the result to ISO format before storing
+        properties = _convert_datetime_to_iso(result)
+
+        if tool_name == "create-ec2-instance" and result.get("Instances"):
+            instance_info = result["Instances"][0]
+            resource_type = "aws_ec2_instance"
+            resource_id = instance_info.get("InstanceId")
+            resource_name = resource_id  # Default name to id
+            for tag in instance_info.get("Tags", []):
+                if tag["Key"] == "Name":
+                    resource_name = tag["Value"]
+                    break
+        elif tool_name == "create-security-group" and result.get("GroupId"):
+            resource_type = "aws_security_group"
+            resource_id = result.get("GroupId")
+            resource_name = result.get("GroupName", resource_id) # Use GroupName if available
+
+        # Add other tool mappings here...
+
+        if resource_id:
+            resource_state = ResourceState(
+                id=resource_id,
+                name=resource_name,
+                type=resource_type,
+                status="creating",  # Or extract from result if available
+                properties=properties
+            )
+            self.agent.state_manager.add_resource(resource_state)
+            self.logger.info(f"Saved new resource '{resource_id}' of type '{resource_type}' to state.")
+
     async def execute_plan(self, execution_plan: List[Dict[str, Any]]) -> None:
         """
         The main method to execute a given plan. It iterates through steps,
@@ -128,17 +182,12 @@ class PlanExecutor:
         await self._send_update({"status": "Executing", "message": "Plan execution started"})
         self.logger.info("Plan execution started. Processing steps...")
 
-        # --- FUTURE ENHANCEMENT ---
-        # This is where a proper DAG (Directed Acyclic Graph) solver would go.
-        # It would analyze `dependsOn` fields to determine the execution order
-        # and run independent steps in parallel using asyncio.gather().
-        # For the MVP, we assume the plan is pre-sorted and run sequentially.
-        
         for step in execution_plan:
             step_id = step.get("id")
             step_name = step.get("name", "Unnamed Step")
             tool_name = step.get("mcpTool")
             tool_params = step.get("toolParameters", {})
+            action = step.get("action", "").lower()
 
             if not all([step_id, tool_name]):
                 raise ValueError(f"Step is missing required fields 'id' or 'mcpTool': {step}")
@@ -151,7 +200,7 @@ class PlanExecutor:
             })
 
             try:
-                # 1. Resolve parameters for the current step using the new recursive method
+                # 1. Resolve parameters for the current step
                 resolved_params = self._resolve_placeholders_recursively(tool_params)
                 self.logger.info(f"Executing tool '{tool_name}' with resolved params: {resolved_params}")
                 
@@ -163,7 +212,11 @@ class PlanExecutor:
                 self.logger.info(f"Step '{step_name}' completed. Result stored in context for ID '{step_id}'.")
                 self.logger.debug(f"Context after step '{step_id}': {self.context}")
 
-                # 4. Send success update to the client
+                # 4. If a resource was created, update the main state
+                if action == "create":
+                    self._update_state_after_creation(tool_name, result)
+
+                # 5. Send success update to the client
                 await self._send_update({
                     "status": "Step Completed",
                     "step": step_name,
