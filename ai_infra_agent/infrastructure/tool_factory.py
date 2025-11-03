@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List, Any
 from loguru import logger
 
 # Adapter Imports
@@ -127,6 +127,15 @@ class ToolFactory:
     def get_tool_names(self) -> list[str]:
         """Returns a list of registered tool names."""
         return list(self._tools.keys())
+
+    def get_all_tool_info(self) -> List[Dict[str, Any]]:
+        """
+        Returns a list of dictionaries, each containing the name and description of a registered tool.
+        """
+        tool_info_list = []
+        for tool_name, tool_instance in self._tools.items():
+            tool_info_list.append({"name": tool_instance.name, "description": tool_instance.description})
+        return tool_info_list
 
     def create_tool(self, tool_name: str) -> BaseTool:
         """

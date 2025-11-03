@@ -8,7 +8,7 @@ API_BASE_URL = "http://127.0.0.1:8000/api/v1/agent"
 WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/v1/agent/execute"
 
 # Yêu cầu ngôn ngữ tự nhiên bạn muốn gửi đến agent
-USER_REQUEST = "Tạo một EC2 instance"
+USER_REQUEST = "Tạo một môi trường web hoàn chỉnh: Đầu tiên, tạo một VPC mới. Sau đó, tạo một key pair tên là 'test-key-04'. Tiếp theo, tạo một security group tên 'web-sg' cho phép truy cập SSH và HTTP. Sử dụng AMI Ubuntu mới nhất để tạo một EC2 instance trong VPC đó với key pair vừa tạo. Cuối cùng, tạo một S3 bucket có tên ngẫu nhiên và duy nhất để lưu trữ logs."
 
 # --- Hàm lấy kế hoạch từ API (giữ nguyên, không cần thay đổi) ---
 def get_execution_plan(request_text: str) -> dict:

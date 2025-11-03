@@ -1,7 +1,11 @@
 from typing import List, Dict, Any
-from pathlib import Path # Added import for Path
-from ai_infra_agent.core.config import settings, ROOT_DIR # Import ROOT_DIR
-import yaml # Import yaml for loading config files
+from pathlib import Path
+from ai_infra_agent.core.config import settings, ROOT_DIR
+import yaml
+import json
+from ai_infra_agent.infrastructure.tool_factory import ToolFactory
+from loguru import logger
+from ai_infra_agent.core.logging import llm_request_logger # Import llm_request_logger
 
 class PromptBuilder:
     """
@@ -30,6 +34,9 @@ class PromptBuilder:
 
         # Load the tools execution context template
         self.tools_context_template = self._load_text_file(ROOT_DIR / "settings/templates/tools-execution-context-optimized.txt")
+
+        # Initialize ToolFactory
+        self.tool_factory = ToolFactory(logger=logger) # Pass logger to ToolFactory
 
     def _load_yaml_file(self, file_path: Path) -> str:
         """Loads a YAML file and returns its content as a string."""
@@ -61,6 +68,7 @@ class PromptBuilder:
         This should ideally be avoided in production.
         """
         return """
+
 You are an expert AI assistant for managing AWS infrastructure.
 Your task is to generate a JSON plan of tool calls to fulfill the user's request.
 
@@ -87,8 +95,7 @@ Your task is to generate a JSON plan of tool calls to fulfill the user's request
 """
 
     def build(self, request: str, tools_context: str, current_state_formatted: str) -> str:
-        """
-        Builds the final prompt string.
+        """Builds the final prompt string.
 
         Args:
             request (str): The user's request.
@@ -98,15 +105,31 @@ Your task is to generate a JSON plan of tool calls to fulfill the user's request
         Returns:
             str: The formatted prompt string.
         """
-        # Debug print statements
-        print(f"--- DEBUG: Prompt Template (first 500 chars):\n{self.template[:500]}...")
-        print(f"--- DEBUG: Formatting args: request type={{type(request)}}, tools_context type={{type(tools_context)}}, current_state_formatted type={{type(current_state_formatted)}}")
+        # Get tool information from ToolFactory
+        all_tool_info = self.tool_factory.get_all_tool_info()
+        # Format tool information as a JSON string for the prompt
+        formatted_tool_schemas = json.dumps(all_tool_info, indent=2)
 
-        return self.template.format(
+        # Replace the placeholder in the tools_context_template
+        final_tools_context = self.tools_context_template.replace(
+            "{{MCP_TOOLS_SCHEMAS}}", formatted_tool_schemas
+        )
+
+        # Format the main template
+        final_prompt_string = self.template.format(
             request=request,
-            tools=tools_context,
+            tools=final_tools_context, # Use the updated tools_context
             state=current_state_formatted,
             resource_patterns=self.resource_patterns,
             field_mappings=self.field_mappings,
             aws_region=settings.aws.region # Inject the region from config
         )
+
+        # Log the final prompt string to the dedicated LLM request logger
+        llm_request_logger.info(final_prompt_string)
+
+        # Debug print statements
+        print(f"--- DEBUG: Prompt Template (first 500 chars):\n{self.template[:500]}...")
+        print(f"--- DEBUG: Formatting args: request type={{type(request)}}, tools_context type={{type(tools_context)}}, current_state_formatted type={{type(current_state_formatted)}}")
+
+        return final_prompt_string
