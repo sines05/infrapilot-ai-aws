@@ -225,3 +225,115 @@ class ListSubnetsForAlbTool(BaseTool):
         except Exception as e:
             self.logger.error(f"Failed to select subnets for ALB in VPC {vpc_id}: {e}")
             return {"error": str(e)}
+
+class CreateInternetGatewayTool(BaseTool):
+    """
+    Tool to create a new Internet Gateway.
+    """
+    def __init__(self, logger: logger, adapter: VpcAdapter):
+        super().__init__(logger, adapter)
+        self.name = "create-internet-gateway"
+        self.description = "Creates a new Internet Gateway for a VPC."
+
+    def execute(self, name: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        """
+        Executes the tool to create an Internet Gateway.
+
+        Args:
+            name (Optional[str]): A name tag for the Internet Gateway.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the details of the created Internet Gateway.
+        """
+        self.logger.info(f"Executing tool: {self.name}")
+        tags = [{"Key": "Name", "Value": name}] if name else None
+        try:
+            response = self.adapter.create_internet_gateway(tags=tags)
+            igw_id = response.get("InternetGatewayId")
+            return {"internet_gateway_id": igw_id, "details": response}
+        except Exception as e:
+            self.logger.error(f"Failed to create Internet Gateway: {e}")
+            return {"error": str(e)}
+
+
+class AttachInternetGatewayTool(BaseTool):
+    """
+    Tool to attach an Internet Gateway to a VPC.
+    """
+    def __init__(self, logger: logger, adapter: VpcAdapter):
+        super().__init__(logger, adapter)
+        self.name = "attach-internet-gateway"
+        self.description = "Attaches an existing Internet Gateway to a specified VPC."
+
+    def execute(self, internet_gateway_id: str, vpc_id: str, **kwargs) -> Dict[str, Any]:
+        """
+        Executes the tool to attach an Internet Gateway to a VPC.
+
+        Args:
+            internet_gateway_id (str): The ID of the Internet Gateway to attach.
+            vpc_id (str): The ID of the VPC to attach the Internet Gateway to.
+
+        Returns:
+            Dict[str, Any]: A dictionary indicating the success of the operation.
+        """
+        self.logger.info(f"Executing tool: {self.name}")
+        try:
+            response = self.adapter.attach_internet_gateway(internet_gateway_id=internet_gateway_id, vpc_id=vpc_id)
+            return response
+        except Exception as e:
+            self.logger.error(f"Failed to attach Internet Gateway '{internet_gateway_id}' to VPC '{vpc_id}': {e}")
+            return {"error": str(e)}
+
+class CreatePublicSubnetTool(BaseTool):
+    """
+    Tool to create a new public subnet within a specified VPC.
+    """
+    def __init__(self, logger: logger, adapter: VpcAdapter):
+        super().__init__(logger, adapter)
+        self.name = "create-public-subnet"
+        self.description = "Creates a new public subnet in a VPC and enables auto-assign public IP."
+
+    def execute(self, vpc_id: str, cidr_block: str, name: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        """
+        Executes the tool to create a public subnet.
+
+        Args:
+            vpc_id (str): The ID of the VPC to create the subnet in.
+            cidr_block (str): The CIDR block for the subnet.
+            name (Optional[str]): A name tag for the subnet.
+            availability_zone (str): The Availability Zone for the subnet (passed via kwargs).
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the details of the created subnet.
+        """
+        self.logger.info(f"Executing tool: {self.name}")
+        
+        # Extract availability_zone from kwargs, as it's a required parameter for the adapter
+        availability_zone = kwargs.get("availability_zone")
+        if not availability_zone:
+            raise ValueError("availability_zone is a required parameter for creating a public subnet.")
+
+        tags = [{"Key": "Name", "Value": name}] if name else None
+        try:
+            # 1. Create the subnet
+            subnet_response = self.adapter.create_subnet(
+                vpc_id=vpc_id,
+                cidr_block=cidr_block,
+                availability_zone=availability_zone,
+                tags=tags
+            )
+            subnet_id = subnet_response.get("SubnetId")
+
+            if not subnet_id:
+                raise ValueError("Subnet creation failed, no SubnetId returned.")
+
+            # 2. Modify subnet attribute to make it public (enable auto-assign public IP)
+            self.adapter.modify_subnet_attribute(
+                subnet_id=subnet_id,
+                map_public_ip_on_launch=True
+            )
+            
+            return {"subnet_id": subnet_id, "details": subnet_response}
+        except Exception as e:
+            self.logger.error(f"Failed to create public subnet: {e}")
+            return {"error": str(e)}

@@ -20,10 +20,20 @@ from ai_infra_agent.infrastructure.aws.tools.ec2 import (
     StartInstanceTool,
     StopInstanceTool,
     CreateVolumeTool,
+    ListAvailabilityZonesTool, # Added this line
 )
 from ai_infra_agent.infrastructure.aws.tools.ami import GetLatestAmazonLinuxAMITool, GetLatestUbuntuAmiTool
 from ai_infra_agent.infrastructure.aws.tools.keypair import CreateKeyPairTool, ListKeyPairsTool
-from ai_infra_agent.infrastructure.aws.tools.vpc import GetDefaultVPCTool, ListSubnetsTool, ListVpcsTool, CreateVpcTool, ListSubnetsForAlbTool
+from ai_infra_agent.infrastructure.aws.tools.vpc import (
+    GetDefaultVPCTool,
+    ListSubnetsTool,
+    ListVpcsTool,
+    CreateVpcTool,
+    ListSubnetsForAlbTool,
+    CreateInternetGatewayTool,
+    AttachInternetGatewayTool,
+    CreatePublicSubnetTool, # Added this line
+)
 from ai_infra_agent.infrastructure.aws.tools.rds import ListRDSInstancesTool, CreateDbSubnetGroupTool, CreateDbInstanceTool
 from ai_infra_agent.infrastructure.aws.tools.security_group import (
     CreateSecurityGroupTool,
@@ -71,6 +81,7 @@ class ToolFactory:
         self.register_tool("start-ec2-instance", StartInstanceTool(self.logger, ec2_adapter))
         self.register_tool("stop-ec2-instance", StopInstanceTool(self.logger, ec2_adapter))
         self.register_tool("create-volume", CreateVolumeTool(self.logger, ec2_adapter))
+        self.register_tool("list-availability-zones", ListAvailabilityZonesTool(self.logger, ec2_adapter)) # Added this line
 
         # AMI Tools
         self.register_tool("get-latest-amazon-linux-ami", GetLatestAmazonLinuxAMITool(self.logger, ec2_adapter))
@@ -86,9 +97,12 @@ class ToolFactory:
         self.register_tool("list-vpcs", ListVpcsTool(self.logger, vpc_adapter))
         self.register_tool("create-vpc", CreateVpcTool(self.logger, vpc_adapter))
         self.register_tool("list-subnets-for-alb", ListSubnetsForAlbTool(self.logger, vpc_adapter))
+        self.register_tool("create-internet-gateway", CreateInternetGatewayTool(self.logger, vpc_adapter))
+        self.register_tool("attach-internet-gateway", AttachInternetGatewayTool(self.logger, vpc_adapter))
+        self.register_tool("create-public-subnet", CreatePublicSubnetTool(self.logger, vpc_adapter)) # Added this line
 
         # RDS Tools
-        self.register_tool("list-rds-instances", ListRDSInstancesTool(self.logger, rds_adapter))
+        self.register_tool("list-db-instances", ListRDSInstancesTool(self.logger, rds_adapter))
         self.register_tool("create-db-subnet-group", CreateDbSubnetGroupTool(self.logger, rds_adapter))
         self.register_tool("create-db-instance", CreateDbInstanceTool(self.logger, rds_adapter))
 

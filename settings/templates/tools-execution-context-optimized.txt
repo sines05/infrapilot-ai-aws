@@ -193,6 +193,24 @@ Discover existing EC2 instances
 
 Output: Returns instanceId field
 
+PATTERN 6: AVAILABILITY ZONE DISCOVERY
+Discover available Availability Zones
+
+{
+  "id": "step-list-azs",
+  "name": "List Availability Zones",
+  "description": "Find all available Availability Zones in the current region.",
+  "action": "query",
+  "resourceId": "availability-zones",
+  "mcpTool": "list-availability-zones",
+  "toolParameters": {},
+  "dependsOn": [],
+  "status": "pending"
+}
+
+Output: Returns an array of strings (e.g., ["us-east-1a", "us-east-1b"])
+Reference: {{step-list-azs.availability_zones[0]}} for the first AZ.
+
 ═══════════════════════════════════════════════════════════════════
 🎯 PARAMETER RESOLUTION PATTERNS
 ═══════════════════════════════════════════════════════════════════
@@ -334,6 +352,21 @@ RDS Instance Creation:
     "vpc_security_group_ids": ["{{step-create-db-sg.securityGroupId}}"]
   },
   "dependsOn": ["step-create-db-subnet-group", "step-create-db-sg"]
+}
+
+PATTERN 5: PUBLIC SUBNET CREATION
+Requires: VPC, CIDR Block, Availability Zone
+
+{
+  "action": "create",
+  "mcpTool": "create-public-subnet",
+  "toolParameters": {
+    "vpc_id": "{{step-create-vpc.vpc_id}}",
+    "cidr_block": "10.0.1.0/24", // Example CIDR
+    "availability_zone": "{{step-list-azs.availability_zones[0]}}",
+    "name": "public-subnet-{timestamp}"
+  },
+  "dependsOn": ["step-create-vpc", "step-list-azs"]
 }
 
 ═══════════════════════════════════════════════════════════════════

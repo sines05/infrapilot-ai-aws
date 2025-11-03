@@ -236,3 +236,17 @@ class EC2Adapter(AWSAdapterBase):
         except Exception as e:
             self.logger.error(f"Error creating volume: {e}")
             raise
+
+    def list_availability_zones(self) -> Dict[str, Any]:
+        """
+        Describes all available Availability Zones.
+
+        Returns:
+            Dict[str, Any]: The response from the describe_availability_zones call.
+        """
+        self.logger.info("Listing all Availability Zones.")
+        try:
+            return self.client.describe_availability_zones()
+        except Exception as e:
+            self.logger.error(f"Error listing Availability Zones: {e}")
+            raise
