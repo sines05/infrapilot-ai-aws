@@ -5,7 +5,7 @@ You are an expert AWS infrastructure automation agent. Generate executable infra
 ═══════════════════════════════════════════════════════════════════
 USER REQUEST
 ═══════════════════════════════════════════════════════════════════
-create an ec2 instance
+Tạo một DB Subnet Group mới tên 'my-db-subnet-group' sử dụng 2 subnet bất kỳ trong VPC mặc định. Sau đó, khởi tạo một cơ sở dữ liệu MySQL tên 'production-db' với class 'db.t3.micro', dung lượng 20GB, username 'admin' và password 'SecurePass123!' sử dụng DB Subnet Group vừa tạo.
 
 ═══════════════════════════════════════════════════════════════════
 AVAILABLE TOOLS
@@ -366,7 +366,150 @@ RDS Instance Creation:
 ═══════════════════════════════════════════════════════════════════
 🏗️ MANAGED RESOURCES (CURRENT STATE)
 ═══════════════════════════════════════════════════════════════════
-No managed resources found.
+- ID: i-0bc60b425d6de3346
+  Name: Web-Server-Alpha
+  Type: aws_ec2_instance
+  Status: terminated
+  Properties: {AmiLaunchIndex:0, ImageId:ami-0850ab57897dcaa32, InstanceId:i-0bc60b425d6de3346, InstanceType:t3.micro, KeyName:alpha-key-20251030213220, LaunchTime:2025-10-30 21:32:26+00:00, Monitoring:{'State': 'disabled'}, Placement:{'AvailabilityZone': 'eu-west-2c', 'GroupName': '', 'Tenancy': 'default'}, PrivateDnsName:, ProductCodes:[], PublicDnsName:, State:{'Code': 48, 'Name': 'terminated'}, StateTransitionReason:User initiated (2025-10-30 21:38:45 GMT), Architecture:x86_64, BlockDeviceMappings:[], ClientToken:b74a9a30-bef5-4d3e-9765-3068470757e1, EbsOptimized:False, EnaSupport:True, Hypervisor:xen, NetworkInterfaces:[], RootDeviceName:/dev/sda1, RootDeviceType:ebs, SecurityGroups:[], StateReason:{'Code': 'Client.UserInitiatedShutdown', 'Message': 'Client.UserInitiatedShutdown: User initiated shutdown'}, VirtualizationType:hvm, CpuOptions:{'CoreCount': 1, 'ThreadsPerCore': 2}, CapacityReservationSpecification:{'CapacityReservationPreference': 'open'}, HibernationOptions:{'Configured': False}, MetadataOptions:{'State': 'pending', 'HttpTokens': 'optional', 'HttpPutResponseHopLimit': 1, 'HttpEndpoint': 'enabled', 'HttpProtocolIpv6': 'disabled', 'InstanceMetadataTags': 'disabled'}, EnclaveOptions:{'Enabled': False}, BootMode:uefi-preferred, PlatformDetails:Linux/UNIX, UsageOperation:RunInstances, UsageOperationUpdateTime:2025-10-30 21:32:26+00:00, MaintenanceOptions:{'AutoRecovery': 'default'}, CurrentInstanceBootMode:uefi}
+  Tags: {Name:Web-Server-Alpha}
+- ID: vpc-09f9c7ecc75a0b7dd
+  Name: vpc-09f9c7ecc75a0b7dd
+  Type: aws_vpc
+  Status: available
+  Properties: {CidrBlock:172.31.0.0/16, DhcpOptionsId:dopt-0478c7065b27415bc, State:available, VpcId:vpc-09f9c7ecc75a0b7dd, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-0003043e95eae44f5', 'CidrBlock': '172.31.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:True}
+  Tags: {}
+- ID: sg-0ef911a700ee3ed83
+  Name: production-db-sg-20251030214754
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030214754, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0ef911a700ee3ed83, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0096b17a7734d4797
+  Name: nguyenqueson-sg-20251030155910
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for NguyenQueSon EC2 instance, allowing SSH., GroupName:nguyenqueson-sg-20251030155910, IpPermissions:[{'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0096b17a7734d4797, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-00307a8f13ff12f1a
+  Name: production-db-sg-20251030220427
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030220427, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-00307a8f13ff12f1a, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0faba3326caf6a0c9
+  Name: production-db-sg-20251030220259
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030220259, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0faba3326caf6a0c9, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-040a6bd851a4473f2
+  Name: production-db-sg-20251030221007
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030221007, IpPermissions:[], OwnerId:782859940219, GroupId:sg-040a6bd851a4473f2, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0f6c30e5be6c2d49d
+  Name: production-db-sg-20251030215213
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030215213, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0f6c30e5be6c2d49d, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0db7473ff822d69b1
+  Name: default
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-0db7473ff822d69b1', 'UserId': '782859940219'}]}], OwnerId:782859940219, GroupId:sg-0db7473ff822d69b1, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0a98fd494bce3ec6a
+  Name: production-db-sg-20251030221620
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030221620, IpPermissions:[], OwnerId:782859940219, GroupId:sg-0a98fd494bce3ec6a, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0a5d07c678c15c453
+  Name: nguyenqueson-web-sg-20251030160237
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for NguyenQueSon EC2 instance, allowing web (HTTP/HTTPS) and SSH., GroupName:nguyenqueson-web-sg-20251030160237, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}, {'FromPort': 443, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 443, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0a5d07c678c15c453, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-08271368b79505504
+  Name: hehehe-web-sg-20251030182817
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for HeHeHe web server, allowing web (HTTP/HTTPS) and SSH., GroupName:hehehe-web-sg-20251030182817, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}, {'FromPort': 443, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 443, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-08271368b79505504, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0736aedc9c0e14c6f
+  Name: production-db-sg-20251030222300
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030222300, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0736aedc9c0e14c6f, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-046ab7ee8fc0cdf06
+  Name: production-db-sg-20251030220803
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030220803, IpPermissions:[], OwnerId:782859940219, GroupId:sg-046ab7ee8fc0cdf06, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-08fb836ceb086d931
+  Name: production-db-sg-20251030221241
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030221241, IpPermissions:[], OwnerId:782859940219, GroupId:sg-08fb836ceb086d931, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-07f2a92f52aac6975
+  Name: production-db-sg-20251030221451
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030221451, IpPermissions:[], OwnerId:782859940219, GroupId:sg-07f2a92f52aac6975, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-05bb3fbb2595ae8f5
+  Name: Web-Server-Alpha-SG-20251030213222
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for Web-Server-Alpha, allowing web (HTTP) and SSH., GroupName:Web-Server-Alpha-SG-20251030213222, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-05bb3fbb2595ae8f5, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-07f16dd58fb70ba42
+  Name: production-db-sg-20251030221955
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030221955, IpPermissions:[], OwnerId:782859940219, GroupId:sg-07f16dd58fb70ba42, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-073e9283089fac923
+  Name: production-db-sg-20251030215716
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030215716, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-073e9283089fac923, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0a0d9fa28233e6bd3
+  Name: production-db-sg-20251030215606
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030215606, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0a0d9fa28233e6bd3, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0ae692356e026c5b8
+  Name: production-db-sg-20251030220108
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030220108, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0ae692356e026c5b8, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-004f0d0806df55f4f
+  Name: production-db-sg-20251030220616
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030220616, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-004f0d0806df55f4f, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-0dde32c83229ec5f3
+  Name: production-db-sg-20251030215847
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for production-db, allowing MySQL traffic (port 3306)., GroupName:production-db-sg-20251030215847, IpPermissions:[{'FromPort': 3306, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 3306, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0dde32c83229ec5f3, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
+- ID: sg-00a2954569adf9ec7
+  Name: ec2-instance-sg-20251030203450
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for EC2 instance, allowing web (HTTP/HTTPS) and SSH., GroupName:ec2-instance-sg-20251030203450, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}, {'FromPort': 443, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 443, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-00a2954569adf9ec7, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-09f9c7ecc75a0b7dd}
+  Tags: {}
 
 
 ═══════════════════════════════════════════════════════════════════

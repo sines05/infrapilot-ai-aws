@@ -9,31 +9,15 @@ from ai_infra_agent.core.logging import setup_logger
 from ai_infra_agent.state.manager import StateManager
 
 # --- Infrastructure Imports ---
-from ai_infra_agent.infrastructure.aws.adapters.ec2 import EC2Adapter
-from ai_infra_agent.infrastructure.aws.adapters.security_group import SecurityGroupAdapter
+# The factory now manages its own dependencies internally.
 from ai_infra_agent.infrastructure.tool_factory import ToolFactory
 
-# --- AWS Tool Imports ---
-from ai_infra_agent.infrastructure.aws.tools.ami import GetLatestAmazonLinuxAMITool, GetLatestUbuntuAmiTool
-from ai_infra_agent.infrastructure.aws.tools.ec2 import (
-    CreateEC2InstanceTool, ListEC2InstancesTool, TerminateEC2InstanceTool
-)
-from ai_infra_agent.infrastructure.aws.tools.keypair import CreateKeyPairTool, ListKeyPairsTool
-from ai_infra_agent.infrastructure.aws.tools.security_group import (
-    CreateSecurityGroupTool, AddSecurityGroupIngressRuleTool, ListSecurityGroupsTool
-)
-from ai_infra_agent.infrastructure.aws.tools.vpc import GetDefaultVPCTool, ListSubnetsTool
-# Note: The debug tool is also registered here for consistency
-from ai_infra_agent.infrastructure.aws.tools.debug import DebugEchoTool
-
-# --- Agent Imports ---
+# --- Agent & Discovery Imports ---
 from ai_infra_agent.agent.agent import StateAwareAgent
+from ai_infra_agent.services.discovery.scanner import DiscoveryScanner
 
 
 # The @lru_cache(maxsize=None) decorator turns these functions into singleton factories.
-# The first time a function is called, it computes and caches the result.
-# Subsequent calls with the same arguments will return the cached result instantly.
-# Since these functions have no arguments, they will run only once.
 
 @lru_cache(maxsize=None)
 def get_logger() -> logger:
@@ -50,58 +34,31 @@ def get_state_manager() -> StateManager:
     """
     log = get_logger()
     log.info("Initializing StateManager singleton...")
-    return StateManager(settings.state.file_path, log)
-
-
-@lru_cache(maxsize=None)
-def get_ec2_adapter() -> EC2Adapter:
-    """
-    Dependency function that provides a singleton EC2Adapter instance.
-    """
-    log = get_logger()
-    log.info("Initializing EC2Adapter singleton...")
-    return EC2Adapter(settings.aws, log)
-
-@lru_cache(maxsize=None)
-def get_security_group_adapter() -> SecurityGroupAdapter:
-    """
-    Dependency function that provides a singleton SecurityGroupAdapter instance.
-    """
-    log = get_logger()
-    log.info("Initializing SecurityGroupAdapter singleton...")
-    return SecurityGroupAdapter(settings.aws, log)
+    return StateManager(log)
 
 
 @lru_cache(maxsize=None)
 def get_tool_factory() -> ToolFactory:
     """
-    Dependency function that provides a singleton ToolFactory instance,
-    with all available tools registered.
+    Dependency function that provides a singleton ToolFactory instance.
+    The factory is now responsible for its own setup and tool registration.
     """
     log = get_logger()
-    ec2_adapter = get_ec2_adapter()
-    security_group_adapter = get_security_group_adapter()
-    log.info("Initializing ToolFactory singleton and registering all tools...")
-
+    log.info("Initializing ToolFactory singleton...")
+    # The factory's __init__ now handles all adapter/tool registration.
     factory = ToolFactory(logger=log)
-    
-    # Register all tools
-    factory.register_tool("get-latest-amazon-linux-ami", GetLatestAmazonLinuxAMITool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("get-latest-ubuntu-ami", GetLatestUbuntuAmiTool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("create-ec2-instance", CreateEC2InstanceTool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("list-ec2-instances", ListEC2InstancesTool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("terminate-ec2-instance", TerminateEC2InstanceTool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("create-key-pair", CreateKeyPairTool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("list-key-pairs", ListKeyPairsTool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("create-security-group", CreateSecurityGroupTool(logger=log, adapter=security_group_adapter))
-    factory.register_tool("add-security-group-ingress-rule", AddSecurityGroupIngressRuleTool(logger=log, adapter=security_group_adapter))
-    factory.register_tool("list-security-groups", ListSecurityGroupsTool(logger=log, adapter=security_group_adapter))
-    factory.register_tool("get-default-vpc", GetDefaultVPCTool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("list-subnets", ListSubnetsTool(logger=log, adapter=ec2_adapter))
-    factory.register_tool("debug-echo", DebugEchoTool(logger=log, adapter=ec2_adapter))
-    
     log.info(f"ToolFactory initialized with {len(factory.get_tool_names())} tools.")
     return factory
+
+@lru_cache(maxsize=None)
+def get_scanner() -> DiscoveryScanner:
+    """
+    Dependency function that provides a singleton DiscoveryScanner instance.
+    """
+    log = get_logger()
+    tool_factory = get_tool_factory()
+    log.info("Initializing DiscoveryScanner singleton...")
+    return DiscoveryScanner(tool_factory=tool_factory)
 
 
 @lru_cache(maxsize=None)
@@ -115,5 +72,6 @@ def get_agent() -> StateAwareAgent:
         settings=settings.agent,
         state_manager=get_state_manager(),
         tool_factory=get_tool_factory(),
-        logger=log
+        logger=log,
+        scanner=get_scanner()
     )

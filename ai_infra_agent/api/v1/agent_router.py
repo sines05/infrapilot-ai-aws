@@ -3,7 +3,8 @@ from typing import Any, Dict
 
 from ai_infra_agent.agent.agent import StateAwareAgent
 from ai_infra_agent.state.manager import StateManager
-from ai_infra_agent.api.dependencies import get_agent, get_state_manager
+from ai_infra_agent.api.dependencies import get_agent, get_state_manager, get_scanner
+from ai_infra_agent.services.discovery.scanner import DiscoveryScanner
 
 # Create a new router instance. This will be included in the main FastAPI app.
 router = APIRouter()
@@ -53,26 +54,45 @@ async def process_request(
         )
 
 
-@router.get(
-    "/state",
-    summary="Get the current infrastructure state",
-    response_description="The current state of managed infrastructure as a JSON object.",
+@router.post(
+    "/discover",
+    summary="Trigger discovery of existing AWS resources",
+    response_description="The discovered infrastructure state.",
 )
-async def get_state(state_manager: StateManager = Depends(get_state_manager)):
+async def discover_resources(
+    state_manager: StateManager = Depends(get_state_manager),
+    scanner: DiscoveryScanner = Depends(get_scanner),
+):
     """
-    Retrieves and returns the current state of the managed infrastructure
-    from the StateManager.
-
-    The state is typically stored in a local file and represents the agent's
-    knowledge of the cloud resources it manages.
+    Initiates a scan of the AWS account to discover existing resources.
+    The discovered resources are then stored in the StateManager's discovered_state.
     """
     try:
-        # The state object is already loaded in the StateManager instance.
-        # We just need to convert it to a dictionary for the JSON response.
-        current_state = state_manager.state
-        return current_state.dict()
+        discovered_infra_state = await scanner.scan_aws_resources()
+        state_manager.set_discovered_state(discovered_infra_state)
+        return discovered_infra_state.dict()
     except Exception as e:
-        state_manager.logger.error(f"Failed to get state: {e}", exc_info=True)
+        state_manager.logger.error(f"Failed to discover resources: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500, detail=f"An unexpected error occurred during discovery: {str(e)}"
+        )
+
+
+@router.get(
+    "/state",
+    summary="Get the current combined infrastructure state (managed + discovered)",
+    response_description="The current combined state of managed and discovered infrastructure as a JSON object.",
+)
+async def get_state(
+    state_manager: StateManager = Depends(get_state_manager)
+):
+    """
+    Retrieves and returns the current discovered state of the AWS resources.
+    """
+    try:
+        return state_manager.state.dict()
+    except Exception as e:
+        state_manager.logger.error(f"Failed to get discovered state: {e}", exc_info=True)
         raise HTTPException(
             status_code=500, detail=f"Failed to retrieve infrastructure state: {str(e)}"
         )

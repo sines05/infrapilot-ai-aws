@@ -1,20 +1,25 @@
+import os
 import json
 import asyncio
 import datetime # Import datetime for timestamp
 import re # Import re for regex operations
 from typing import Dict, Any, List
 
-from langchain.llms.base import BaseLLM
+from langchain_core.language_models import BaseLanguageModel
 from langchain.schema import Generation, LLMResult
-# A placeholder for a real LLM integration, e.g., from langchain.chat_models import ChatOpenAI
-# For MVP, we might use a mock or a simple LLM wrapper.
 
 from ai_infra_agent.state.manager import StateManager
 from ai_infra_agent.infrastructure.tool_factory import ToolFactory
 from ai_infra_agent.agent.prompt_builder import PromptBuilder
 from ai_infra_agent.core.logging import logger
+from ai_infra_agent.services.discovery.scanner import DiscoveryScanner # Import DiscoveryScanner
+from ai_infra_agent.core.config import settings # Import settings
 
-from ai_infra_agent.agent.llms.gemini import GeminiLLM
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI
+from langchain_anthropic import ChatAnthropic # Import ChatAnthropic
+from langchain_aws.chat_models.bedrock import ChatBedrockConverse # Import ChatBedrockConverse
+import boto3 # Import boto3
 
 
 class StateAwareAgent:
@@ -22,7 +27,7 @@ class StateAwareAgent:
     The AI agent that understands the infrastructure state and processes user requests.
     """
 
-    def __init__(self, settings, state_manager: StateManager, tool_factory: ToolFactory, logger, llm: BaseLLM = None):
+    def __init__(self, settings, state_manager: StateManager, tool_factory: ToolFactory, logger, scanner: DiscoveryScanner, llm: BaseLanguageModel = None):
         """
         Initializes the StateAwareAgent.
 
@@ -31,12 +36,14 @@ class StateAwareAgent:
             state_manager (StateManager): The manager for infrastructure state.
             tool_factory (ToolFactory): The factory to create tools.
             logger: The logger instance.
-            llm (BaseLLM, optional): The language model to use. If None, it will be initialized based on settings.
+            scanner (DiscoveryScanner): The scanner for discovering AWS resources.
+            llm (BaseLanguageModel, optional): The language model to use. If None, it will be initialized based on settings.
         """
         self.settings = settings
         self.state_manager = state_manager
         self.tool_factory = tool_factory
         self.logger = logger
+        self.scanner = scanner # Store the scanner instance
 
         if llm:
             self.llm = llm
@@ -46,7 +53,7 @@ class StateAwareAgent:
         self.prompt_builder = PromptBuilder()
         self.logger.info("StateAwareAgent initialized.")
 
-    def _initialize_llm(self) -> BaseLLM:
+    def _initialize_llm(self) -> BaseLanguageModel:
         """
         Initializes the appropriate LLM based on settings.
         """
@@ -55,27 +62,58 @@ class StateAwareAgent:
         temperature = self.settings.temperature
         max_tokens = self.settings.max_tokens
 
+        self.logger.info(f"LLM Provider configured: {provider}")
+        self.logger.info(f"LLM Model configured: {model_name}")
+
         if provider == "gemini":
-            # GEMINI_API_KEY is loaded via pydantic_settings from .env or env vars
-            api_key = self.settings.api_key.get_secret_value() if self.settings.api_key else None
+            api_key = os.getenv("GOOGLE_API_KEY")
             if not api_key:
-                self.logger.error("GEMINI_API_KEY not found in environment variables. Gemini LLM cannot be initialized.")
-                raise ValueError("GEMINI_API_KEY is required for Gemini provider.")
-            return GeminiLLM(
-                model_name=model_name,
+                self.logger.error("GOOGLE_API_KEY not found in environment variables. Gemini LLM cannot be initialized.")
+                raise ValueError("GOOGLE_API_KEY is required for Gemini provider.")
+            return ChatGoogleGenerativeAI(
+                model=model_name,
+                temperature=temperature,
+                max_output_tokens=max_tokens,
+                google_api_key=api_key
+            )
+        elif provider == "openai":
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                self.logger.error("OPENAI_API_KEY not found in environment variables. OpenAI LLM cannot be initialized.")
+                raise ValueError("OPENAI_API_KEY is required for OpenAI provider.")
+            return ChatOpenAI(
+                model=model_name,
                 temperature=temperature,
                 max_tokens=max_tokens,
-                api_key=api_key,
-                logger=self.logger
+                api_key=api_key
             )
-        # Add other LLM providers here (e.g., "openai", "claude", "awsbedrock")
-        # elif provider == "openai":
-        #     # Initialize OpenAI LLM
-        #     pass
+        elif provider == "claude":
+            api_key = os.getenv("ANTHROPIC_API_KEY")
+            if not api_key:
+                self.logger.error("ANTHROPIC_API_KEY not found in environment variables. Claude LLM cannot be initialized.")
+                raise ValueError("ANTHROPIC_API_KEY is required for Claude provider.")
+            return ChatAnthropic(
+                model=model_name,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                anthropic_api_key=api_key
+            )
+        elif provider == "bedrock":
+            # Create a boto3 client explicitly
+            boto3_client = boto3.client(
+                "bedrock-runtime",
+                region_name=settings.aws.region
+            )
+            return ChatBedrockConverse(
+                client=boto3_client,
+                model=model_name, # Use model_name from settings
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
         else:
             self.logger.warning(f"Unknown LLM provider: {provider}. Falling back to a mock LLM.")
             # Fallback to a simple mock LLM if provider is unknown or not configured
-            class SimpleMockLLM(BaseLLM):
+            class SimpleMockLLM(BaseLanguageModel):
                 def _generate(self, prompts: List[str], stop: List[str] = None) -> LLMResult:
                     self.logger.info("Using Mock LLM. Returning a predefined plan from sample_data.json.")
                     with open('sample_data.json', 'r') as f:
@@ -114,8 +152,14 @@ class StateAwareAgent:
         """
         logger.info(f"Processing request: '{request}'")
 
+        # 0. Perform a fresh discovery before processing the request
+        self.logger.info("Triggering automatic AWS resource discovery before processing request...")
+        discovered_infra_state = await self.scanner.scan_aws_resources()
+        self.state_manager.set_discovered_state(discovered_infra_state)
+        self.logger.info("Automatic AWS resource discovery completed.")
+
         # 1. Gather context
-        # Get formatted current state from StateManager
+        # Get formatted current state from StateManager (now includes discovered state)
         current_state_formatted = self.state_manager.get_current_state_formatted()
         logger.debug(f"Formatted current state:\n{current_state_formatted}")
 
@@ -139,7 +183,8 @@ class StateAwareAgent:
                 f.write(prompt)
             logger.debug("Full LLM prompt saved to llm_request.log")
             # Run the synchronous LLM call in a separate thread
-            llm_response = await asyncio.to_thread(self.llm, prompt)
+            llm_response_obj = await asyncio.to_thread(self.llm.invoke, prompt)
+            llm_response = llm_response_obj.content
             logger.debug(f"Raw LLM response:\n{llm_response}") # Added debug log for raw response
             try:
                 # Remove markdown code block if present
@@ -161,6 +206,7 @@ class StateAwareAgent:
             logger.error(f"An error occurred during LLM interaction: {e}")
             plan = {"error": str(e)}
 
+
         # 4. Return the plan (no complex validation in MVP)
         return plan
 
@@ -181,5 +227,8 @@ class StateAwareAgent:
         # to avoid blocking the asyncio event loop.
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(None, lambda: tool.execute(**resolved_kwargs))
+        if "error" in result:
+            self.logger.error(f"Tool '{tool_name}' execution failed with error: {result["error"]}")
+            raise ValueError(f"Tool '{tool_name}' execution failed: {result["error"]}")
         self.logger.info(f"Tool '{tool_name}' executed successfully.")
         return result

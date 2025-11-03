@@ -1,0 +1,57 @@
+﻿Mã WBS,Mô tả Công việc,Người Phụ trách,Thành phần trên Sơ đồ liên quan,Mã Tham Chiếu Sơ Đồ
+1,Quản lý Dự án & Phân tích Yêu cầu,Người A,,
+1.1,"Lập kế hoạch dự án tổng thể, xác định mục tiêu, phạm vi",Người A,,
+1.2,Phân tích yêu cầu chi tiết từ người dùng (DevOps/Cloud Admin),Người A,User,
+1.3,Thiết kế sơ đồ Use-Case cho các chức năng chính,Người A,"User, Web Browser Frontend, Backend Server","[USER], [FE], [BE]"
+1.4,Mô tả luồng nghiệp vụ chi tiết cho các chức năng cốt lõi,Người A,"User, Web Browser Frontend, Backend Server, AI providers, Amazon Web Services ","[USER], [FE], [BE], [LLM], [AWS]"
+2,Phát triển Backend Server,Người B,Backend Server,[BE]
+2.1,"Cài đặt môi trường phát triển Python, Poetry, Git",Người B,Backend Server,[BE]
+2.2,"Khởi tạo dự án FastAPI, cấu hình Uvicorn",Người B,Backend Server,[BE]
+2.3,Phát triển API endpoint HTTP `/api/v1/agent/process` (xử lý yêu cầu),Người B,Backend Server,"[BE], [HTTP]"
+2.4,Phát triển API endpoint HTTP `/api/v1/agent/state` (lấy trạng thái hạ tầng),Người B,Backend Server,"[BE], [HTTP]"
+2.5,Phát triển endpoint WebSocket `/ws/v1/agent/execute` (thực thi kế hoạch),Người B,"Backend Server, WebSocket","[BE], [WS]"
+2.6,Cấu hình CORS cho phép Frontend truy cập,Người B,Backend Server,[BE]
+2.7,Triển khai hệ thống Logging tập trung (Loguru),Người B,Backend Server,[BE]
+3,Phát triển Lõi AI Agent,Người B,Backend Server (Core Logic: AI Agent),[BE-CORE]
+3.1,Thiết kế kiến trúc lớp `StateAwareAgent`,Người B,Backend Server (Core Logic: AI Agent),[BE-CORE]
+3.2,Triển khai lớp `StateAwareAgent` (logic chính của agent),Người B,Backend Server (Core Logic: AI Agent),[BE-CORE]
+3.3,Phát triển `StateManager` để quản lý và lưu trữ trạng thái hạ tầng,Người B,Backend Server (Core Logic: AI Agent),[BE-CORE]
+3.4,Phát triển `PromptBuilder` để xây dựng prompt động cho LLM,Người B,Backend Server (Core Logic: AI Agent),[BE-CORE]
+3.5,"Xử lý phản hồi từ LLM (phân tích JSON, trích xuất kế hoạch)",Người B,Backend Server (Core Logic: AI Agent),"[BE-CORE], [LLM]"
+3.6,Triển khai `PlanExecutor` để điều phối việc thực thi các bước trong kế hoạch,Người B,Backend Server (Core Logic: AI Agent),[BE-CORE]
+3.7,Xử lý lỗi và cơ chế retry trong quá trình agent hoạt động,Người B,Backend Server (Core Logic: AI Agent),[BE-CORE]
+4,Tích hợp LLM,Người B,AI providers,[LLM]
+4.1,Tích hợp Google Gemini API thông qua `GeminiLLM`,Người B,AI providers (Google Gemini),[LLM-GEM]
+4.2,Xử lý cấu hình và quản lý API Key an toàn cho LLM,Người B,AI providers,[LLM]
+4.3,"Mở rộng hỗ trợ các nhà cung cấp LLM khác (OpenAI, AWS Bedrock, Anthropic)",Người B,"AI providers (OpenAI, AWS Bedrock, Anthropic)","[LLM-GPT], [LLM-BED], [LLM-ANT]"
+5,Phát triển AWS Tools,Người C,Amazon Web Services (AWS SDK Calls),[AWS-SDK]
+5.1,Thiết kế kiến trúc `ToolFactory` để tạo các công cụ AWS,Người C,Backend Server (AWS SDK Calls),[AWS-SDK]
+5.2,Triển khai `ToolFactory`,Người C,Backend Server (AWS SDK Calls),[AWS-SDK]
+5.3,"Phát triển Tool EC2 (tạo, xóa, mô tả instance, key pair)",Người C,EC2 Instances,[AWS-EC2]
+5.4,"Phát triển Tool VPC (tạo, xóa, mô tả VPC, Subnet, Route Table)",Người C,VPC & Subnets,[AWS-VPC]
+5.5,"Phát triển Tool RDS (tạo, xóa, mô tả DB Instance)",Người C,RDS Databases,[AWS-RDS]
+5.6,"Phát triển Tool Security Group (tạo, xóa, mô tả SG, thêm/xóa rules)",Người C,Security Groups,[AWS-SG]
+5.7,"Xử lý lỗi, xác thực đầu vào và đầu ra cho từng Tool",Người C,Backend Server (AWS SDK Calls),[AWS-SDK]
+6,Phát triển Frontend (Web Browser),Người A,Web Browser Frontend,[FE]
+6.1,Thiết kế giao diện người dùng (UI/UX) cho ứng dụng web,Người A,Web Browser Frontend,[FE]
+6.2,Phát triển giao diện React (hoặc framework khác),Người A,Web Browser Frontend,[FE]
+6.3,"Tích hợp Frontend với Backend API (gửi yêu cầu, lấy trạng thái)",Người A,"Web Browser Frontend, Backend Server","[FE], [HTTP]"
+6.4,"Tích hợp Frontend với WebSocket (gửi kế hoạch, nhận cập nhật trạng thái)",Người A,"Web Browser Frontend, WebSocket","[FE], [WS]"
+6.5,"Xử lý hiển thị trạng thái, tiến trình và thông báo lỗi trên UI",Người A,Web Browser Frontend,[FE]
+7,Triển khai & Vận hành,Người C,Amazon Web Services,[AWS]
+7.1,Cấu hình IAM Role và các chính sách quyền hạn cần thiết cho Agent,Người C,IAM Role,[AWS-IAM]
+7.2,"Chuẩn bị môi trường triển khai (ví dụ: Dockerfile, cấu hình EC2/ECS/Lambda)",Người C,Amazon Web Services,[AWS]
+7.3,"Triển khai ứng dụng Backend lên AWS (ví dụ: EC2, ECS Fargate)",Người C,Amazon Web Services,[AWS-EC2]
+7.4,"Cấu hình Load Balancer, Auto Scaling (nếu cần)",Người C,Amazon Web Services,[AWS]
+7.5,Cấu hình giám sát (Monitoring) và cảnh báo (Alerting) cho ứng dụng,Người C,Amazon Web Services,[AWS]
+8,Kiểm thử & Đảm bảo chất lượng,"Người A, B, C",,
+8.1,"Lập kế hoạch kiểm thử tổng thể (Unit, Integration, E2E)",Người A,,
+8.2,"Viết và thực hiện Unit Tests cho các module Backend, Agent, Tools","Người B, C","Backend Server, Core Logic: AI Agent, AWS SDK Calls","[BE], [BE-CORE], [AWS-SDK]"
+8.3,"Thực hiện Integration Tests giữa các thành phần Backend, LLM, AWS","Người B, C","Backend Server, AI providers, Amazon Web Services","[BE], [LLM], [AWS]"
+8.4,Thực hiện End-to-End Tests (từ Frontend đến AWS),"Người A, B, C",Toàn bộ hệ thống,Toàn hệ thống
+8.5,Debugging và sửa lỗi phát hiện trong quá trình kiểm thử,"Người B, C",,Toàn hệ thống
+9,Tài liệu & Báo cáo,Người A,,
+9.1,"Viết báo cáo chi tiết về dự án, công nghệ, kiến trúc",Người A,,
+9.2,Chuẩn bị slide thuyết trình dự án,Người A,,
+9.3,Viết hướng dẫn sử dụng chi tiết cho người dùng cuối,Người A,,"[USER], [FE]"
+9.4,"Cập nhật và hoàn thiện sơ đồ kiến trúc, sơ đồ Use-Case",Người A,Toàn bộ sơ đồ,
