@@ -190,21 +190,21 @@ class EC2Adapter(AWSAdapterBase):
             self.logger.error(f"Error starting EC2 instance '{instance_id}': {e}")
             raise
 
-    def stop_instance(self, instance_id: str) -> Dict[str, Any]:
+    def stop_instance(self, instance_ids: List[str]) -> Dict[str, Any]:
         """
-        Stops an EC2 instance.
+        Stops one or more EC2 instances.
 
         Args:
-            instance_id (str): The ID of the instance to stop.
+            instance_ids (List[str]): A list of instance IDs to stop.
 
         Returns:
             Dict[str, Any]: The response from the stop_instances call.
         """
-        self.logger.info(f"Stopping EC2 instance: {instance_id}")
+        self.logger.info(f"Stopping EC2 instances: {instance_ids}")
         try:
-            return self.client.stop_instances(InstanceIds=[instance_id])
+            return self.client.stop_instances(InstanceIds=instance_ids)
         except Exception as e:
-            self.logger.error(f"Error stopping EC2 instance '{instance_id}': {e}")
+            self.logger.error(f"Error stopping EC2 instances '{instance_ids}': {e}")
             raise
 
     def create_volume(self, availability_zone: str, size: int, volume_type: str = 'gp3', tags: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:

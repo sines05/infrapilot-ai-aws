@@ -50,6 +50,8 @@ def get_tool_factory() -> ToolFactory:
     log.info(f"ToolFactory initialized with {len(factory.get_tool_names())} tools.")
     return factory
 
+from ai_infra_agent.infrastructure.aws.adapters.rds import RdsAdapter # New
+
 @lru_cache(maxsize=None)
 def get_scanner() -> DiscoveryScanner:
     """
@@ -57,8 +59,10 @@ def get_scanner() -> DiscoveryScanner:
     """
     log = get_logger()
     tool_factory = get_tool_factory()
+    # Instantiate RdsAdapter here
+    rds_adapter = RdsAdapter(settings=settings.aws, logger=log) # New
     log.info("Initializing DiscoveryScanner singleton...")
-    return DiscoveryScanner(tool_factory=tool_factory)
+    return DiscoveryScanner(tool_factory=tool_factory, rds_adapter=rds_adapter)
 
 
 @lru_cache(maxsize=None)

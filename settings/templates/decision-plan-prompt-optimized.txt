@@ -13,7 +13,7 @@ AVAILABLE TOOLS
 {tools}
 
 ═══════════════════════════════════════════════════════════════════
-🏗️ MANAGED RESOURCES (CURRENT STATE)
+🏗️ MANAGED RESOURCES (CURRENT AVAILABLE STATE ON AWS ACCOUNT)
 ═══════════════════════════════════════════════════════════════════
 {state}
 
@@ -250,7 +250,6 @@ STATE AWARENESS (CRITICAL):
 □ NO dependsOn for MANAGED resource values
 
 STRUCTURE:
-□ Only "create" or "query" actions
 □ All query steps FIRST
 □ Every {{step-id.field}} has step-id in dependsOn
 □ No forward references

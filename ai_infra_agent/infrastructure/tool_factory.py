@@ -79,7 +79,7 @@ class ToolFactory:
         self.register_tool("list-ec2-instances", ListEC2InstancesTool(self.logger, ec2_adapter))
         self.register_tool("terminate-ec2-instance", TerminateEC2InstanceTool(self.logger, ec2_adapter))
         self.register_tool("start-ec2-instance", StartInstanceTool(self.logger, ec2_adapter))
-        self.register_tool("stop-ec2-instance", StopInstanceTool(self.logger, ec2_adapter))
+        self.register_tool("stop-instance", StopInstanceTool(self.logger, ec2_adapter))
         self.register_tool("create-volume", CreateVolumeTool(self.logger, ec2_adapter))
         self.register_tool("list-availability-zones", ListAvailabilityZonesTool(self.logger, ec2_adapter)) # Added this line
 
@@ -102,7 +102,7 @@ class ToolFactory:
         self.register_tool("create-public-subnet", CreatePublicSubnetTool(self.logger, vpc_adapter)) # Added this line
 
         # RDS Tools
-        self.register_tool("list-db-instances", ListRDSInstancesTool(self.logger, rds_adapter))
+        self.register_tool("list-rds-instances", ListRDSInstancesTool(self.logger, rds_adapter))
         self.register_tool("create-db-subnet-group", CreateDbSubnetGroupTool(self.logger, rds_adapter))
         self.register_tool("create-db-instance", CreateDbInstanceTool(self.logger, rds_adapter))
 

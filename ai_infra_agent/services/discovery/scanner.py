@@ -5,13 +5,16 @@ from ai_infra_agent.core.logging import logger
 from ai_infra_agent.infrastructure.tool_factory import ToolFactory
 from ai_infra_agent.core.config import settings # Import settings
 
+from ai_infra_agent.infrastructure.aws.adapters.rds import RdsAdapter # New
+
 class DiscoveryScanner:
     """
     Scans for existing cloud resources to import them into the managed state.
     """
-    def __init__(self, tool_factory: ToolFactory):
+    def __init__(self, tool_factory: ToolFactory, rds_adapter: RdsAdapter):
         self.tool_factory = tool_factory
         self.logger = logger
+        self.rds_adapter = rds_adapter # Store the adapter
         # Initialize boto3 session with region from settings
         self.aws_session = boto3.Session(region_name=settings.aws.region)
 
@@ -38,8 +41,37 @@ class DiscoveryScanner:
         for res in sg_resources:
             discovered_resources[res.id] = res
 
+        # Scan RDS DB Subnet Groups (New)
+        rds_db_subnet_group_resources = await self._scan_rds_db_subnet_groups()
+        for res in rds_db_subnet_group_resources:
+            discovered_resources[res.id] = res
+
         self.logger.info(f"Finished AWS resource discovery. Found {len(discovered_resources)} resources.")
         return InfrastructureState(resources=discovered_resources)
+
+    async def _scan_rds_db_subnet_groups(self) -> List[ResourceState]:
+        """
+        Scans for RDS DB Subnet Groups and converts them to ResourceState objects.
+        """
+        resources: List[ResourceState] = []
+        try:
+            response = self.rds_adapter.describe_db_subnet_groups()
+            self.logger.debug(f"Raw RDS describe_db_subnet_groups response: {response}")
+
+            for db_subnet_group in response.get('DBSubnetGroups', []):
+                group_name = db_subnet_group.get('DBSubnetGroupName')
+                resources.append(ResourceState(
+                    id=group_name,
+                    name=group_name,
+                    type='aws_rds_db_subnet_group',
+                    status=db_subnet_group.get('SubnetGroupStatus', 'unknown'),
+                    properties=db_subnet_group,
+                    tags={tag['Key']: tag['Value'] for tag in db_subnet_group.get('Tags', []) if 'Key' in tag and 'Value' in tag}
+                ))
+            self.logger.debug(f"Discovered {len(resources)} RDS DB Subnet Groups.")
+        except Exception as e:
+            self.logger.error(f"Error scanning RDS DB Subnet Groups: {e}")
+        return resources
 
     async def _scan_ec2_instances(self) -> List[ResourceState]:
         """

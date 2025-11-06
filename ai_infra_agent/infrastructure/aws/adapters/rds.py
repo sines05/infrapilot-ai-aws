@@ -40,6 +40,26 @@ class RdsAdapter(AWSAdapterBase):
             self.logger.error(f"Error describing RDS DB instances: {e}")
             raise
 
+    def describe_db_subnet_groups(self, db_subnet_group_name: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Describes RDS DB Subnet Groups.
+
+        Args:
+            db_subnet_group_name (Optional[str], optional): A specific DB subnet group name to filter by. Defaults to None.
+
+        Returns:
+            Dict[str, Any]: The response from the describe_db_subnet_groups call.
+        """
+        self.logger.info(f"Describing RDS DB Subnet Groups with name: {db_subnet_group_name}")
+        try:
+            if db_subnet_group_name:
+                return self.client.describe_db_subnet_groups(DBSubnetGroupName=db_subnet_group_name)
+            else:
+                return self.client.describe_db_subnet_groups()
+        except Exception as e:
+            self.logger.error(f"Error describing RDS DB Subnet Groups: {e}")
+            raise
+
     def create_db_subnet_group(self, db_subnet_group_name: str, db_subnet_group_description: str, subnet_ids: List[str], tags: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         """
         Creates a new RDS DB Subnet Group.

@@ -21,8 +21,10 @@ else:
 
 # --- Step 2: Define the Pydantic Models as simple BaseModels ---
 # They don't need to know about env prefixes anymore.
-class AWSSettings(BaseModel):
+class AWSSettings(BaseSettings):
     """AWS-specific configuration"""
+    model_config = SettingsConfigDict(env_prefix='AWS_', env_file=dotenv_path, extra='ignore')
+
     region: str = Field("us-west-2", description="Default AWS region")
     access_key_id: Optional[SecretStr] = Field(None, description="AWS Access Key ID")
     secret_access_key: Optional[SecretStr] = Field(None, description="AWS Secret Access Key")
@@ -84,11 +86,6 @@ def load_app_settings() -> Settings:
     
     # We create a dictionary from env vars that we care about.
     env_vars = {
-        "aws": {
-            "region": os.getenv("AWS_REGION"),
-            "access_key_id": os.getenv("AWS_ACCESS_KEY_ID"),
-            "secret_access_key": os.getenv("AWS_SECRET_ACCESS_KEY"),
-        },
         "agent": {
         },
         "web": {
@@ -114,7 +111,15 @@ def load_app_settings() -> Settings:
     final_config_data = merge_dicts(settings_data, env_vars)
     
     # Finally, create the Pydantic model from the combined data
-    return Settings.model_validate(final_config_data)
+    # Note: AWSSettings is now a BaseSettings and will load its own env vars
+    # so we pass it directly.
+    return Settings(
+        aws=AWSSettings(),
+        agent=AgentSettings.model_validate(final_config_data.get("agent", {})),
+        logging=LoggingSettings.model_validate(final_config_data.get("logging", {})),
+        state=StateSettings.model_validate(final_config_data.get("state", {})),
+        web=WebSettings.model_validate(final_config_data.get("web", {})),
+    )
 
 # --- Step 4: Create the global settings instance ---
 settings = load_app_settings()

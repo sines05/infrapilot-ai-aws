@@ -71,16 +71,24 @@ class ListEC2InstancesTool(BaseTool):
 
     def execute(self, instance_ids: List[str] = None) -> Dict[str, Any]:
         """
-        Executes the tool to list EC2 instances.
+        Executes the tool to list EC2 instances and returns a simplified list of instance IDs.
 
         Args:
             instance_ids (List[str], optional): A list of instance IDs to filter by. Defaults to None.
 
         Returns:
-            Dict[str, Any]: The response from the list_instances call.
+            Dict[str, Any]: A dictionary containing a list of instance IDs.
         """
         self.logger.info(f"Executing tool: {self.name}")
-        return self.adapter.list_instances(instance_ids=instance_ids)
+        response = self.adapter.list_instances(instance_ids=instance_ids)
+        
+        # Extract instance IDs from the nested Reservations structure
+        all_instance_ids = []
+        for reservation in response.get("Reservations", []):
+            for instance in reservation.get("Instances", []):
+                all_instance_ids.append(instance.get("InstanceId"))
+        
+        return {"instance_ids": all_instance_ids}
 
 
 class TerminateEC2InstanceTool(BaseTool):
@@ -160,22 +168,33 @@ class StopInstanceTool(BaseTool):
         self.name = "stop-instance"
         self.description = "Stops a specified EC2 instance."
 
-    def execute(self, instance_id: str, **kwargs) -> Dict[str, Any]:
+    def execute(self, instance_id: Optional[str] = None, instance_ids: Optional[List[str]] = None, **kwargs) -> Dict[str, Any]:
         """
-        Executes the tool to stop an instance.
+        Executes the tool to stop EC2 instances.
+        Accepts either a single instance_id or a list of instance_ids.
 
         Args:
-            instance_id (str): The ID of the EC2 instance to stop.
+            instance_id (Optional[str]): A single instance ID to stop.
+            instance_ids (Optional[List[str]]): A list of instance IDs to stop.
 
         Returns:
             Dict[str, Any]: The response from the stop_instances call.
         """
-        self.logger.info(f"Executing StopInstanceTool for instance: {instance_id}")
+        final_instance_ids = []
+        if instance_ids:
+            final_instance_ids.extend(instance_ids)
+        if instance_id:
+            final_instance_ids.append(instance_id)
+        
+        if not final_instance_ids:
+            raise ValueError("Either 'instance_id' or 'instance_ids' must be provided.")
+
+        self.logger.info(f"Executing StopInstanceTool for instances: {final_instance_ids}")
         try:
-            response = self.adapter.stop_instance(instance_id=instance_id)
+            response = self.adapter.stop_instance(instance_ids=final_instance_ids)
             return response
         except Exception as e:
-            self.logger.error(f"Failed to stop instance {instance_id}: {e}")
+            self.logger.error(f"Failed to stop instances {final_instance_ids}: {e}")
             return {"error": str(e)}
 
 class CreateVolumeTool(BaseTool):

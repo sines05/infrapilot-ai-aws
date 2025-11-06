@@ -4,11 +4,11 @@ import asyncio
 import websockets
 
 # --- Cấu hình ---
-API_BASE_URL = "http://127.0.0.1:8000/api/v1/agent"
-WEBSOCKET_URL = "ws://127.0.0.1:8000/ws/v1/agent/execute"
+API_BASE_URL = "http://127.0.0.1:8080/api/v1/agent"
+WEBSOCKET_URL = "ws://127.0.0.1:8080/ws/v1/agent/execute"
 
 # Yêu cầu ngôn ngữ tự nhiên bạn muốn gửi đến agent
-USER_REQUEST = "Tạo một môi trường web hoàn chỉnh: Đầu tiên, tạo một VPC mới. Sau đó, tạo một key pair tên là 'test-key-04'. Tiếp theo, tạo một security group tên 'web-sg' cho phép truy cập SSH và HTTP. Sử dụng AMI Ubuntu mới nhất để tạo một EC2 instance trong VPC đó với key pair vừa tạo. Cuối cùng, tạo một S3 bucket có tên ngẫu nhiên và duy nhất để lưu trữ logs."
+USER_REQUEST = "Triển khai một web server đơn giản. Tạo một key pair mới. Tạo một security group mới trong VPC mặc định, cho phép truy cập HTTP (cổng 80) và SSH (cổng 22) từ mọi nơi. Sau đó, tạo một EC2 instance t3.micro sử dụng AMI Ubuntu mới nhất, key pair và security group vừa tạo. Đặt tên instance là 'my-crai-web-server'."
 
 # --- Hàm lấy kế hoạch từ API (giữ nguyên, không cần thay đổi) ---
 def get_execution_plan(request_text: str) -> dict:
