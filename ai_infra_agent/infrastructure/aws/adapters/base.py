@@ -1,5 +1,5 @@
-import boto3
-from botocore.config import Config
+import boto3 #AWS SDK Library for Python
+from botocore.config import Config #Allows detailed configuration of boto3 client behavior
 from loguru import logger
 
 # Import AWSSettings từ vị trí mới trong core/config.py
@@ -12,7 +12,10 @@ class AWSAdapterBase:
     Initializes a boto3 client for a specific AWS service.
     """
 
-    def __init__(self, service_name: str, settings: AWSSettings, logger: logger):
+    def __init__(self, 
+                 service_name: str, 
+                 settings: AWSSettings, #Object containing AWS configuration
+                 logger: logger):
         """
         Initializes the AWS adapter.
 
