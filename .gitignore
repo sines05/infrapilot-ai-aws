@@ -24,3 +24,5 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+llm_request.log
