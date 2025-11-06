@@ -3,6 +3,8 @@ import json
 import asyncio
 import datetime # Import datetime for timestamp
 import re # Import re for regex operations
+import secrets # Import secrets for secure random string generation
+import string # Import string for character sets
 from typing import Dict, Any, List
 
 from langchain_core.language_models import BaseLanguageModel
@@ -129,13 +131,18 @@ class StateAwareAgent:
     def _resolve_placeholders(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """
         Resolves placeholders in the parameters dictionary.
-        For MVP, only {{timestamp}} is resolved.
+        Handles {{timestamp}} and {{random_string}}.
         """
         resolved_params = {}
         for key, value in params.items():
-            if isinstance(value, str) and "{{timestamp}}" in value:
-                timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-                resolved_params[key] = value.replace("{{timestamp}}", timestamp)
+            if isinstance(value, str):
+                if "{{timestamp}}" in value:
+                    timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+                    value = value.replace("{{timestamp}}", timestamp)
+                if "{{random_string}}" in value:
+                    random_str = ''.join(secrets.choice(string.ascii_lowercase + string.digits) for _ in range(8))
+                    value = value.replace("{{random_string}}", random_str)
+                resolved_params[key] = value
             else:
                 resolved_params[key] = value
         return resolved_params

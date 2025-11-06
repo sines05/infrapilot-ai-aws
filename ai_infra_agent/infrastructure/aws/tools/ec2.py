@@ -216,3 +216,28 @@ class CreateVolumeTool(BaseTool):
         except Exception as e:
             self.logger.error(f"Failed to create volume: {e}")
             return {"error": str(e)}
+
+class ListAvailabilityZonesTool(BaseTool):
+    """
+    Tool to list all available Availability Zones.
+    """
+    def __init__(self, logger, adapter: EC2Adapter):
+        super().__init__(logger, adapter)
+        self.name = "list-availability-zones"
+        self.description = "Lists all available AWS Availability Zones in the current region."
+
+    def execute(self) -> Dict[str, Any]:
+        """
+        Executes the tool to list Availability Zones.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing a list of Availability Zone names.
+        """
+        self.logger.info(f"Executing tool: {self.name}")
+        try:
+            response = self.adapter.list_availability_zones()
+            az_names = [az['ZoneName'] for az in response.get('AvailabilityZones', [])]
+            return {"availability_zones": az_names}
+        except Exception as e:
+            self.logger.error(f"Failed to list Availability Zones: {e}")
+            return {"error": str(e)}

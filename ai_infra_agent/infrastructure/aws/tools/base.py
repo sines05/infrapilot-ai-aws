@@ -27,6 +27,7 @@ class BaseTool(ABC):
         self.description = "This is a base tool."
 
     @abstractmethod
+    @abstractmethod
     def execute(self, **kwargs) -> Dict[str, Any]:
         """
         Executes the tool's action. This method must be implemented by subclasses.
