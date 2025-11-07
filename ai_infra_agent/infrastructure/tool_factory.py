@@ -39,6 +39,8 @@ from ai_infra_agent.infrastructure.aws.tools.security_group import (
     CreateSecurityGroupTool,
     AddSecurityGroupIngressRuleTool,
     ListSecurityGroupsTool,
+    AddSecurityGroupEgressRuleTool,
+    DeleteSecurityGroupTool,
 )
 from ai_infra_agent.infrastructure.aws.tools.elb import CreateLoadBalancerTool
 from ai_infra_agent.infrastructure.aws.tools.s3 import CreateS3BucketTool # New
@@ -110,6 +112,8 @@ class ToolFactory:
         self.register_tool("create-security-group", CreateSecurityGroupTool(self.logger, sg_adapter))
         self.register_tool("add-security-group-ingress-rule", AddSecurityGroupIngressRuleTool(self.logger, sg_adapter))
         self.register_tool("list-security-groups", ListSecurityGroupsTool(self.logger, sg_adapter))
+        self.register_tool("add-security-group-egress-rule", AddSecurityGroupEgressRuleTool(self.logger, sg_adapter))
+        self.register_tool("delete-security-group", DeleteSecurityGroupTool(self.logger, sg_adapter))
 
         # ELB Tools
         self.register_tool("create-load-balancer", CreateLoadBalancerTool(self.logger, elb_adapter))

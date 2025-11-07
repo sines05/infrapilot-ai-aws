@@ -8,8 +8,7 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
-# File cấu hình chứa thông tin nhạy cảm
-# Mặc dù .env đã có ở trên, thêm lại để chắc chắn
+
 .env*
 !/.env.example
 

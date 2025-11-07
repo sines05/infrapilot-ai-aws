@@ -115,7 +115,7 @@ class ListSecurityGroupsTool(BaseTool):
         try:
             response = self.adapter.list_security_groups()
             all_security_groups = response.get("SecurityGroups", [])
-            
+
             if vpc_id:
                 filtered_security_groups = [sg for sg in all_security_groups if sg.get("VpcId") == vpc_id]
             else:
@@ -133,9 +133,86 @@ class ListSecurityGroupsTool(BaseTool):
                 }
                 for sg in filtered_security_groups
             ]
-            
+
             self.logger.info(f"Found {len(result)} security groups.")
             return {"security_groups": result}
+
         except Exception as e:
             self.logger.error(f"Failed to list security groups: {e}")
+            return {"error": str(e)}
+
+
+class AddSecurityGroupEgressRuleTool(BaseTool):
+    """
+    Tool to add an egress rule to an existing EC2 security group.
+    """
+
+    def __init__(self, logger: logger, adapter: SecurityGroupAdapter):
+        """
+        Initializes the AddSecurityGroupEgressRuleTool.
+        """
+        super().__init__(logger, adapter)
+        self.name = "add-security-group-egress-rule"
+        self.description = "Adds an egress rule to an existing EC2 security group."
+
+    def execute(self, group_id: str, protocol: str, cidr_block: str, from_port: int = None, to_port: int = None, **kwargs) -> Dict[str, Any]:
+        """
+        Executes the tool to add an egress rule.
+
+        Args:
+            group_id (str): The ID of the security group.
+            protocol (str): The IP protocol name (e.g., 'tcp', 'udp', 'icmp', '-1' for all).
+            cidr_block (str): The CIDR IP range.
+            from_port (int, optional): The start of the port range. Required for protocols like TCP/UDP. Defaults to None.
+            to_port (int, optional): The end of the port range. Required for protocols like TCP/UDP. Defaults to None.
+
+        Returns:
+            Dict[str, Any]: The response from the authorize_security_group_egress call.
+        """
+        self.logger.info(f"Adding egress rule to security group '{group_id}' for {protocol} to {cidr_block}...")
+        try:
+            response = self.adapter.add_security_group_egress_rule(
+                group_id=group_id,
+                ip_protocol=protocol,
+                from_port=from_port,
+                to_port=to_port,
+                cidr_ip=cidr_block
+            )
+            self.logger.info(f"Egress rule added to security group '{group_id}'.")
+            return {"success": True, "response": response}
+        except Exception as e:
+            self.logger.error(f"Failed to add egress rule to security group '{group_id}': {e}")
+            return {"error": str(e)}
+
+
+class DeleteSecurityGroupTool(BaseTool):
+    """
+    Tool to delete an EC2 security group.
+    """
+
+    def __init__(self, logger: logger, adapter: SecurityGroupAdapter):
+        """
+        Initializes the DeleteSecurityGroupTool.
+        """
+        super().__init__(logger, adapter)
+        self.name = "delete-security-group"
+        self.description = "Deletes an EC2 security group by its ID."
+
+    def execute(self, group_id: str, **kwargs) -> Dict[str, Any]:
+        """
+        Executes the tool to delete a security group.
+
+        Args:
+            group_id (str): The ID of the security group to delete.
+
+        Returns:
+            Dict[str, Any]: A success message or an error.
+        """
+        self.logger.info(f"Deleting security group '{group_id}'...")
+        try:
+            self.adapter.delete_security_group(group_id=group_id)
+            self.logger.info(f"Successfully deleted security group '{group_id}'.")
+            return {"success": True, "group_id": group_id}
+        except Exception as e:
+            self.logger.error(f"Failed to delete security group '{group_id}': {e}")
             return {"error": str(e)}
