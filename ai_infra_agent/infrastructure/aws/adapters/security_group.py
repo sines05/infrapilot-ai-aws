@@ -63,3 +63,39 @@ class SecurityGroupAdapter(AWSAdapterBase):
         except Exception as e:
             self.logger.error(f"Failed to list security groups: {e}")
             raise
+
+    def add_security_group_egress_rule(self, group_id: str, ip_protocol: str, cidr_ip: str, from_port: int = None, to_port: int = None) -> Dict[str, Any]:
+        """
+        Adds an egress rule to an existing EC2 security group.
+        """
+        try:
+            ip_permissions = {
+                'IpProtocol': ip_protocol,
+                'IpRanges': [{'CidrIp': cidr_ip}]
+            }
+
+            if from_port is not None and to_port is not None:
+                ip_permissions['FromPort'] = from_port
+                ip_permissions['ToPort'] = to_port
+
+            response = self.client.authorize_security_group_egress(
+                GroupId=group_id,
+                IpPermissions=[ip_permissions]
+            )
+            self.logger.info(f"Egress rule added to security group '{group_id}'.")
+            return response
+        except Exception as e:
+            self.logger.error(f"Failed to add egress rule to security group '{group_id}': {e}")
+            raise
+
+    def delete_security_group(self, group_id: str) -> Dict[str, Any]:
+        """
+        Deletes an EC2 security group.
+        """
+        try:
+            response = self.client.delete_security_group(GroupId=group_id)
+            self.logger.info(f"Security group '{group_id}' deleted.")
+            return response
+        except Exception as e:
+            self.logger.error(f"Failed to delete security group '{group_id}': {e}")
+            raise

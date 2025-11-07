@@ -8,8 +8,8 @@ API_BASE_URL = "http://127.0.0.1:8080/api/v1/agent"
 WEBSOCKET_URL = "ws://127.0.0.1:8080/ws/v1/agent/execute"
 
 # Yêu cầu ngôn ngữ tự nhiên bạn muốn gửi đến agent
-USER_REQUEST = "Triển khai một web server đơn giản. Tạo một key pair mới. Tạo một security group mới trong VPC mặc định, cho phép truy cập HTTP (cổng 80) và SSH (cổng 22) từ mọi nơi. Sau đó, tạo một EC2 instance t3.micro sử dụng AMI Ubuntu mới nhất, key pair và security group vừa tạo. Đặt tên instance là 'my-crai-web-server'."
-
+USER_REQUEST = "Triển khai một web server đơn giản. Tạo một key pair mới. Tạo một security group mới trong VPC mặc định, cho phép truy cập HTTP (cổng 80) và SSH (cổng 22) từ mọi nơi và chỉ cho phép ra ở một cổng bất kỳ. Sau đó, tạo một EC2 instance t3.micro sử dụng AMI Ubuntu mới nhất, key pair và security group vừa tạo. Đặt tên instance là 'my-crai-web-server'."
+1
 # --- Hàm lấy kế hoạch từ API (giữ nguyên, không cần thay đổi) ---
 def get_execution_plan(request_text: str) -> dict:
     """
