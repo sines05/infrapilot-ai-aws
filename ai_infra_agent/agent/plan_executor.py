@@ -101,6 +101,9 @@ class PlanExecutor:
                             elif key == "group_id" and "groupId" in value:
                                 value = value["groupId"]
                                 self.logger.debug(f"  Found groupId for key 'group_id'")
+                            elif key == "imageId" and "amiId" in value:
+                                value = value["amiId"]
+                                self.logger.debug(f"  Found amiId for key 'imageId'")
                             elif key == "db_subnet_group_name" and ("DBSubnetGroupName" in value or "dbSubnetGroupName" in value or "name" in value):
                                 value = value.get("DBSubnetGroupName") or value.get("dbSubnetGroupName") or value.get("name")
                                 self.logger.debug(f"  Found DBSubnetGroupName for key 'db_subnet_group_name'")
