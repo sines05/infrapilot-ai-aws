@@ -1,15 +1,14 @@
-import type React from "react"
-import { Sidebar } from "@/components/sidebar"
+import type React from "react";
 
 export default function DashboardLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <div className="flex">
-      <Sidebar />
-      <main className="flex-1 bg-background">{children}</main>
+      <aside className="w-64 border-r border-border bg-card flex flex-col h-screen"></aside>
+      <main className="flex-1">{children}</main>
     </div>
-  )
+  );
 }
