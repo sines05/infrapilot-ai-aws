@@ -4,7 +4,8 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Updated color palette: cream background, blues for primary, black for text */
+  /* Updated color palette: cream background, blues for primary, black for text 
+  test */
   --background: #ffffff;
   --foreground: #000000;
   --card: #ffffff;
