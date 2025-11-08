@@ -3,6 +3,10 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, AlertCircle, Clock, ChevronDown, Play, Loader2, Repeat } from "lucide-react"
+import { processRequest } from "@/agent/progress/agent-progress"
+import { startExecution } from "@/agent/websocket/agent-websocket"
+import { getMcpTool, getDependsOn, formatExecutionPlan } from "@/agent/utils/steps"
+import { ExecuteStep } from "@/data/execute-step"
 
 interface ExecutionPlanStep {
   stepId: string
@@ -11,7 +15,7 @@ interface ExecutionPlanStep {
   duration: string
   status: "pending" | "in_progress" | "completed" | "failed"
   details: Record<string, string>
-  mcpTool?: string  // Lưu mcpTool từ backend
+  mcpTool?: string
 }
 
 interface AIResponse {
@@ -35,30 +39,7 @@ export default function ChatPage() {
   const [isExecutionComplete, setIsExecutionComplete] = useState(false)
   const wsRef = useRef<WebSocket | null>(null)
 
-  // === MAP stepName → mcpTool ===
-  const getMcpTool = (stepName: string): string => {
-    const map: Record<string, string> = {
-      "Get latest Ubuntu AMI": "get-latest-ubuntu-ami",
-      "Discover subnets in default VPC": "list-subnets",
-      "Create EC2 Key Pair": "create-key-pair",
-      "Create new EC2 instance": "create-ec2-instance",
-    }
-    return map[stepName] || "unknown-tool"
-  }
-
-  // === MAP stepId → dependsOn (nếu cần) ===
-  const getDependsOn = (stepId: string): string[] => {
-    const map: Record<string, string[]> = {
-      "step-create-ec2-instance": [
-        "step-get-ubuntu-ami",
-        "step-discover-subnets",
-        "step-create-key-pair"
-      ],
-    }
-    return map[stepId] || []
-  }
-
-  // === XỬ LÝ PROCESS REQUEST ===
+  // === PROCESS REQUEST ===
   const handleProcessRequest = async () => {
     if (!prompt.trim() || loading || isExecuting) return
 
@@ -68,21 +49,7 @@ export default function ChatPage() {
     setIsExecutionComplete(false)
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/agent/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          request: prompt,
-          dry_run: dryRunMode,
-        }),
-      })
-
-      if (!response.ok) {
-        const err = await response.text()
-        throw new Error(err || `HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
+      const data = await processRequest({ request: prompt, dryRun: dryRunMode })
 
       setAIResponse({
         request: data.request,
@@ -90,15 +57,7 @@ export default function ChatPage() {
         confidence: data.confidence || 0.95,
         action: data.action || "create_infrastructure",
         reasoning: data.reasoning || "Plan generated.",
-        executionPlan: (data.executionPlan || []).map((step: any, i: number) => ({
-          stepId: step.id || `step-${i + 1}`,
-          stepName: step.name || `Step ${i + 1}`,
-          description: step.description || "No description",
-          duration: step.estimatedDuration || "Estimating...",
-          status: "pending" as const,
-          details: step.toolParameters || {},
-          mcpTool: step.mcpTool || getMcpTool(step.name), // Lưu mcpTool
-        })),
+        executionPlan: formatExecutionPlan(data.executionPlan),
       })
 
       setShowResponse(true)
@@ -110,7 +69,7 @@ export default function ChatPage() {
     }
   }
 
-  // === XỬ LÝ CONFIRM & EXECUTE (GỬI ĐÚNG FORMAT) ===
+  // === CONFIRM & EXECUTE ===
   const handleConfirmExecute = async () => {
     if (!aiResponse?.executionPlan.length || isExecuting) return
 
@@ -120,86 +79,63 @@ export default function ChatPage() {
 
     const executionId = `exec-${Date.now()}`
 
-    try {
-      const ws = new WebSocket("ws://localhost:8000/ws/v1/agent/execute")
-      wsRef.current = ws
+    const steps: ExecuteStep[] = aiResponse.executionPlan.map(step => ({
+      id: step.stepId,
+      mcpTool: step.mcpTool || getMcpTool(step.stepName),
+      toolParameters: step.details,
+      dependsOn: getDependsOn(step.stepId),
+    }))
 
-      ws.onopen = () => {
-        console.log("WebSocket connected, sending plan...")
-        ws.send(JSON.stringify({
-          executionId,
-          executionPlan: aiResponse.executionPlan.map(step => ({
-            id: step.stepId,
-            mcpTool: step.mcpTool || getMcpTool(step.stepName),
-            toolParameters: step.details,
-            dependsOn: getDependsOn(step.stepId),
-          })),
-        }))
-      }
-
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data)
-          console.log("WS message:", msg)
-
-          if (msg.type === "execution_started") {
-            setStatusMessage(`Execution started: ${msg.executionId}`)
-          } else if (msg.type === "execution_progress") {
-            setAIResponse(prev => prev ? {
-              ...prev,
-              executionPlan: prev.executionPlan.map(s =>
-                s.stepId === msg.stepId
-                  ? { ...s, status: msg.status || "in_progress" }
-                  : s
-              )
-            } : prev)
-            setStatusMessage(`${msg.stepName}: ${msg.status}`)
-          } else if (msg.type === "execution_completed") {
-            setStatusMessage("EC2 created successfully!")
-            setIsExecutionComplete(true)
-            ws.close()
-          } else if (msg.type === "error") {
-            setStatusMessage(`Error: ${msg.message}`)
-            setIsExecutionComplete(true)
-            ws.close()
-          } else if (msg.type === "plan_recovery_request") {
-            const approve = window.confirm(`Recovery needed: ${msg.reason}. Approve?`)
-            ws.send(JSON.stringify({
-              type: approve ? "plan_recovery_decision" : "plan_recovery_abort",
-              executionId: msg.executionId,
-              approved: approve,
-            }))
-          }
-        } catch (err) {
-          console.error("Failed to parse WS message:", err)
+    const ws = startExecution(
+      executionId,
+      steps,
+      (msg) => { // onMessage
+        if (msg.type === "execution_started") {
+          setStatusMessage(`Execution started: ${msg.executionId}`)
+        } else if (msg.type === "execution_progress") {
+          setAIResponse(prev => prev ? {
+            ...prev,
+            executionPlan: prev.executionPlan.map(s =>
+              s.stepId === msg.stepId ? { ...s, status: msg.status || "in_progress" } : s
+            )
+          } : prev)
+          setStatusMessage(`${msg.stepName}: ${msg.status}`)
+        } else if (msg.type === "execution_completed") {
+          setStatusMessage("EC2 created successfully!")
+          setIsExecutionComplete(true)
+          ws.close()
+        } else if (msg.type === "error") {
+          setStatusMessage(`Error: ${msg.message}`)
+          setIsExecutionComplete(true)
+          ws.close()
+        } else if (msg.type === "plan_recovery_request") {
+          const approve = window.confirm(`Recovery needed: ${msg.reason}. Approve?`)
+          ws.send(JSON.stringify({
+            type: approve ? "plan_recovery_decision" : "plan_recovery_abort",
+            executionId: msg.executionId,
+            approved: approve,
+          }))
         }
-      }
-
-      ws.onerror = () => {
+      },
+      () => { // onError
         setStatusMessage("WebSocket connection error")
         setIsExecuting(false)
-      }
-
-      ws.onclose = () => {
+      },
+      () => { // onClose
         setIsExecuting(false)
-        if (!isExecutionComplete) {
-          setStatusMessage("Execution interrupted")
-        }
+        if (!isExecutionComplete) setStatusMessage("Execution interrupted")
       }
+    )
 
-    } catch (error: any) {
-      setStatusMessage(`Failed to start: ${error.message}`)
-      setIsExecuting(false)
-    }
+    wsRef.current = ws
   }
 
-  // === DỌN DẸP WEBSOCKET ===
+  // === CLEANUP ===
   useEffect(() => {
-    return () => {
-      wsRef.current?.close()
-    }
+    return () => { wsRef.current?.close() }
   }, [])
 
+  // === RENDER ===
   return (
     <div className="flex flex-col gap-8 h-full bg-background p-6 overflow-y-auto">
       {/* Header */}
@@ -228,11 +164,7 @@ export default function ChatPage() {
           placeholder="Describe your infrastructure request..."
           className="w-full h-20 p-4 border border-input rounded-lg bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
           disabled={loading || isExecuting}
-          onKeyDown={(e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
-              handleProcessRequest()
-            }
-          }}
+          onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") handleProcessRequest() }}
         />
 
         <div className="flex items-center justify-between gap-4">
@@ -273,9 +205,7 @@ export default function ChatPage() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 space-y-4">
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center text-sm font-bold">
-                  i
-                </div>
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white flex items-center justify-center text-sm font-bold">i</div>
                 <div className="space-y-3 flex-1">
                   <h3 className="font-bold text-lg">Request Processed</h3>
                   <div className="space-y-2 text-sm">
@@ -313,9 +243,7 @@ export default function ChatPage() {
                       onClick={() => setExpandedStep(expandedStep === i ? null : i)}
                       className="p-5 bg-card hover:bg-muted/50 cursor-pointer flex items-start gap-4 border-l-4 border-l-primary"
                     >
-                      <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">
-                        {i + 1}
-                      </div>
+                      <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm">{i + 1}</div>
                       <div className="flex-1">
                         <h3 className="font-bold">{step.stepName}</h3>
                         <p className="text-sm text-muted-foreground mt-1">{step.description}</p>

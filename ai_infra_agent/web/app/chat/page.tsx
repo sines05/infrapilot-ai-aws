@@ -1,4 +1,4 @@
-import ChatPage from "@/components/main/ui-chat/ui-chat"
+import ChatPage from "@/components/main-page/ui-chat/ui-chat"
 
 export default function Dashboard() {
   return (
