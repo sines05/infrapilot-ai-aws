@@ -16,6 +16,7 @@ import {
   LogOut,
   User,
   Bell,
+  Key,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -41,6 +42,11 @@ const sidebarItems: SidebarItem[] = [
     icon: <Zap className="w-5 h-5" />,
   },
   {
+    label: "AWS Credentials",
+    href: "/dashboard/credentials",
+    icon: <Key className="w-5 h-5" />,
+  },
+  {
     label: "Settings",
     href: "/dashboard/settings",
     icon: <Settings className="w-5 h-5" />,
@@ -52,7 +58,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   const isSidebarItemActive = (href: string) => {
-    return pathname === href || pathname.startsWith(href + "/");
+    return pathname === href;
   };
 
   return (

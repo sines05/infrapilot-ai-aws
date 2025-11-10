@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Zap, Brain, Gauge } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ArrowRight, Zap, Brain, Gauge } from "lucide-react";
 
 export default function Home() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    const rect = e.currentTarget.getBoundingClientRect()
+    const rect = e.currentTarget.getBoundingClientRect();
     setMousePosition({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,
-    })
-  }
+    });
+  };
 
   return (
     <main className="min-h-screen bg-background text-foreground overflow-hidden">
@@ -49,8 +49,9 @@ export default function Home() {
               Automate Your Infrastructure with AI
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-balance">
-              InfraPilot AI generates, executes, and manages infrastructure automation scripts. Let AI handle the
-              complexity while you focus on innovation.
+              InfraPilot AI generates, executes, and manages infrastructure
+              automation scripts. Let AI handle the complexity while you focus
+              on innovation.
             </p>
             <div className="flex flex-col md:flex-row gap-4 justify-center">
               <Link href="/auth/signup">
@@ -65,22 +66,28 @@ export default function Home() {
           </div>
 
           {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-6 mt-20" onMouseMove={handleMouseMove}>
+          <div
+            className="grid md:grid-cols-3 gap-6 mt-20"
+            onMouseMove={handleMouseMove}
+          >
             {[
               {
                 icon: Brain,
                 title: "AI-Powered Generation",
-                description: "Generate infrastructure scripts using natural language prompts",
+                description:
+                  "Generate infrastructure scripts using natural language prompts",
               },
               {
                 icon: Gauge,
                 title: "Dry-Run Mode",
-                description: "Preview changes before execution to ensure safety",
+                description:
+                  "Preview changes before execution to ensure safety",
               },
               {
                 icon: Zap,
                 title: "Instant Deployment",
-                description: "Execute scripts directly to your infrastructure with one click",
+                description:
+                  "Execute scripts directly to your infrastructure with one click",
               },
             ].map((feature, i) => (
               <div
@@ -89,7 +96,9 @@ export default function Home() {
               >
                 <feature.icon className="w-8 h-8 text-accent mb-4" />
                 <h3 className="font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
+                <p className="text-sm text-muted-foreground">
+                  {feature.description}
+                </p>
               </div>
             ))}
           </div>
@@ -100,7 +109,8 @@ export default function Home() {
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <h2 className="text-3xl font-bold">Ready to automate?</h2>
             <p className="text-muted-foreground">
-              Join teams already using AI to manage their infrastructure efficiently and securely.
+              Join teams already using AI to manage their infrastructure
+              efficiently and securely.
             </p>
             <Link href="/auth/signup">
               <Button size="lg">Create Your Account</Button>
@@ -114,5 +124,5 @@ export default function Home() {
         </footer>
       </div>
     </main>
-  )
+  );
 }
