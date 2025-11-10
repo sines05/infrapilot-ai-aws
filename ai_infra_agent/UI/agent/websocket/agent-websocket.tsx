@@ -1,4 +1,4 @@
-import { AIResponse } from "@/data/data";
+import { AIResponse } from "@/types/data";
 import { getDependsOn, getMcpTool } from "../helper-function/agent-helper-function"
 
 // --- WebSocket Execution Function ---

@@ -1,3 +1,8 @@
+// File: app/layout.tsx
+
+// 1. Import AuthProvider bạn vừa tạo
+import AuthProvider from "@/app/provider";
+
 import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
@@ -21,7 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        {children}
+        {/* 2. Bọc {children} bên trong <AuthProvider> */}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
+        
         <Analytics />
       </body>
     </html>

@@ -1,10 +1,12 @@
+// File: app/auth/signin/page.tsx
+
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -23,20 +25,23 @@ export default function SignIn() {
     setLoading(true)
 
     try {
-      // TODO: Integrate with authentication service
-      // For now, simulate a login
-      if (!email || !password) {
-        setError("Please fill in all fields")
-        return
+      // Gọi hàm signIn của NextAuth với provider 'credentials'
+      const result = await signIn('credentials', {
+        redirect: false, // Tự xử lý redirect để hiển thị lỗi
+        email: email,
+        password: password,
+      });
+
+      if (result?.ok) {
+        // Đăng nhập thành công, chuyển hướng đến dashboard
+        router.replace("/dashboard");
+      } else {
+        // Đăng nhập thất bại, hiển thị lỗi chung
+        setError("Email hoặc mật khẩu không hợp lệ.");
       }
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Redirect to dashboard on success
-      router.push("/dashboard")
     } catch (err) {
-      setError("Invalid email or password")
+      console.error("Lỗi đăng nhập không mong muốn:", err);
+      setError("Đã có lỗi xảy ra. Vui lòng thử lại.");
     } finally {
       setLoading(false)
     }
@@ -105,7 +110,6 @@ export default function SignIn() {
             </Button>
           </form>
 
-          {/* Divider */}
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border" />
@@ -115,7 +119,6 @@ export default function SignIn() {
             </div>
           </div>
 
-          {/* Social Sign In */}
           <div className="grid grid-cols-2 gap-3">
             <Button variant="outline" disabled={loading}>
               Google
@@ -126,7 +129,6 @@ export default function SignIn() {
           </div>
         </Card>
 
-        {/* Sign Up Link */}
         <p className="text-center text-sm text-muted-foreground mt-6">
           Don't have an account?{" "}
           <Link href="/auth/signup" className="text-accent font-medium hover:underline">

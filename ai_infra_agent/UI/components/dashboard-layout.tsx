@@ -17,6 +17,7 @@ import {
   User,
   Bell,
   Key,
+  Boxes
 } from "lucide-react";
 import Image from "next/image";
 
@@ -36,6 +37,10 @@ const sidebarItems: SidebarItem[] = [
     label: "AI Chat",
     href: "/dashboard/chat",
     icon: <MessageSquare className="w-5 h-5" />,
+  },{
+    label: "Architecture",
+    href: "/dashboard/architecture",
+    icon: <Boxes className="w-5 h-5" />,
   },
   {
     label: "Projects",

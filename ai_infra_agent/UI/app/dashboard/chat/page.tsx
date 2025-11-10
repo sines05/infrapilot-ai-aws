@@ -17,27 +17,11 @@ import {
   Repeat,
 } from "lucide-react";
 // Giả định file data/data.ts định nghĩa AIResponse
-import { AIResponse } from "@/data/data";
+import { AIResponse } from "@/types/data";
 import { processAgentRequest } from "@/agent/progress/agent-progress";
 // Import hàm executePlan bạn đã cung cấp
 import { executePlan } from "@/agent/websocket/agent-websocket";
-
-// --- Định nghĩa kiểu dữ liệu cho tin nhắn Chat ---
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: Date;
-}
-
-// Định nghĩa kiểu dữ liệu cho tin nhắn từ WebSocket (đơn giản hơn)
-interface WebSocketProgressMessage {
-  type: string;
-  stepId?: string;
-  status?: "in_progress" | "completed" | "failed";
-  message?: string;
-  executionId?: string;
-}
+import { WebSocketProgressMessage, Message } from "@/types/data";
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([

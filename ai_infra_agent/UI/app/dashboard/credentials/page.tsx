@@ -27,40 +27,6 @@ import {
   LogOut,
 } from "lucide-react";
 
-interface SidebarItem {
-  label: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
-const sidebarItems: SidebarItem[] = [
-  {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: <BarChart3 className="w-5 h-5" />,
-  },
-  {
-    label: "AI Chat",
-    href: "/dashboard/chat",
-    icon: <MessageSquare className="w-5 h-5" />,
-  },
-  {
-    label: "Projects",
-    href: "/dashboard/projects",
-    icon: <Zap className="w-5 h-5" />,
-  },
-  {
-    label: "AWS Credentials",
-    href: "/dashboard/credentials",
-    icon: <Key className="w-5 h-5" />,
-  },
-  {
-    label: "Settings",
-    href: "/dashboard/settings",
-    icon: <Settings className="w-5 h-5" />,
-  },
-];
-
 const credentials = [
   {
     id: 1,

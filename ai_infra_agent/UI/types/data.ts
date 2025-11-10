@@ -6,7 +6,7 @@ export interface ExecutionPlanStep {
   status: "pending" | "in_progress" | "completed" | "failed";
   details: Record<string, string>;
   mcpTool?: string;
-  toolParameters: Record<string, any>;
+  toolParameters ?: Record<string, any>;
 }
 
 export interface ExecuteStep {
@@ -23,4 +23,19 @@ export interface AIResponse {
   action: string;
   reasoning: string;
   executionPlan: ExecutionPlanStep[];
+}
+
+export interface WebSocketProgressMessage {
+  type: string;
+  stepId?: string;
+  status?: "in_progress" | "completed" | "failed";
+  message?: string;
+  executionId?: string;
+}
+
+export interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
 }

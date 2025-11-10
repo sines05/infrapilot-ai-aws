@@ -1,4 +1,4 @@
-import { AIResponse } from "@/data/data";
+import { AIResponse } from "@/types/data";
 import { getMcpTool } from "../helper-function/agent-helper-function"
 
 // --- Agent Request Processing Function ---

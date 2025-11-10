@@ -1,4 +1,4 @@
-import { ExecutionPlanStep } from "@/data/execution-plan-step"
+import { ExecutionPlanStep } from "@/types/data"
 
 export const getMcpTool = (stepName: string): string => {
   const map: Record<string, string> = {
