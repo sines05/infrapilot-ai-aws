@@ -17,7 +17,7 @@ import {
   Repeat,
 } from "lucide-react";
 // Giả định file data/data.ts định nghĩa AIResponse
-import { AIResponse } from "@/data/data"; 
+import { AIResponse } from "@/data/data";
 import { processAgentRequest } from "@/agent/progress/agent-progress";
 // Import hàm executePlan bạn đã cung cấp
 import { executePlan } from "@/agent/websocket/agent-websocket";
@@ -125,7 +125,7 @@ export default function ChatPage() {
     setIsExecuting(true);
     setIsExecutionComplete(false);
     setStatusMessage("Starting execution...");
-    
+
     // Sử dụng hàm executePlan đã được import
     const ws = executePlan(
       aiResponse,
@@ -195,7 +195,7 @@ export default function ChatPage() {
           }`}
         >
           {statusMessage.includes("Error") ? (
-             <AlertCircle className="w-4 h-4" />
+            <AlertCircle className="w-4 h-4" />
           ) : (
             <CheckCircle2 className="w-4 h-4" />
           )}
@@ -233,10 +233,12 @@ export default function ChatPage() {
                     <div className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce" />
                     <div
                       className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                      style={{ animationDelay: "0.1s" }}/>
+                      style={{ animationDelay: "0.1s" }}
+                    />
                     <div
                       className="w-2 h-2 rounded-full bg-muted-foreground animate-bounce"
-                      style={{ animationDelay: "0.2s" }}/>
+                      style={{ animationDelay: "0.2s" }}
+                    />
                   </div>
                 </div>
               </div>
@@ -245,7 +247,10 @@ export default function ChatPage() {
           </div>
 
           <div className="border-t border-border p-6 bg-card">
-            <form onSubmit={handleSendMessage} className="flex gap-3 items-center">
+            <form
+              onSubmit={handleSendMessage}
+              className="flex gap-3 items-center"
+            >
               <Input
                 placeholder="Describe the infrastructure task..."
                 value={input}
@@ -289,7 +294,9 @@ export default function ChatPage() {
                   className="border rounded-xl overflow-hidden shadow-sm"
                 >
                   <div
-                    onClick={() => setExpandedStep(expandedStep === i ? null : i)}
+                    onClick={() =>
+                      setExpandedStep(expandedStep === i ? null : i)
+                    }
                     className="p-4 bg-card hover:bg-muted/50 cursor-pointer flex items-start gap-4 border-l-4 border-l-primary"
                   >
                     <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shrink-0">
@@ -333,18 +340,20 @@ export default function ChatPage() {
                       }`}
                     />
                   </div>
-                  
+
                   {expandedStep === i && (
                     <div className="border-t p-4 bg-muted/30">
                       <h4 className="font-bold text-sm mb-2">Parameters</h4>
-                      {/* Giả định `step.toolParameters` tồn tại */}
-                      {step.toolParameters &&
-                      Object.keys(step.toolParameters).length > 0 ? (
+                      {/* SỬA Ở ĐÂY: Đọc từ `step.details` thay vì `step.toolParameters` */}
+                      {step.details &&
+                      Object.keys(step.details).length > 0 ? (
                         <div className="p-3 bg-background rounded-md border text-sm font-mono space-y-1">
-                          {Object.entries(step.toolParameters).map(
+                          {Object.entries(step.details).map(
                             ([key, value]) => (
                               <div key={key}>
-                                <span className="text-primary font-semibold">{key}:</span>{" "}
+                                <span className="text-primary font-semibold">
+                                  {key}:
+                                </span>{" "}
                                 <span>{String(value)}</span>
                               </div>
                             )
@@ -371,7 +380,11 @@ export default function ChatPage() {
                 ) : (
                   <CheckCircle2 className="w-4 h-4" />
                 )}
-                {isExecuting ? "Executing..." : isExecutionComplete ? "Completed" : "Confirm & Execute"}
+                {isExecuting
+                  ? "Executing..."
+                  : isExecutionComplete
+                  ? "Completed"
+                  : "Confirm & Execute"}
               </Button>
               <Button
                 variant="outline"
