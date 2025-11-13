@@ -5,6 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   BarChart3,
@@ -17,7 +18,7 @@ import {
   User,
   Bell,
   Key,
-  Boxes
+  Boxes,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -37,7 +38,8 @@ const sidebarItems: SidebarItem[] = [
     label: "AI Chat",
     href: "/dashboard/chat",
     icon: <MessageSquare className="w-5 h-5" />,
-  },{
+  },
+  {
     label: "Architecture",
     href: "/dashboard/architecture",
     icon: <Boxes className="w-5 h-5" />,
@@ -62,6 +64,7 @@ const sidebarItems: SidebarItem[] = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   const isSidebarItemActive = (href: string) => {
     return pathname === href;
@@ -87,10 +90,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {/* Logo */}
           <div className="p-4 h-20 flex items-center justify-center border-b border-sidebar-border">
             <Image
-              src="/logo.png"  // <-- CHANGED
-              alt="InfraPilot AI Logo"    // <-- CHANGED
-              width={450}                 // <-- CHANGED
-              height={40}                 // <-- CHANGED
+              src="/logo.png" // <-- CHANGED
+              alt="InfraPilot AI Logo" // <-- CHANGED
+              width={450} // <-- CHANGED
+              height={40} // <-- CHANGED
               priority
             />
           </div>
@@ -119,13 +122,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Button
               variant="outline"
               className="w-full justify-start gap-2 text-sidebar-foreground bg-transparent"
-            >
-              <User className="w-4 h-4" />
-              Profile
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2 text-sidebar-foreground bg-transparent"
+              onClick={() => {
+                router.push("/auth/signin");
+              }}
             >
               <LogOut className="w-4 h-4" />
               Sign Out
