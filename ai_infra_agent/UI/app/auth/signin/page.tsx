@@ -25,17 +25,20 @@ export default function SignIn() {
     setLoading(true);
 
     try {
-      // Gọi hàm signIn của NextAuth với provider 'credentials'
       const result = await signIn("credentials", {
-        redirect: false, // Tự xử lý redirect để hiển thị lỗi
+        redirect: false, 
         email: email,
         password: password,
       });
 
+      console.log('[SIGNIN] Response:', result);
+
       if (result?.ok) {
         router.replace("/dashboard");
       } else {
-        setError("Email hoặc mật khẩu không hợp lệ.");
+        const errorMsg = result?.error || "Email hoặc mật khẩu không hợp lệ.";
+        console.error('[SIGNIN] Error:', errorMsg);
+        setError(errorMsg);
       }
     } catch (err) {
       console.error("Lỗi đăng nhập không mong muốn:", err);

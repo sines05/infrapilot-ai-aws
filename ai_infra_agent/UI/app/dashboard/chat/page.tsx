@@ -16,7 +16,6 @@ import {
   Loader2,
   Repeat,
 } from "lucide-react";
-// Giả định file data/data.ts định nghĩa AIResponse
 import { AIResponse } from "@/types/data";
 import { processAgentRequest } from "@/agent/progress/agent-progress";
 // Import hàm executePlan bạn đã cung cấp
@@ -24,6 +23,8 @@ import { executePlan } from "@/agent/websocket/agent-websocket";
 import { WebSocketProgressMessage, Message } from "@/types/data";
 
 export default function ChatPage() {
+
+  // Initial States
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
@@ -33,6 +34,7 @@ export default function ChatPage() {
       timestamp: new Date(),
     },
   ]);
+
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -151,7 +153,6 @@ export default function ChatPage() {
   // Dọn dẹp WebSocket khi component unmount
   useEffect(() => () => wsRef.current?.close(), []);
 
-  // --- JSX Giao diện ---
   return (
     <DashboardLayout>
       <div className="space-y-6 mx-auto">

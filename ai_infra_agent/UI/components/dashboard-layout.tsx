@@ -21,6 +21,7 @@ import {
   Boxes,
 } from "lucide-react";
 import Image from "next/image";
+import { signOut } from "next-auth/react";
 
 interface SidebarItem {
   label: string;
@@ -122,9 +123,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Button
               variant="outline"
               className="w-full justify-start gap-2 text-sidebar-foreground bg-transparent"
-              onClick={() => {
-                router.push("/auth/signin");
-              }}
+              onClick={() => signOut({ callbackUrl: "/" })}
             >
               <LogOut className="w-4 h-4" />
               Sign Out

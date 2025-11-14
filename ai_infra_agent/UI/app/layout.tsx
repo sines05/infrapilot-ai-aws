@@ -26,11 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        {/* 2. Bọc {children} bên trong <AuthProvider> */}
         <AuthProvider>
           {children}
         </AuthProvider>
-        
         <Analytics />
       </body>
     </html>
