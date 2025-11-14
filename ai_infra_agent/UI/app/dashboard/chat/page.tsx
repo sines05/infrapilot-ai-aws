@@ -18,7 +18,6 @@ import {
 } from "lucide-react";
 import { AIResponse } from "@/types/data";
 import { processAgentRequest } from "@/agent/progress/agent-progress";
-// Import hàm executePlan bạn đã cung cấp
 import { executePlan } from "@/agent/websocket/agent-websocket";
 import { WebSocketProgressMessage, Message } from "@/types/data";
 import CredentialsNotifier from '@/components/auth/CredentialsNotifier';

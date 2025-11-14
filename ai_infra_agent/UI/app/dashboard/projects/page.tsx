@@ -1,294 +1,228 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Plus, Search, Edit, Trash2, Play, AlertCircle, Eye } from "lucide-react"
+import { Plus, Search, Trash2, AlertCircle, Eye, Loader2 } from "lucide-react"
 
 interface Script {
   id: string
-  name: string
-  description: string
-  status: "active" | "archived" | "draft"
-  language: string
+  type: string
   created: Date
-  lastRun?: Date
-  executions: number
-  tags: string[]
 }
+const fetchScriptsFromDB = async (): Promise<Script[]> => {
+  console.log("Fetching data from the database...")
+  await new Promise(resolve => setTimeout(resolve, 1000)); 
+
+  // 5. Cập nhật dữ liệu mẫu để có nhiều mục hơn và ID duy nhất
+  return [
+    { id: "scr_1a2b3c", type: "Deploy Kubernetes Cluster", created: new Date("2025-07-22") },
+    { id: "scr_5e6f7g", type: "Database Backup Daily", created: new Date("2025-07-20") },
+    { id: "scr_9i0j1k", type: "SSL Certificate Renewal", created: new Date("2025-07-15") },
+    { id: "scr_3m4n5o", type: "Cleanup Old EC2 Resources", created: new Date("2025-06-30") },
+    { id: "scr_7q8r9s", type: "Terraform Load Balancer Config", created: new Date("2025-06-10") },
+    { id: "scr_8t9u0v", type: "User Provisioning Script", created: new Date("2025-06-05") },
+    { id: "scr_1w2x3y", type: "System Health Check", created: new Date("2025-05-28") },
+    { id: "scr_4z5a6b", type: "Firewall Rule Update", created: new Date("2025-05-19") },{ id: "scr_1a2b3c", type: "Deploy Kubernetes Cluster", created: new Date("2025-07-22") },
+    { id: "scr_5e6f7g", type: "Database Backup Daily", created: new Date("2025-07-20") },
+    { id: "scr_9i0j1k", type: "SSL Certificate Renewal", created: new Date("2025-07-15") },
+    { id: "scr_3m4n5o", type: "Cleanup Old EC2 Resources", created: new Date("2025-06-30") },
+    { id: "scr_7q8r9s", type: "Terraform Load Balancer Config", created: new Date("2025-06-10") },
+    { id: "scr_8t9u0v", type: "User Provisioning Script", created: new Date("2025-06-05") },
+    { id: "scr_1w2x3y", type: "System Health Check", created: new Date("2025-05-28") },
+    { id: "scr_4z5a6b", type: "Firewall Rule Update", created: new Date("2025-05-19") },{ id: "scr_1a2b3c", type: "Deploy Kubernetes Cluster", created: new Date("2025-07-22") },
+    { id: "scr_5e6f7g", type: "Database Backup Daily", created: new Date("2025-07-20") },
+    { id: "scr_9i0j1k", type: "SSL Certificate Renewal", created: new Date("2025-07-15") },
+    { id: "scr_3m4n5o", type: "Cleanup Old EC2 Resources", created: new Date("2025-06-30") },
+    { id: "scr_7q8r9s", type: "Terraform Load Balancer Config", created: new Date("2025-06-10") },
+    { id: "scr_8t9u0v", type: "User Provisioning Script", created: new Date("2025-06-05") },
+    { id: "scr_1w2x3y", type: "System Health Check", created: new Date("2025-05-28") },
+    { id: "scr_4z5a6b", type: "Firewall Rule Update", created: new Date("2025-05-19") },
+  ];
+};
+
 
 export default function ProjectsPage() {
   const [searchQuery, setSearchQuery] = useState("")
-  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "archived" | "draft">("all")
-  const [selectedScripts, setSelectedScripts] = useState<Set<string>>(new Set())
+  const [scripts, setScripts] = useState<Script[]>([])
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // 1. Thêm state cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
-  const [scripts] = useState<Script[]>([
-    {
-      id: "1",
-      name: "Deploy Kubernetes Cluster",
-      description: "Automated K8s cluster setup with monitoring and logging",
-      status: "active",
-      language: "bash",
-      created: new Date("2025-01-15"),
-      lastRun: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      executions: 12,
-      tags: ["kubernetes", "deployment", "infrastructure"],
-    },
-    {
-      id: "2",
-      name: "Database Backup Daily",
-      description: "Scheduled daily backup of production database",
-      status: "active",
-      language: "python",
-      created: new Date("2025-01-10"),
-      lastRun: new Date(Date.now() - 30 * 60 * 1000),
-      executions: 156,
-      tags: ["database", "backup", "scheduled"],
-    },
-    {
-      id: "3",
-      name: "SSL Certificate Renewal",
-      description: "Automated SSL certificate update and deployment",
-      status: "active",
-      language: "bash",
-      created: new Date("2025-01-05"),
-      lastRun: new Date("2025-01-30"),
-      executions: 6,
-      tags: ["security", "certificates", "ssl"],
-    },
-    {
-      id: "4",
-      name: "Cleanup Old Resources",
-      description: "Remove unused EC2 instances and storage",
-      status: "draft",
-      language: "python",
-      created: new Date("2025-01-20"),
-      executions: 0,
-      tags: ["cleanup", "cost-optimization"],
-    },
-    {
-      id: "5",
-      name: "Load Balancer Config",
-      description: "Configure and update load balancer settings",
-      status: "archived",
-      language: "terraform",
-      created: new Date("2024-12-15"),
-      lastRun: new Date("2024-12-20"),
-      executions: 8,
-      tags: ["networking", "terraform"],
-    },
-  ])
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const data = await fetchScriptsFromDB();
+        setScripts(data);
+      } catch (e) {
+        setError("Failed to load scripts.");
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+  
+  // 4. Khi tìm kiếm, quay về trang 1
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
-  const filteredScripts = scripts.filter((script) => {
-    const matchesSearch =
-      script.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      script.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      script.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredScripts = scripts.filter((script) =>
+    script.type.toLowerCase().includes(searchQuery.toLowerCase())
+  )
 
-    const matchesStatus = filterStatus === "all" || script.status === filterStatus
+  // 2. Tính toán dữ liệu cho trang hiện tại
+  const totalPages = Math.ceil(filteredScripts.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedScripts = filteredScripts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
-    return matchesSearch && matchesStatus
-  })
-
-  const toggleScript = (id: string) => {
-    const newSelected = new Set(selectedScripts)
-    if (newSelected.has(id)) {
-      newSelected.delete(id)
-    } else {
-      newSelected.add(id)
-    }
-    setSelectedScripts(newSelected)
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-green-500/10 text-green-700 dark:text-green-400"
-      case "draft":
-        return "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
-      case "archived":
-        return "bg-gray-500/10 text-gray-700 dark:text-gray-400"
-      default:
-        return "bg-muted text-muted-foreground"
-    }
-  }
 
   const formatDate = (date: Date) => {
-    const now = new Date()
-    const diff = now.getTime() - date.getTime()
-    const hours = Math.floor(diff / (1000 * 60 * 60))
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-
-    if (hours < 1) return "Just now"
-    if (hours < 24) return `${hours}h ago`
-    if (days < 7) return `${days}d ago`
-    return date.toLocaleDateString()
+    return date.toLocaleDateString("en-US", {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
   }
+  
+  const handleRun = (id: string) => alert(`Running script: ${id}`);
+  const handleView = (id: string) => alert(`Viewing script: ${id}`);
+  const handleDelete = (id: string) => {
+    if (confirm(`Are you sure you want to delete script ${id}?`)) {
+      setScripts(prev => prev.filter(s => s.id !== id));
+      alert(`Deleted script: ${id}`);
+    }
+  };
+
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold">Scripts & Projects</h1>
             <p className="text-muted-foreground mt-1">Manage your infrastructure automation scripts</p>
           </div>
-          <Button className="gap-2 w-full md:w-auto">
-            <Plus className="w-4 h-4" />
-            New Script
-          </Button>
         </div>
 
-        {/* Search and Filters */}
         <Card className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search scripts by name or tag..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="flex gap-2">
-              {(["all", "active", "draft", "archived"] as const).map((status) => (
-                <Button
-                  key={status}
-                  variant={filterStatus === status ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilterStatus(status)}
-                  className="capitalize"
-                >
-                  {status}
-                </Button>
-              ))}
-            </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Search scripts by type..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
           </div>
         </Card>
 
-        {/* Scripts Table */}
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="px-6 py-4 text-left text-sm font-medium">
-                    <input
-                      type="checkbox"
-                      checked={selectedScripts.size === filteredScripts.length && filteredScripts.length > 0}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedScripts(new Set(filteredScripts.map((s) => s.id)))
-                        } else {
-                          setSelectedScripts(new Set())
-                        }
-                      }}
-                      className="rounded"
-                    />
-                  </th>
-                  <th className="px-6 py-4 text-left text-sm font-medium">Script Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium hidden lg:table-cell">Language</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium hidden md:table-cell">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium hidden lg:table-cell">Executions</th>
-                  <th className="px-6 py-4 text-left text-sm font-medium">Last Run</th>
+                <tr className="border-b border-border bg-blue-200">
+                  <th className="px-6 py-4 text-left text-sm font-medium">ID</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium">Action</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium">Type</th>
+                  <th className="px-6 py-4 text-left text-sm font-medium">Created</th>
                   <th className="px-6 py-4 text-left text-sm font-medium">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {filteredScripts.map((script) => (
-                  <tr key={script.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedScripts.has(script.id)}
-                        onChange={() => toggleScript(script.id)}
-                        className="rounded"
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div>
-                        <p className="font-medium text-sm">{script.name}</p>
-                        <p className="text-xs text-muted-foreground">{script.description}</p>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {script.tags.map((tag) => (
-                            <span key={tag} className="text-xs bg-muted px-2 py-1 rounded">
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 hidden lg:table-cell">
-                      <span className="text-sm font-mono">{script.language}</span>
-                    </td>
-                    <td className="px-6 py-4 hidden md:table-cell">
-                      <span className={`text-xs font-medium px-3 py-1 rounded-full ${getStatusColor(script.status)}`}>
-                        {script.status.charAt(0).toUpperCase() + script.status.slice(1)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 hidden lg:table-cell">
-                      <span className="text-sm">{script.executions}</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-muted-foreground">
-                        {script.lastRun ? formatDate(script.lastRun) : "Never"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        <Button size="icon" variant="ghost" className="w-8 h-8" title="Run script">
-                          <Play className="w-4 h-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="w-8 h-8" title="View details">
-                          <Eye className="w-4 h-4" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="w-8 h-8" title="Edit script">
-                          <Edit className="w-4 h-4" />
-                        </Button>
+              {!loading && !error && (
+                <tbody>
+                  {/* Sử dụng dữ liệu đã được phân trang */}
+                  {paginatedScripts.map((script) => (
+                    <tr key={script.id} className="border-b border-border hover:bg-muted/50 transition-colors">
+                      <td className="px-6 py-4 font-mono text-sm text-muted-foreground">{script.id}</td>
+                      <td className="px-6 py-4">
                         <Button
-                          size="icon"
-                          variant="ghost"
-                          className="w-8 h-8 hover:text-destructive"
-                          title="Delete script"
+                          variant="link"
+                          className="p-0 h-auto font-medium text-blue-600 hover:text-blue-700"
+                          onClick={() => handleRun(script.id)}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          Run
                         </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+                      </td>
+                      <td className="px-6 py-4 font-medium">{script.type}</td>
+                      <td className="px-6 py-4 text-muted-foreground">{formatDate(script.created)}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          <Button size="icon" variant="ghost" className="w-8 h-8" title="View details" onClick={() => handleView(script.id)}>
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="w-8 h-8 hover:text-destructive"
+                            title="Delete script"
+                            onClick={() => handleDelete(script.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              )}
             </table>
           </div>
 
-          {filteredScripts.length === 0 && (
+          {loading && (
+            <div className="flex items-center justify-center p-12">
+              <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {error && (
+             <div className="px-6 py-12 text-center text-destructive">
+               <AlertCircle className="w-12 h-12 mx-auto mb-4" />
+               <p>{error}</p>
+             </div>
+          )}
+          {!loading && !error && filteredScripts.length === 0 && (
             <div className="px-6 py-12 text-center">
               <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
               <p className="text-muted-foreground mb-4">No scripts found</p>
               <Button>Create Your First Script</Button>
             </div>
           )}
+          
+          {/* 3. Thêm giao diện điều khiển phân trang */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between p-4 border-t border-border">
+              <span className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages}
+              </span>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                  disabled={currentPage === 1}
+                >
+                  Previous
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage >= totalPages}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
-
-        {/* Stats Footer */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-4">
-            <p className="text-sm text-muted-foreground mb-2">Total Scripts</p>
-            <p className="text-2xl font-bold">{scripts.length}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-sm text-muted-foreground mb-2">Active</p>
-            <p className="text-2xl font-bold">{scripts.filter((s) => s.status === "active").length}</p>
-          </Card>
-          <Card className="p-4">
-            <p className="text-sm text-muted-foreground mb-2">Total Executions</p>
-            <p className="text-2xl font-bold">{scripts.reduce((sum, s) => sum + s.executions, 0)}</p>
-          </Card>
-        </div>
       </div>
     </DashboardLayout>
   )
