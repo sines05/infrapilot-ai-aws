@@ -21,6 +21,7 @@ import { processAgentRequest } from "@/agent/progress/agent-progress";
 // Import hàm executePlan bạn đã cung cấp
 import { executePlan } from "@/agent/websocket/agent-websocket";
 import { WebSocketProgressMessage, Message } from "@/types/data";
+import CredentialsNotifier from '@/components/auth/CredentialsNotifier';
 
 export default function ChatPage() {
 
@@ -155,6 +156,7 @@ export default function ChatPage() {
 
   return (
     <DashboardLayout>
+      <CredentialsNotifier /> 
       <div className="space-y-6 mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between">

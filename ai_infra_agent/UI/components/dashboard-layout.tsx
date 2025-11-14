@@ -81,10 +81,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {/* Logo */}
           <div className="p-4 h-20 flex items-center justify-center border-b border-sidebar-border">
             <Image
-              src="/logo.png" // <-- CHANGED
-              alt="InfraPilot AI Logo" // <-- CHANGED
-              width={450} // <-- CHANGED
-              height={40} // <-- CHANGED
+              src="/logo.png" 
+              alt="InfraPilot AI Logo" 
+              width={450} 
+              height={40} 
               priority
             />
           </div>

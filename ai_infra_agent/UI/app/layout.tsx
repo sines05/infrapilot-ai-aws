@@ -1,6 +1,3 @@
-// File: app/layout.tsx
-
-// 1. Import AuthProvider bạn vừa tạo
 import AuthProvider from "@/app/provider";
 
 import type React from "react";
