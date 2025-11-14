@@ -1,5 +1,5 @@
 import AuthProvider from "@/app/provider";
-
+import { AvatarProvider } from "@/app/provider";
 import type React from "react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -24,7 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <AvatarProvider>{children}</AvatarProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
+import { useAvatar } from "@/app/provider";
 
 interface SidebarItem {
   label: string;
@@ -60,6 +61,8 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const isSidebarItemActive = (href: string) => {
     return pathname === href;
   };
+
+  const { profileImage } = useAvatar();
 
   return (
     <div className="min-h-screen bg-background">
@@ -140,7 +143,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Button variant="ghost" size="icon">
               <Bell className="w-5 h-5" />
             </Button>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent" />
+            <div />
+            <Image
+              className="w-8 h-8 rounded-full border-1 border-primary shadow-md"
+              src={profileImage || "/favicon.ico"}
+              alt="InfraPilot AI Logo"
+              width={450}
+              height={40}
+              priority
+            />
           </div>
         </div>
       </header>
