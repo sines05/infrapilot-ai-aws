@@ -25,18 +25,6 @@ const settingsSections = [
     href: "/dashboard/settings/notifications",
   },
   {
-    icon: Database,
-    title: "Infrastructure",
-    description: "Manage connected infrastructure and credentials",
-    href: "/dashboard/settings/infrastructure",
-  },
-  {
-    icon: Zap,
-    title: "Integrations",
-    description: "Connect with external tools and services",
-    href: "/dashboard/settings/integrations",
-  },
-  {
     icon: Users,
     title: "Team & Billing",
     description: "Manage team members and billing settings",

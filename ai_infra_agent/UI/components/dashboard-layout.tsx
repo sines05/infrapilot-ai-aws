@@ -5,6 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   BarChart3,
@@ -17,7 +18,11 @@ import {
   User,
   Bell,
   Key,
+  Boxes,
 } from "lucide-react";
+import Image from "next/image";
+import { signOut } from "next-auth/react";
+import { useAvatar } from "@/app/provider";
 
 interface SidebarItem {
   label: string;
@@ -27,11 +32,6 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
   {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: <BarChart3 className="w-5 h-5" />,
-  },
-  {
     label: "AI Chat",
     href: "/dashboard/chat",
     icon: <MessageSquare className="w-5 h-5" />,
@@ -39,10 +39,10 @@ const sidebarItems: SidebarItem[] = [
   {
     label: "Projects",
     href: "/dashboard/projects",
-    icon: <Zap className="w-5 h-5" />,
+    icon: <Boxes className="w-5 h-5" />,
   },
   {
-    label: "AWS Credentials",
+    label: "Credentials",
     href: "/dashboard/credentials",
     icon: <Key className="w-5 h-5" />,
   },
@@ -56,10 +56,13 @@ const sidebarItems: SidebarItem[] = [
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   const isSidebarItemActive = (href: string) => {
     return pathname === href;
   };
+
+  const { profileImage } = useAvatar();
 
   return (
     <div className="min-h-screen bg-background">
@@ -79,16 +82,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6 border-b border-sidebar-border">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Zap className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="font-bold">InfraPilot AI</span>
-            </Link>
+          <div className="p-4 h-20 flex items-center justify-center border-b border-sidebar-border">
+            <Image
+              src="/logo.png"
+              alt="InfraPilot AI Logo"
+              width={450}
+              height={40}
+              priority
+            />
           </div>
 
           {/* Navigation */}
@@ -115,13 +116,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Button
               variant="outline"
               className="w-full justify-start gap-2 text-sidebar-foreground bg-transparent"
-            >
-              <User className="w-4 h-4" />
-              Profile
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start gap-2 text-sidebar-foreground bg-transparent"
+              onClick={() => signOut({ callbackUrl: "/" })}
             >
               <LogOut className="w-4 h-4" />
               Sign Out
@@ -148,7 +143,15 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             <Button variant="ghost" size="icon">
               <Bell className="w-5 h-5" />
             </Button>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent" />
+            <div />
+            <Image
+              className="w-8 h-8 rounded-full border-1 border-primary shadow-md"
+              src={profileImage || "/favicon.ico"}
+              alt="InfraPilot AI Logo"
+              width={450}
+              height={40}
+              priority
+            />
           </div>
         </div>
       </header>

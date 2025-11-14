@@ -1,106 +1,91 @@
+// File: app/dashboard/page.tsx (hoặc nơi bạn đặt file này)
+
 "use client"
 
-import { useState } from "react"
+// 1. Import các hook cần thiết
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Zap, BarChart3, Clock, CheckCircle, TrendingUp, Plus, ArrowRight } from "lucide-react"
 
 export default function Dashboard() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    // Nếu chưa kiểm tra xong và trạng thái là "unauthenticated" (chưa đăng nhập)
+    if (status === "unauthenticated") {
+      // Chuyển hướng người dùng về trang đăng nhập
+      router.push("/auth/signin")
+    }
+  }, [status, router]) // useEffect sẽ chạy lại khi status hoặc router thay đổi
+
   const [stats] = useState([
-    {
-      icon: Zap,
-      label: "Active Scripts",
-      value: "12",
-      change: "+2 this week",
-      color: "text-accent",
-    },
-    {
-      icon: CheckCircle,
-      label: "Successful Executions",
-      value: "847",
-      change: "+142 this month",
-      color: "text-green-500",
-    },
-    {
-      icon: Clock,
-      label: "Avg. Execution Time",
-      value: "2.3s",
-      change: "-0.5s improvement",
-      color: "text-blue-500",
-    },
-    {
-      icon: TrendingUp,
-      label: "Cost Saved",
-      value: "$4.2k",
-      change: "+$1.2k this month",
-      color: "text-purple-500",
-    },
+    // ... (dữ liệu state của bạn không thay đổi)
+    { icon: Zap, label: "Active Scripts", value: "12", change: "+2 this week", color: "text-accent" },
+    { icon: CheckCircle, label: "Successful Executions", value: "847", change: "+142 this month", color: "text-green-500" },
+    { icon: Clock, label: "Avg. Execution Time", value: "2.3s", change: "-0.5s improvement", color: "text-blue-500" },
+    { icon: TrendingUp, label: "Cost Saved", value: "$4.2k", change: "+$1.2k this month", color: "text-purple-500" },
   ])
 
   const [recentScripts] = useState([
-    {
-      id: 1,
-      name: "Deploy Kubernetes Cluster",
-      status: "completed",
-      lastRun: "2 hours ago",
-      executions: 12,
-    },
-    {
-      id: 2,
-      name: "Update SSL Certificates",
-      status: "scheduled",
-      lastRun: "Tomorrow at 2:00 AM",
-      executions: 3,
-    },
-    {
-      id: 3,
-      name: "Database Backup Daily",
-      status: "active",
-      lastRun: "30 minutes ago",
-      executions: 156,
-    },
-    {
-      id: 4,
-      name: "Cleanup Unused Resources",
-      status: "failed",
-      lastRun: "Yesterday at 3:00 PM",
-      executions: 5,
-    },
+    // ... (dữ liệu state của bạn không thay đổi)
+    { id: 1, name: "Deploy Kubernetes Cluster", status: "completed", lastRun: "2 hours ago", executions: 12 },
+    { id: 2, name: "Update SSL Certificates", status: "scheduled", lastRun: "Tomorrow at 2:00 AM", executions: 3 },
+    { id: 3, name: "Database Backup Daily", status: "active", lastRun: "30 minutes ago", executions: 156 },
+    { id: 4, name: "Cleanup Unused Resources", status: "failed", lastRun: "Yesterday at 3:00 PM", executions: 5 },
   ])
 
   const getStatusColor = (status: string) => {
+    // ... (hàm của bạn không thay đổi)
     switch (status) {
-      case "completed":
-        return "bg-green-500/10 text-green-700 dark:text-green-400"
-      case "active":
-        return "bg-accent/10 text-accent"
-      case "scheduled":
-        return "bg-blue-500/10 text-blue-700 dark:text-blue-400"
-      case "failed":
-        return "bg-destructive/10 text-destructive"
-      default:
-        return "bg-muted text-muted-foreground"
+      case "completed": return "bg-green-500/10 text-green-700 dark:text-green-400";
+      case "active": return "bg-accent/10 text-accent";
+      case "scheduled": return "bg-blue-500/10 text-blue-700 dark:text-blue-400";
+      case "failed": return "bg-destructive/10 text-destructive";
+      default: return "bg-muted text-muted-foreground";
     }
   }
 
-  return (
-    <DashboardLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground mt-1">Welcome back! Here's your infrastructure overview.</p>
-          </div>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            New Script
-          </Button>
+  // 4. Xử lý trạng thái loading và khi đã đăng nhập
+  // Nếu đang trong quá trình kiểm tra session, hiển thị thông báo loading
+  if (status === "loading") {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-screen">
+          <p>Loading your dashboard...</p>
         </div>
+      </DashboardLayout>
+    )
+  }
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  // Nếu đã xác thực thành công, hiển thị nội dung dashboard
+  if (session) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-8">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              {/* 5. Cá nhân hóa lời chào */}
+              <p className="text-muted-foreground mt-1">
+                Welcome back, {session.user?.name}! Here's your infrastructure overview.
+              </p>
+            </div>
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              New Script
+            </Button>
+          </div>
+
+          {/* ... (Toàn bộ phần còn lại của JSX của bạn giữ nguyên) ... */}
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, i) => (
             <Card key={i} className="p-6">
               <div className="flex items-start justify-between mb-4">
@@ -185,7 +170,11 @@ export default function Dashboard() {
             </div>
           </Card>
         </div>
-      </div>
-    </DashboardLayout>
-  )
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // Nếu không loading, cũng không có session, thì trả về null (vì useEffect đã xử lý redirect)
+  return null
 }
