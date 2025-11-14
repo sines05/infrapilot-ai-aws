@@ -26,18 +26,18 @@ export default function SignIn() {
 
     try {
       const result = await signIn("credentials", {
-        redirect: false, 
+        redirect: false,
         email: email,
         password: password,
       });
 
-      console.log('[SIGNIN] Response:', result);
+      console.log("[SIGNIN] Response:", result);
 
       if (result?.ok) {
-        router.replace("/dashboard");
+        router.replace("/dashboard/chat");
       } else {
         const errorMsg = result?.error || "Email hoặc mật khẩu không hợp lệ.";
-        console.error('[SIGNIN] Error:', errorMsg);
+        console.error("[SIGNIN] Error:", errorMsg);
         setError(errorMsg);
       }
     } catch (err) {

@@ -31,24 +31,14 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
   {
-    label: "Dashboard",
-    href: "/dashboard",
-    icon: <BarChart3 className="w-5 h-5" />,
-  },
-  {
     label: "AI Chat",
     href: "/dashboard/chat",
     icon: <MessageSquare className="w-5 h-5" />,
   },
   {
-    label: "Architecture",
-    href: "/dashboard/architecture",
-    icon: <Boxes className="w-5 h-5" />,
-  },
-  {
     label: "Projects",
     href: "/dashboard/projects",
-    icon: <Zap className="w-5 h-5" />,
+    icon: <Boxes className="w-5 h-5" />,
   },
   {
     label: "AWS Credentials",
