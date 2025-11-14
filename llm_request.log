@@ -5,7 +5,7 @@ You are an expert AWS infrastructure automation agent. Generate executable infra
 ═══════════════════════════════════════════════════════════════════
 USER REQUEST
 ═══════════════════════════════════════════════════════════════════
-Triển khai một web server đơn giản. Tạo một key pair mới. Tạo một security group mới trong VPC mặc định, cho phép truy cập HTTP (cổng 80) và SSH (cổng 22) từ mọi nơi và chỉ cho phép ra ở một cổng bất kỳ. Sau đó, tạo một EC2 instance t3.micro sử dụng AMI Ubuntu mới nhất, key pair và security group vừa tạo. Đặt tên instance là 'my-crai-web-server'.
+liệt kê các tài nguyên hiện có
 
 ═══════════════════════════════════════════════════════════════════
 AVAILABLE TOOLS
@@ -520,6 +520,12 @@ Requires: VPC, CIDR Block, Availability Zone
 ═══════════════════════════════════════════════════════════════════
 🏗️ MANAGED RESOURCES (CURRENT AVAILABLE STATE ON AWS ACCOUNT)
 ═══════════════════════════════════════════════════════════════════
+- ID: i-02e00f25678c854f1
+  Name: my-crai-web-server
+  Type: aws_ec2_instance
+  Status: running
+  Properties: {AmiLaunchIndex:0, ImageId:ami-0d7069e98d190f5ce, InstanceId:i-02e00f25678c854f1, InstanceType:t3.micro, KeyName:my-crai-web-server-key-20251114075408, LaunchTime:2025-11-14 07:54:16+00:00, Monitoring:{'State': 'disabled'}, Placement:{'AvailabilityZone': 'sa-east-1b', 'GroupName': '', 'Tenancy': 'default'}, PrivateDnsName:ip-172-31-20-247.sa-east-1.compute.internal, PrivateIpAddress:172.31.20.247, ProductCodes:[], PublicDnsName:ec2-15-229-247-222.sa-east-1.compute.amazonaws.com, PublicIpAddress:15.229.247.222, State:{'Code': 16, 'Name': 'running'}, StateTransitionReason:, SubnetId:subnet-007a2aca7a6c9a0c7, VpcId:vpc-0054bcca2ef516ccc, Architecture:x86_64, BlockDeviceMappings:[{'DeviceName': '/dev/sda1', 'Ebs': {'AttachTime': datetime.datetime(2025, 11, 14, 7, 54, 17, tzinfo=tzutc()), 'DeleteOnTermination': True, 'Status': 'attached', 'VolumeId': 'vol-024daca29038dbf20'}}], ClientToken:e39b9302-a535-4216-990d-6f8dfcdcbe30, EbsOptimized:False, EnaSupport:True, Hypervisor:xen, NetworkInterfaces:[{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-15-229-247-222.sa-east-1.compute.amazonaws.com', 'PublicIp': '15.229.247.222'}, 'Attachment': {'AttachTime': datetime.datetime(2025, 11, 14, 7, 54, 16, tzinfo=tzutc()), 'AttachmentId': 'eni-attach-0526e110064334f49', 'DeleteOnTermination': True, 'DeviceIndex': 0, 'Status': 'attached', 'NetworkCardIndex': 0}, 'Description': '', 'Groups': [{'GroupName': 'my-crai-web-server-sg-20251114075411', 'GroupId': 'sg-0a8949ee1f0733bf7'}], 'Ipv6Addresses': [], 'MacAddress': '06:61:ac:3a:77:0f', 'NetworkInterfaceId': 'eni-0e9c9de53752658ed', 'OwnerId': '782859940219', 'PrivateDnsName': 'ip-172-31-20-247.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.20.247', 'PrivateIpAddresses': [{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-15-229-247-222.sa-east-1.compute.amazonaws.com', 'PublicIp': '15.229.247.222'}, 'Primary': True, 'PrivateDnsName': 'ip-172-31-20-247.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.20.247'}], 'SourceDestCheck': True, 'Status': 'in-use', 'SubnetId': 'subnet-007a2aca7a6c9a0c7', 'VpcId': 'vpc-0054bcca2ef516ccc', 'InterfaceType': 'interface'}], RootDeviceName:/dev/sda1, RootDeviceType:ebs, SecurityGroups:[{'GroupName': 'my-crai-web-server-sg-20251114075411', 'GroupId': 'sg-0a8949ee1f0733bf7'}], SourceDestCheck:True, VirtualizationType:hvm, CpuOptions:{'CoreCount': 1, 'ThreadsPerCore': 2}, CapacityReservationSpecification:{'CapacityReservationPreference': 'open'}, HibernationOptions:{'Configured': False}, MetadataOptions:{'State': 'applied', 'HttpTokens': 'optional', 'HttpPutResponseHopLimit': 1, 'HttpEndpoint': 'enabled', 'HttpProtocolIpv6': 'disabled', 'InstanceMetadataTags': 'disabled'}, EnclaveOptions:{'Enabled': False}, BootMode:uefi-preferred, PlatformDetails:Linux/UNIX, UsageOperation:RunInstances, UsageOperationUpdateTime:2025-11-14 07:54:16+00:00, PrivateDnsNameOptions:{'HostnameType': 'ip-name', 'EnableResourceNameDnsARecord': False, 'EnableResourceNameDnsAAAARecord': False}, MaintenanceOptions:{'AutoRecovery': 'default'}, CurrentInstanceBootMode:uefi}
+  Tags: {Name:my-crai-web-server}
 - ID: vpc-0054bcca2ef516ccc
   Name: vpc-0054bcca2ef516ccc
   Type: aws_vpc
@@ -579,6 +585,12 @@ Requires: VPC, CIDR Block, Availability Zone
   Type: aws_security_group
   Status: available
   Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107082525, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0e61931d2add14094, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-0a8949ee1f0733bf7
+  Name: my-crai-web-server-sg-20251114075411
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-server-sg-20251114075411, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0a8949ee1f0733bf7, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
 - ID: sg-0cb4e043cd373f322
   Name: my-crai-web-sg-20251106085330
@@ -726,6 +738,11 @@ Universal Rule: For ANY resource type, extract primary identifier from [property
 5. SCHEMA ADHERENCE (CRITICAL):
    • Tool parameter names MUST EXACTLY match the names in the tool's 'Input Schema'.
    • DO NOT invent or use alternative names (e.g., use 'protocol', not 'ip_protocol'; use 'cidr_block', not 'cidr_ip').
+
+6. SECURITY GROUP RULES (CRITICAL):
+  • Before adding any ingress or egress rule to a security group, you MUST first use the 'get-security-group-rules' tool to check if the rule already exists.
+  • If the rule already exists, DO NOT add a step to create it.
+  • This is especially important for default security groups which often have default rules.
 
 ═══════════════════════════════════════════════════════════════════
 🔧 TOOL NAMING CONVENTIONS
@@ -899,6 +916,9 @@ STRUCTURE:
 □ Parameters use snake_case
 □ Valid JSON only (no markdown)
 
+SECURITY GROUPS:
+□ Verified that for every 'add-security-group-ingress-rule' or 'add-security-group-egress-rule' step, the plan first checks for existing rules using 'get-security-group-rules' to prevent duplicate rule errors.
+
 EXAMPLES TO REMEMBER:
 □ VPC in MANAGED [vpc_id:vpc-xxx]? → "vpc_id":"vpc-xxx" directly, NO discovery
 □ Subnet in MANAGED [subnet_id:subnet-xxx]? → Use directly, NO discovery
@@ -914,63 +934,4 @@ TOOL OUTPUT FIELD NAMES:
 • list-security-groups: "security_groups" (list of objects, each with "group_id") (e.g., {step-discover-sg.security_groups[0].group_id})
 • create-ec2-instance: Requires "key_name" (e.g., "my-key-{timestamp}")
 
-BEGIN YOUR ANALYSIS AND PROVIDE YOUR JSON RESPONSE:WebSocket connection accepted.
-Plan execution started. Processing steps...
---- Preparing to execute step: 'Get latest Ubuntu AMI' (ID: step-get-ubuntu-ami) ---
-Executing tool 'get-latest-ubuntu-ami' with resolved params: {'architecture': 'x86_64'}
-Executing tool 'get-latest-ubuntu-ami' with params: {'architecture': 'x86_64'}
-Getting latest Ubuntu AMI...
-Searching for latest Ubuntu Server 22.04 LTS AMI...
-Found latest Ubuntu AMI: ami-0d7069e98d190f5ce
-Tool 'get-latest-ubuntu-ami' executed successfully.
-Step 'Get latest Ubuntu AMI' completed. Result stored in context for ID 'step-get-ubuntu-ami'.
---- Preparing to execute step: 'List subnets in default VPC' (ID: step-list-default-vpc-subnets) ---
-Executing tool 'list-subnets' with resolved params: {'vpc_id': 'vpc-0054bcca2ef516ccc'}
-Executing tool 'list-subnets' with params: {'vpc_id': 'vpc-0054bcca2ef516ccc'}
-Listing subnets for VPC ID: vpc-0054bcca2ef516ccc
-Listing subnets for VPC ID: vpc-0054bcca2ef516ccc
-Found 3 subnets in VPC vpc-0054bcca2ef516ccc.
-Tool 'list-subnets' executed successfully.
-Step 'List subnets in default VPC' completed. Result stored in context for ID 'step-list-default-vpc-subnets'.
---- Preparing to execute step: 'Create new EC2 Key Pair' (ID: step-create-key-pair) ---
-Executing tool 'create-key-pair' with resolved params: {'key_name': 'my-crai-web-server-key-20251114075408'}
-Executing tool 'create-key-pair' with params: {'key_name': 'my-crai-web-server-key-20251114075408'}
-Executing CreateKeyPairTool with key_name: my-crai-web-server-key-20251114075408
-Creating key pair: my-crai-web-server-key-20251114075408
-Tool 'create-key-pair' executed successfully.
-Step 'Create new EC2 Key Pair' completed. Result stored in context for ID 'step-create-key-pair'.
---- Preparing to execute step: 'Create Security Group for Web Server' (ID: step-create-security-group) ---
-Executing tool 'create-security-group' with resolved params: {'group_name': 'my-crai-web-server-sg-20251114075411', 'description': 'Security group for my-crai-web-server, allowing HTTP and SSH', 'vpc_id': 'vpc-0054bcca2ef516ccc'}
-Executing tool 'create-security-group' with params: {'group_name': 'my-crai-web-server-sg-20251114075411', 'description': 'Security group for my-crai-web-server, allowing HTTP and SSH', 'vpc_id': 'vpc-0054bcca2ef516ccc'}
-Creating security group 'my-crai-web-server-sg-20251114075411' in VPC 'vpc-0054bcca2ef516ccc'...
-Security group 'my-crai-web-server-sg-20251114075411' created with ID: sg-0a8949ee1f0733bf7
-Security group 'my-crai-web-server-sg-20251114075411' created with ID: sg-0a8949ee1f0733bf7
-Tool 'create-security-group' executed successfully.
-Step 'Create Security Group for Web Server' completed. Result stored in context for ID 'step-create-security-group'.
---- Preparing to execute step: 'Add HTTP Ingress Rule' (ID: step-add-http-ingress-rule) ---
-Executing tool 'add-security-group-ingress-rule' with resolved params: {'group_id': 'sg-0a8949ee1f0733bf7', 'protocol': 'tcp', 'from_port': 80, 'to_port': 80, 'cidr_block': '0.0.0.0/0'}
-Executing tool 'add-security-group-ingress-rule' with params: {'group_id': 'sg-0a8949ee1f0733bf7', 'protocol': 'tcp', 'from_port': 80, 'to_port': 80, 'cidr_block': '0.0.0.0/0'}
-Adding ingress rule to security group 'sg-0a8949ee1f0733bf7' for tcp:80-80 from 0.0.0.0/0...
-Ingress rule added to security group 'sg-0a8949ee1f0733bf7'.
-Ingress rule added to security group 'sg-0a8949ee1f0733bf7'.
-Tool 'add-security-group-ingress-rule' executed successfully.
-Step 'Add HTTP Ingress Rule' completed. Result stored in context for ID 'step-add-http-ingress-rule'.
---- Preparing to execute step: 'Add SSH Ingress Rule' (ID: step-add-ssh-ingress-rule) ---
-Executing tool 'add-security-group-ingress-rule' with resolved params: {'group_id': 'sg-0a8949ee1f0733bf7', 'protocol': 'tcp', 'from_port': 22, 'to_port': 22, 'cidr_block': '0.0.0.0/0'}
-Executing tool 'add-security-group-ingress-rule' with params: {'group_id': 'sg-0a8949ee1f0733bf7', 'protocol': 'tcp', 'from_port': 22, 'to_port': 22, 'cidr_block': '0.0.0.0/0'}
-Adding ingress rule to security group 'sg-0a8949ee1f0733bf7' for tcp:22-22 from 0.0.0.0/0...
-Ingress rule added to security group 'sg-0a8949ee1f0733bf7'.
-Ingress rule added to security group 'sg-0a8949ee1f0733bf7'.
-Tool 'add-security-group-ingress-rule' executed successfully.
-Step 'Add SSH Ingress Rule' completed. Result stored in context for ID 'step-add-ssh-ingress-rule'.
---- Preparing to execute step: 'Create EC2 Web Server Instance' (ID: step-create-ec2-instance) ---
-Executing tool 'create-ec2-instance' with resolved params: {'image_id': 'ami-0d7069e98d190f5ce', 'instance_type': 't3.micro', 'key_name': 'my-crai-web-server-key-20251114075408', 'subnet_id': 'subnet-007a2aca7a6c9a0c7', 'security_group_ids': ['sg-0a8949ee1f0733bf7'], 'tags': [{'Key': 'Name', 'Value': 'my-crai-web-server'}], 'user_data': '#!/bin/bash\nsudo apt update -y\nsudo apt install apache2 -y\nsudo systemctl start apache2\nsudo systemctl enable apache2\necho "<h1>Hello from my-crai-web-server!</h1>" | sudo tee /var/www/html/index.html'}
-Executing tool 'create-ec2-instance' with params: {'image_id': 'ami-0d7069e98d190f5ce', 'instance_type': 't3.micro', 'key_name': 'my-crai-web-server-key-20251114075408', 'subnet_id': 'subnet-007a2aca7a6c9a0c7', 'security_group_ids': ['sg-0a8949ee1f0733bf7'], 'tags': [{'Key': 'Name', 'Value': 'my-crai-web-server'}], 'user_data': '#!/bin/bash\nsudo apt update -y\nsudo apt install apache2 -y\nsudo systemctl start apache2\nsudo systemctl enable apache2\necho "<h1>Hello from my-crai-web-server!</h1>" | sudo tee /var/www/html/index.html'}
-Executing tool: create-ec2-instance
-Creating EC2 instance with image 'ami-0d7069e98d190f5ce' and type 't3.micro'
-Tool 'create-ec2-instance' executed successfully.
-Step 'Create EC2 Web Server Instance' completed. Result stored in context for ID 'step-create-ec2-instance'.
-Added/updated resource 'i-02e00f25678c854f1' to the state.
-Saved new resource 'i-02e00f25678c854f1' of type 'aws_ec2_instance' to state.
-Plan execution finished successfully.
-WebSocket connection closed.
+BEGIN YOUR ANALYSIS AND PROVIDE YOUR JSON RESPONSE:
