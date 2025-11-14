@@ -12,20 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 // import { usePathname } from "next/navigation";
 import { DashboardLayout } from "@/components/dashboard-layout";
-import {
-  Eye,
-  EyeOff,
-  Copy,
-  Trash2,
-  Link,
-  Zap,
-  User,
-  BarChart3,
-  MessageSquare,
-  Key,
-  Settings,
-  LogOut,
-} from "lucide-react";
+import { Eye, EyeOff, Copy, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const credentials = [
   {
@@ -46,19 +34,70 @@ const credentials = [
 
 export default function CredentialsPage() {
   const [showSecret, setShowSecret] = useState<Record<number, boolean>>({});
+  const [showAddForm, setShowAddForm] = useState<boolean>(false);
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">AWS Credentials</h1>
+            <h1 className="text-3xl font-bold">Credentials</h1>
             <p className="text-muted-foreground">
               Manage your cloud provider credentials
             </p>
           </div>
-          <Button>Add Credentials</Button>
+          <Button onClick={() => setShowAddForm((s) => !s)}>
+            {showAddForm ? "Close" : "Add Credentials"}
+          </Button>
         </div>
+        {/* Add New Credentials Form with Animation */}
+        <AnimatePresence>
+          {showAddForm && (
+            <motion.div
+              key="add-form"
+              initial={{ opacity: 0, height: 0, scale: 0.99 }}
+              animate={{ opacity: 1, height: "auto", scale: 1 }}
+              exit={{ opacity: 0, height: 0, scale: 0.99 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <Card>
+                <CardHeader>
+                  <CardTitle>Add New AWS Credentials</CardTitle>
+                  <CardDescription>
+                    Enter your AWS credentials securely
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 max-w-2xl">
+                  <div>
+                    <label className="text-sm font-medium">
+                      Credential Name
+                    </label>
+                    <Input
+                      placeholder="e.g., Production AWS"
+                      className="mt-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">Access Key ID</label>
+                    <Input placeholder="AKIA..." className="mt-2" />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium">
+                      Secret Access Key
+                    </label>
+                    <Input
+                      type="password"
+                      placeholder="••••••••"
+                      className="mt-2"
+                    />
+                  </div>
+                  <Button>Save Credentials</Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Existing Credentials */}
         <div className="space-y-4">
@@ -139,31 +178,6 @@ export default function CredentialsPage() {
             </Card>
           ))}
         </div>
-
-        {/* Add New Credentials Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Add New AWS Credentials</CardTitle>
-            <CardDescription>
-              Enter your AWS credentials securely
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 max-w-2xl">
-            <div>
-              <label className="text-sm font-medium">Credential Name</label>
-              <Input placeholder="e.g., Production AWS" className="mt-2" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Access Key ID</label>
-              <Input placeholder="AKIA..." className="mt-2" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Secret Access Key</label>
-              <Input type="password" placeholder="••••••••" className="mt-2" />
-            </div>
-            <Button>Save Credentials</Button>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
   );

@@ -41,7 +41,7 @@ const sidebarItems: SidebarItem[] = [
     icon: <Boxes className="w-5 h-5" />,
   },
   {
-    label: "AWS Credentials",
+    label: "Credentials",
     href: "/dashboard/credentials",
     icon: <Key className="w-5 h-5" />,
   },
@@ -81,10 +81,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           {/* Logo */}
           <div className="p-4 h-20 flex items-center justify-center border-b border-sidebar-border">
             <Image
-              src="/logo.png" 
-              alt="InfraPilot AI Logo" 
-              width={450} 
-              height={40} 
+              src="/logo.png"
+              alt="InfraPilot AI Logo"
+              width={450}
+              height={40}
               priority
             />
           </div>
