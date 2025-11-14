@@ -51,7 +51,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             name: user.name,
             email: user.email,
-            aws_access_key: user.aws_access_key,
+            ess_key: user.ess_key,
             aws_secret_key: user.aws_secret_key,
           };
 
