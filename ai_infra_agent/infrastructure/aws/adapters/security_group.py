@@ -99,3 +99,15 @@ class SecurityGroupAdapter(AWSAdapterBase):
         except Exception as e:
             self.logger.error(f"Failed to delete security group '{group_id}': {e}")
             raise
+
+    def get_security_group_rules(self, group_id: str) -> Dict[str, Any]:
+        """
+        Retrieves the rules of an existing EC2 security group.
+        """
+        try:
+            response = self.client.describe_security_groups(GroupIds=[group_id])
+            self.logger.info(f"Rules for security group '{group_id}' retrieved.")
+            return response
+        except Exception as e:
+            self.logger.error(f"Failed to get rules for security group '{group_id}': {e}")
+            raise

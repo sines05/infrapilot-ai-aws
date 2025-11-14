@@ -85,6 +85,11 @@ Universal Rule: For ANY resource type, extract primary identifier from [property
    • Tool parameter names MUST EXACTLY match the names in the tool's 'Input Schema'.
    • DO NOT invent or use alternative names (e.g., use 'protocol', not 'ip_protocol'; use 'cidr_block', not 'cidr_ip').
 
+6. SECURITY GROUP RULES (CRITICAL):
+  • Before adding any ingress or egress rule to a security group, you MUST first use the 'get-security-group-rules' tool to check if the rule already exists.
+  • If the rule already exists, DO NOT add a step to create it.
+  • This is especially important for default security groups which often have default rules.
+
 ═══════════════════════════════════════════════════════════════════
 🔧 TOOL NAMING CONVENTIONS
 ═══════════════════════════════════════════════════════════════════
@@ -110,6 +115,7 @@ UNIVERSAL DEPENDENCY PRINCIPLES:
 
 DEPENDENCY PATTERNS (apply to ANY resource type):
 • Network-attached resources → Need: vpc_id, subnet_id(s), security_group_ids
+• Before adding a security group rule, use get-security-group-rules to check if it already exists.
 • Compute resources → May need: subnet_id, image_id/AMI, instance_type, key_pair, user_data
 • Storage resources → May need: volume_type, size, encryption, kms_key
 • Database resources → May need: db_subnet_group_name, engine, engine_version, master_user
@@ -255,6 +261,9 @@ STRUCTURE:
 □ No forward references
 □ Parameters use snake_case
 □ Valid JSON only (no markdown)
+
+SECURITY GROUPS:
+□ Verified that for every 'add-security-group-ingress-rule' or 'add-security-group-egress-rule' step, the plan first checks for existing rules using 'get-security-group-rules' to prevent duplicate rule errors.
 
 EXAMPLES TO REMEMBER:
 □ VPC in MANAGED [vpc_id:vpc-xxx]? → "vpc_id":"vpc-xxx" directly, NO discovery

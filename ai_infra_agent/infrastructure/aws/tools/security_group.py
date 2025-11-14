@@ -216,3 +216,31 @@ class DeleteSecurityGroupTool(BaseTool):
         except Exception as e:
             self.logger.error(f"Failed to delete security group '{group_id}': {e}")
             return {"error": str(e)}
+
+class GetSecurityGroupRulesTool(BaseTool):
+    """
+    Tool to get the rules of a security group.
+    """
+
+    def __init__(self, logger: logger, adapter: SecurityGroupAdapter):
+        super().__init__(logger, adapter)
+        self.name = "get-security-group-rules"
+        self.description = "Retrieves the ingress and egress rules for a specified security group."
+
+    def execute(self, group_id: str, **kwargs) -> Dict[str, Any]:
+        """
+        Executes the tool to get security group rules.
+
+        Args:
+            group_id (str): The ID of the security group.
+
+        Returns:
+            Dict[str, Any]: The security group rules or an error message.
+        """
+        self.logger.info(f"Getting rules for security group '{group_id}'...")
+        try:
+            response = self.adapter.get_security_group_rules(group_id=group_id)
+            return response
+        except Exception as e:
+            self.logger.error(f"Failed to get rules for security group '{group_id}': {e}")
+            return {"error": str(e)}
