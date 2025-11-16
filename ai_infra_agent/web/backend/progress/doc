@@ -1,7 +1,0 @@
-Trường JSON nhận prompt
-
-- Endpoint: /api/agent/process (POST)
-- Trường JSON: request
-- Kiểu dữ liệu: Chuỗi (string)
-- Mô tả: Trường request chứa nội dung prompt do người dùng cung cấp, ví dụ 
-như một yêu cầu tạo tài nguyên AWS (như "Create an EC2 instance with Amazon Linux 2 in ap-southeast-2").
