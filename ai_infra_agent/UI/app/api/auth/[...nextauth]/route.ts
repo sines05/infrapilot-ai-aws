@@ -51,8 +51,9 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             name: user.name,
             email: user.email,
-            ess_key: user.ess_key,
+            aws_access_key: user.aws_access_key,
             aws_secret_key: user.aws_secret_key,
+            google_api_key: user.google_api_key,
           };
 
         } catch (error) {
@@ -71,6 +72,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.aws_access_key = (user as any).aws_access_key;
         token.aws_secret_key = (user as any).aws_secret_key;
+        token.google_api_key = (user as any).google_api_key;
       }
       return token;
     },
@@ -79,6 +81,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         (session.user as any).aws_access_key = token.aws_access_key;
         (session.user as any).aws_secret_key = token.aws_secret_key;
+        (session.user as any).google_api_key = token.google_api_key;
       }
       return session;
     },

@@ -1,43 +1,47 @@
-import { AIResponse } from "@/types/data";
-import { getMcpTool } from "../helper-function/agent-helper-function"
+// agent/progress/agent-progress.ts
 
-// --- Agent Request Processing Function ---
-export async function processAgentRequest(
-  input: string,
-  dryRunMode: boolean
-): Promise<AIResponse> {
+import { AIResponse, ExecutionPlanStep } from "@/types/data";
+
+/**
+ * Gửi yêu cầu đến backend và chuẩn hóa phản hồi cho frontend.
+ */
+export async function processAgentRequest(prompt: string, dryRunMode: boolean): Promise<AIResponse> {
+  
   const response = await fetch("http://localhost:8000/api/v1/agent/process", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      request: input,
-      dry_run: dryRunMode,
-    }),
+    body: JSON.stringify({ request: prompt }),
   });
 
   if (!response.ok) {
-    const err = await response.text();
-    throw new Error(err || `HTTP ${response.status}`);
+    const errorData = await response.json().catch(() => ({ detail: "Unknown server error" }));
+    throw new Error(`Failed to process agent request: ${errorData.detail || response.statusText}`);
   }
 
-  const data = await response.json();
+  const rawData = await response.json();
 
-  // Chuẩn hóa dữ liệu trả về
+  // Chuyển đổi từ cấu trúc API backend sang cấu trúc ExecutionPlanStep của frontend
+  const transformedPlan: ExecutionPlanStep[] = rawData.executionPlan.map((stepFromApi: any) => {
+    return {
+      stepId: stepFromApi.id,
+      stepName: stepFromApi.name,
+      description: stepFromApi.description,
+      details: stepFromApi.toolParameters, // Map 'toolParameters' -> 'details'
+      mcpTool: stepFromApi.mcpTool,
+      duration: stepFromApi.estimatedDuration || "N/A", // Lấy từ API nếu có
+      status: "pending", // Luôn bắt đầu là pending
+      result: undefined,
+    };
+  });
+
+  // Tạo đối tượng AIResponse cuối cùng
   const aiResponse: AIResponse = {
-    request: data.request,
-    mode: dryRunMode ? "Dry Run" : "Live",
-    confidence: data.confidence || 0.95,
-    action: data.action || "create_infrastructure",
-    reasoning: data.reasoning || "Plan generated.",
-    executionPlan: (data.executionPlan || []).map((step: any, i: number) => ({
-      stepId: step.id || `step-${i + 1}`,
-      stepName: step.name || `Step ${i + 1}`,
-      description: step.description || "No description",
-      duration: step.estimatedDuration || "Estimating...",
-      status: "pending",
-      details: step.toolParameters || {},
-      mcpTool: step.mcpTool || getMcpTool(step.name),
-    })),
+    request: prompt,
+    mode: rawData.mode || (dryRunMode ? "dry-run" : "live"),
+    confidence: rawData.confidence,
+    action: rawData.action,
+    reasoning: rawData.reasoning,
+    executionPlan: transformedPlan,
   };
 
   return aiResponse;

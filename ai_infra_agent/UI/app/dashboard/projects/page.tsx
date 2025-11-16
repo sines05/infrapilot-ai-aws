@@ -1,46 +1,44 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { getInfrastructureHistoryForCurrentUser } from "@/lib/actions/infrastructure.actions"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Plus, Search, Trash2, AlertCircle, Eye, Loader2 } from "lucide-react"
+import { deleteInfrastructureHistory } from "@/lib/actions/infrastructure.actions"
 
+// The Script interface remains the same, mapping to your data
 interface Script {
   id: string
   type: string
   created: Date
 }
-const fetchScriptsFromDB = async (): Promise<Script[]> => {
-  console.log("Fetching data from the database...")
-  await new Promise(resolve => setTimeout(resolve, 1000)); 
 
-  // 5. Cập nhật dữ liệu mẫu để có nhiều mục hơn và ID duy nhất
-  return [
-    { id: "scr_1a2b3c", type: "Deploy Kubernetes Cluster", created: new Date("2025-07-22") },
-    { id: "scr_5e6f7g", type: "Database Backup Daily", created: new Date("2025-07-20") },
-    { id: "scr_9i0j1k", type: "SSL Certificate Renewal", created: new Date("2025-07-15") },
-    { id: "scr_3m4n5o", type: "Cleanup Old EC2 Resources", created: new Date("2025-06-30") },
-    { id: "scr_7q8r9s", type: "Terraform Load Balancer Config", created: new Date("2025-06-10") },
-    { id: "scr_8t9u0v", type: "User Provisioning Script", created: new Date("2025-06-05") },
-    { id: "scr_1w2x3y", type: "System Health Check", created: new Date("2025-05-28") },
-    { id: "scr_4z5a6b", type: "Firewall Rule Update", created: new Date("2025-05-19") },{ id: "scr_1a2b3c", type: "Deploy Kubernetes Cluster", created: new Date("2025-07-22") },
-    { id: "scr_5e6f7g", type: "Database Backup Daily", created: new Date("2025-07-20") },
-    { id: "scr_9i0j1k", type: "SSL Certificate Renewal", created: new Date("2025-07-15") },
-    { id: "scr_3m4n5o", type: "Cleanup Old EC2 Resources", created: new Date("2025-06-30") },
-    { id: "scr_7q8r9s", type: "Terraform Load Balancer Config", created: new Date("2025-06-10") },
-    { id: "scr_8t9u0v", type: "User Provisioning Script", created: new Date("2025-06-05") },
-    { id: "scr_1w2x3y", type: "System Health Check", created: new Date("2025-05-28") },
-    { id: "scr_4z5a6b", type: "Firewall Rule Update", created: new Date("2025-05-19") },{ id: "scr_1a2b3c", type: "Deploy Kubernetes Cluster", created: new Date("2025-07-22") },
-    { id: "scr_5e6f7g", type: "Database Backup Daily", created: new Date("2025-07-20") },
-    { id: "scr_9i0j1k", type: "SSL Certificate Renewal", created: new Date("2025-07-15") },
-    { id: "scr_3m4n5o", type: "Cleanup Old EC2 Resources", created: new Date("2025-06-30") },
-    { id: "scr_7q8r9s", type: "Terraform Load Balancer Config", created: new Date("2025-06-10") },
-    { id: "scr_8t9u0v", type: "User Provisioning Script", created: new Date("2025-06-05") },
-    { id: "scr_1w2x3y", type: "System Health Check", created: new Date("2025-05-28") },
-    { id: "scr_4z5a6b", type: "Firewall Rule Update", created: new Date("2025-05-19") },
-  ];
+/**
+ * Fetches infrastructure scripts from database for the currently authenticated user via NextAuth.
+ * @returns A promise that resolves to an array of scripts.
+ */
+const fetchScriptsFromDB = async (): Promise<Script[]> => {
+  console.log("Fetching data from database for the current user...")
+
+  try {
+    // Use server action to fetch data with NextAuth session
+    const data = await getInfrastructureHistoryForCurrentUser();
+
+    // Map the database response to the local Script interface
+    // The `created_at` field is converted from a string to a Date object.
+    return data.map((script: { id: any; type: any; created_at: string | number | Date }) => ({
+      id: script.id,
+      type: script.type,
+      created: new Date(script.created_at),
+    }));
+  } catch (error: any) {
+    console.error("Error fetching scripts:", error.message);
+    throw new Error("Failed to fetch scripts from the database.");
+  }
 };
 
 
@@ -50,27 +48,42 @@ export default function ProjectsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // 1. Thêm state cho phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 5;
+
+  // Get NextAuth session
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Only load if user is authenticated
+        if (status === "unauthenticated") {
+          setError("Please sign in to view your scripts.");
+          setLoading(false);
+          return;
+        }
+
+        if (status !== "authenticated") {
+          // Still loading session
+          return;
+        }
+
         setLoading(true);
+        // This now calls the function that fetches real data
         const data = await fetchScriptsFromDB();
         setScripts(data);
-      } catch (e) {
-        setError("Failed to load scripts.");
+        setError(null);
+      } catch (e: any) {
+        setError(e.message || "Failed to load scripts.");
         console.error(e);
       } finally {
         setLoading(false);
       }
     };
     loadData();
-  }, []);
+  }, [status]);
   
-  // 4. Khi tìm kiếm, quay về trang 1
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
@@ -79,7 +92,6 @@ export default function ProjectsPage() {
     script.type.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  // 2. Tính toán dữ liệu cho trang hiện tại
   const totalPages = Math.ceil(filteredScripts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedScripts = filteredScripts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -95,10 +107,29 @@ export default function ProjectsPage() {
   
   const handleRun = (id: string) => alert(`Running script: ${id}`);
   const handleView = (id: string) => alert(`Viewing script: ${id}`);
-  const handleDelete = (id: string) => {
+  
+  /**
+   * Deletes a script from the database and updates the local state.
+   * @param id The UUID of the script to delete.
+   */
+  const handleDelete = async (id: string) => {
     if (confirm(`Are you sure you want to delete script ${id}?`)) {
-      setScripts(prev => prev.filter(s => s.id !== id));
-      alert(`Deleted script: ${id}`);
+      try {
+        const result = await deleteInfrastructureHistory(id);
+        
+        if (!result.success) {
+          alert(`Failed to delete script: ${result.error}`);
+          console.error("Error deleting script:", result.error);
+        } else {
+          // On successful deletion, remove the item from the local state
+          // to instantly update the UI without a full reload.
+          setScripts(prev => prev.filter(s => s.id !== id));
+          alert(`Deleted script: ${id}`);
+        }
+      } catch (error: any) {
+        alert(`Error deleting script: ${error.message}`);
+        console.error("Error deleting script:", error);
+      }
     }
   };
 
@@ -139,7 +170,6 @@ export default function ProjectsPage() {
               </thead>
               {!loading && !error && (
                 <tbody>
-                  {/* Sử dụng dữ liệu đã được phân trang */}
                   {paginatedScripts.map((script) => (
                     <tr key={script.id} className="border-b border-border hover:bg-muted/50 transition-colors">
                       <td className="px-6 py-4 font-mono text-sm text-muted-foreground">{script.id}</td>
@@ -192,11 +222,9 @@ export default function ProjectsPage() {
             <div className="px-6 py-12 text-center">
               <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
               <p className="text-muted-foreground mb-4">No scripts found</p>
-              <Button>Create Your First Script</Button>
             </div>
           )}
           
-          {/* 3. Thêm giao diện điều khiển phân trang */}
           {totalPages > 1 && (
             <div className="flex items-center justify-between p-4 border-t border-border">
               <span className="text-sm text-muted-foreground">
