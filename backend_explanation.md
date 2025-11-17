@@ -1,7 +1,7 @@
 
 # Giải thích chi tiết hoạt động của Backend trong dự án InfraPilot AI
 
-Dưới đây là bản phân tích chi tiết về cách hoạt động của hệ thống backend trong dự án InfraPilot AI, được thiết kế để giúp bạn hiểu rõ từng thành phần và luồng hoạt động của chúng.
+Dưới đây là bản phân tích chi tiết về cách hoạt động của hệ thống backend trong dự án InfraPilot AI.
 
 ## 1. Kiến trúc tổng quan
 
@@ -28,10 +28,11 @@ Client --> FastAPI --> AI Agent --> LLM (lên kế hoạch) --> Plan Executor --
 ## 2. Luồng hoạt động chi tiết: Từ yêu cầu đến thực thi
 
 Hãy cùng theo dõi một yêu cầu của người dùng từ đầu đến cuối:
+![alt text](workflow.png)
 
 ### Bước 1: Client gửi yêu cầu
 
-Người dùng nhập một yêu cầu bằng ngôn ngữ tự nhiên vào giao diện chat (ứng dụng `web`), ví dụ: "Tạo một EC2 instance loại t2.micro".
+Người dùng nhập một yêu cầu bằng ngôn ngữ tự nhiên vào giao diện chat (ứng dụng `web`), ví dụ: "Tạo một EC2 instance loại t3.micro".
 
 Giao diện người dùng sẽ gửi yêu cầu này đến backend. Có hai giai đoạn chính:
 
@@ -142,7 +143,7 @@ Phương thức `process_request` trong lớp `StateAwareAgent` thực hiện c�
 ### State Management (`manager.py`)
 
 - **`StateManager`:**
-    - Rất đơn giản trong thiết kế hiện tại. Nó chỉ giữ trạng thái của hạ tầng trong bộ nhớ (`self.state`).
+    - Giữ trạng thái của hạ tầng trong bộ nhớ (`self.state`).
     - **`set_discovered_state`:** Được gọi bởi agent sau khi quét AWS để cập nhật trạng thái.
     - **`add_resource`:** Được gọi bởi `PlanExecutor` sau khi một tài nguyên được tạo thành công.
     - **`get_current_state_formatted`:** Định dạng lại dữ liệu trạng thái thành một chuỗi văn bản dễ đọc để đưa vào prompt cho LLM.
@@ -175,9 +176,7 @@ Phương thức `process_request` trong lớp `StateAwareAgent` thực hiện c�
 ## 4. Cấu hình (`config.yaml`)
 
 - **`config.yaml`:** Là file cấu hình trung tâm.
-    - **`agent`:** Cho phép thay đổi LLM provider (`gemini`, `openai`), model, nhiệt độ (temperature),...
+    - **`agent`:** Cho phép thay đổi LLM provider (`gemini`, `openai`), model, (temperature),...
     - **`logging`:** Cấu hình mức độ log (debug, info, error).
     - **`state`:** Cấu hình đường dẫn đến file lưu trạng thái.
     - Các cài đặt này được đọc bởi một đối tượng `settings` (sử dụng Pydantic) và được cung cấp cho toàn bộ ứng dụng, đảm bảo tính nhất quán.
-
-Hy vọng bản giải thích chi tiết này sẽ giúp bạn hiểu rõ hơn về cách hoạt động của backend. Nếu có bất kỳ câu hỏi nào về một phần cụ thể, đừng ngần ngại hỏi nhé!
