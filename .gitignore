@@ -25,3 +25,4 @@ Thumbs.db
 *.swp
 
 llm_request.log
+sample_data.json
