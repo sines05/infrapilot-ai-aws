@@ -4,15 +4,44 @@ import { AIResponse, ExecutionResult, UserCredentials, ExecuteStep } from "@/typ
 // getDependsOn có thể không cần nữa nếu backend không dùng, nhưng giữ lại để tham khảo
 import { getDependsOn, getMcpTool } from "../helper-function/agent-helper-function"; 
 
-export function executePlan(
+export async function executePlan(
   aiResponse: AIResponse,
   credentials: UserCredentials,
   onProgress: (msg: any) => void,
   onStatus: (status: string) => void,
   onComplete: (result?: ExecutionResult) => void,
   onError: (error: string) => void
-): WebSocket {
-  const ws = new WebSocket("ws://localhost:8000/ws/v1/agent/execute");
+): Promise<WebSocket> {
+  // Lấy token và user_id từ API route
+  let token: string | null = null;
+  let userId: string | null = null;
+  try {
+    const tokenResponse = await fetch("/api/agent/token");
+    if (!tokenResponse.ok) {
+      throw new Error("Failed to get authentication token");
+    }
+    const tokenData = await tokenResponse.json();
+    token = tokenData.token;
+    userId = tokenData.userId || tokenData.user_id || null;
+  } catch (error: any) {
+    onError(`Failed to get authentication token: ${error.message}`);
+    throw error;
+  }
+
+  // Kết nối WebSocket với token hoặc user_id trong query parameter
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "ws://localhost:8000";
+  let wsUrl = `${backendUrl}/ws/v1/agent/execute?`;
+  if (token) {
+    wsUrl += `token=${encodeURIComponent(token)}`;
+    if (userId) {
+      wsUrl += `&user_id=${encodeURIComponent(userId)}`;
+    }
+  } else if (userId) {
+    wsUrl += `user_id=${encodeURIComponent(userId)}`;
+  } else {
+    throw new Error("No token or user_id available for WebSocket connection");
+  }
+  const ws = new WebSocket(wsUrl);
   const executionId = `exec-${Date.now()}`;
   
   let isClosedProperly = false;

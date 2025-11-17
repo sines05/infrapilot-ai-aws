@@ -18,7 +18,7 @@ class ElbAdapter(AWSAdapterBase):
             settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
         """
-        super().__init__(service_name="elbv2", settings=settings, logger=logger)
+        super().__init__(service_name="elbv2", logger=logger, aws_config=None, settings=settings)
 
     def create_load_balancer(
         self,

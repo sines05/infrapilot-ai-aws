@@ -538,11 +538,23 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: running
   Properties: {AmiLaunchIndex:0, ImageId:ami-0d7069e98d190f5ce, InstanceId:i-09420c0a3d2498e0e, InstanceType:t3.micro, KeyName:new-ec2-key-20251115132609, LaunchTime:2025-11-15 13:26:12+00:00, Monitoring:{'State': 'disabled'}, Placement:{'AvailabilityZone': 'sa-east-1b', 'GroupName': '', 'Tenancy': 'default'}, PrivateDnsName:ip-172-31-28-148.sa-east-1.compute.internal, PrivateIpAddress:172.31.28.148, ProductCodes:[], PublicDnsName:ec2-15-229-21-13.sa-east-1.compute.amazonaws.com, PublicIpAddress:15.229.21.13, State:{'Code': 16, 'Name': 'running'}, StateTransitionReason:, SubnetId:subnet-007a2aca7a6c9a0c7, VpcId:vpc-0054bcca2ef516ccc, Architecture:x86_64, BlockDeviceMappings:[{'DeviceName': '/dev/sda1', 'Ebs': {'AttachTime': datetime.datetime(2025, 11, 15, 13, 26, 13, tzinfo=tzutc()), 'DeleteOnTermination': True, 'Status': 'attached', 'VolumeId': 'vol-0404c09600fec131d'}}], ClientToken:5a48a98b-8078-4690-bc67-c37d18de737d, EbsOptimized:False, EnaSupport:True, Hypervisor:xen, NetworkInterfaces:[{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-15-229-21-13.sa-east-1.compute.amazonaws.com', 'PublicIp': '15.229.21.13'}, 'Attachment': {'AttachTime': datetime.datetime(2025, 11, 15, 13, 26, 12, tzinfo=tzutc()), 'AttachmentId': 'eni-attach-08e19eccd955a978c', 'DeleteOnTermination': True, 'DeviceIndex': 0, 'Status': 'attached', 'NetworkCardIndex': 0}, 'Description': '', 'Groups': [{'GroupName': 'web-sg', 'GroupId': 'sg-0ffb09ae78847f064'}], 'Ipv6Addresses': [], 'MacAddress': '06:fb:eb:00:5d:05', 'NetworkInterfaceId': 'eni-0e9acd3bd74342c11', 'OwnerId': '782859940219', 'PrivateDnsName': 'ip-172-31-28-148.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.28.148', 'PrivateIpAddresses': [{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-15-229-21-13.sa-east-1.compute.amazonaws.com', 'PublicIp': '15.229.21.13'}, 'Primary': True, 'PrivateDnsName': 'ip-172-31-28-148.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.28.148'}], 'SourceDestCheck': True, 'Status': 'in-use', 'SubnetId': 'subnet-007a2aca7a6c9a0c7', 'VpcId': 'vpc-0054bcca2ef516ccc', 'InterfaceType': 'interface'}], RootDeviceName:/dev/sda1, RootDeviceType:ebs, SecurityGroups:[{'GroupName': 'web-sg', 'GroupId': 'sg-0ffb09ae78847f064'}], SourceDestCheck:True, VirtualizationType:hvm, CpuOptions:{'CoreCount': 1, 'ThreadsPerCore': 2}, CapacityReservationSpecification:{'CapacityReservationPreference': 'open'}, HibernationOptions:{'Configured': False}, MetadataOptions:{'State': 'applied', 'HttpTokens': 'optional', 'HttpPutResponseHopLimit': 1, 'HttpEndpoint': 'enabled', 'HttpProtocolIpv6': 'disabled', 'InstanceMetadataTags': 'disabled'}, EnclaveOptions:{'Enabled': False}, BootMode:uefi-preferred, PlatformDetails:Linux/UNIX, UsageOperation:RunInstances, UsageOperationUpdateTime:2025-11-15 13:26:12+00:00, PrivateDnsNameOptions:{'HostnameType': 'ip-name', 'EnableResourceNameDnsARecord': False, 'EnableResourceNameDnsAAAARecord': False}, MaintenanceOptions:{'AutoRecovery': 'default'}, CurrentInstanceBootMode:uefi}
   Tags: {Name:new-ec2-instance-20251115132611}
+- ID: vpc-04f3179fa96b62b0d
+  Name: vpc-04f3179fa96b62b0d
+  Type: aws_vpc
+  Status: available
+  Properties: {CidrBlock:10.0.0.0/16, DhcpOptionsId:dopt-0c7273ae4ab6b762e, State:available, VpcId:vpc-04f3179fa96b62b0d, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-096b9de48e3009720', 'CidrBlock': '10.0.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:False}
+  Tags: {}
 - ID: vpc-0054bcca2ef516ccc
   Name: vpc-0054bcca2ef516ccc
   Type: aws_vpc
   Status: available
   Properties: {CidrBlock:172.31.0.0/16, DhcpOptionsId:dopt-0c7273ae4ab6b762e, State:available, VpcId:vpc-0054bcca2ef516ccc, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-06fc4675b8c7ab62e', 'CidrBlock': '172.31.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:True}
+  Tags: {}
+- ID: vpc-02beadf053a1b44ac
+  Name: vpc-02beadf053a1b44ac
+  Type: aws_vpc
+  Status: available
+  Properties: {CidrBlock:10.1.0.0/16, DhcpOptionsId:dopt-0c7273ae4ab6b762e, State:available, VpcId:vpc-02beadf053a1b44ac, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-04b86494a0ecff552', 'CidrBlock': '10.1.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:False}
   Tags: {}
 - ID: sg-0047e87d8873212da
   Name: default
@@ -550,47 +562,17 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: available
   Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-0047e87d8873212da', 'UserId': '782859940219'}]}, {'FromPort': 443, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 443, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0047e87d8873212da, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
-- ID: sg-08ae81bacd3d54cc5
-  Name: my-crai-web-sg-20251114072319
-  Type: aws_security_group
-  Status: available
-  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251114072319, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-08ae81bacd3d54cc5, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
-  Tags: {}
-- ID: sg-0c2f557d2466070f9
-  Name: my-crai-web-sg-20251107082255
-  Type: aws_security_group
-  Status: available
-  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107082255, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0c2f557d2466070f9, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
-  Tags: {}
-- ID: sg-0ccbeb29a363715fb
-  Name: new-ec2-sg-20251107130959
-  Type: aws_security_group
-  Status: available
-  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107130959, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0ccbeb29a363715fb, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
-  Tags: {}
 - ID: sg-0c084deb9e082880f
   Name: my-crai-web-sg-20251107081627
   Type: aws_security_group
   Status: available
   Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107081627, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0c084deb9e082880f, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
-- ID: sg-0c988da22eaf384ff
-  Name: my-test-alb-sg-20251106083254
+- ID: sg-04ba6e08f29ab2055
+  Name: default
   Type: aws_security_group
   Status: available
-  Properties: {Description:Security group for my-test-alb, allowing HTTP and HTTPS traffic, GroupName:my-test-alb-sg-20251106083254, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 443, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 443, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0c988da22eaf384ff, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
-  Tags: {}
-- ID: sg-06616cbbc7fd2d7ef
-  Name: my-crai-web-sg-20251107081815
-  Type: aws_security_group
-  Status: available
-  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107081815, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-06616cbbc7fd2d7ef, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
-  Tags: {}
-- ID: sg-0e1be0bb51ae3f91d
-  Name: my-crai-web-server-sg-20251114073604
-  Type: aws_security_group
-  Status: available
-  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-server-sg-20251114073604, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0e1be0bb51ae3f91d, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-04ba6e08f29ab2055', 'UserId': '782859940219'}]}], OwnerId:782859940219, GroupId:sg-04ba6e08f29ab2055, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-04f3179fa96b62b0d}
   Tags: {}
 - ID: sg-0e61931d2add14094
   Name: my-crai-web-sg-20251107082525
@@ -610,23 +592,11 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: available
   Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251106085330, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0cb4e043cd373f322, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
-- ID: sg-0fad12cbbb20c508b
-  Name: new-ec2-sg-20251107135255
-  Type: aws_security_group
-  Status: available
-  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107135255, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0fad12cbbb20c508b, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
-  Tags: {}
 - ID: sg-0e3cf3485ced831f6
   Name: new-ec2-sg-20251107134934
   Type: aws_security_group
   Status: available
   Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107134934, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0e3cf3485ced831f6, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
-  Tags: {}
-- ID: sg-03e938c6a9c16676d
-  Name: new-ec2-sg-20251107135136
-  Type: aws_security_group
-  Status: available
-  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107135136, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-03e938c6a9c16676d, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
 - ID: sg-00a6aa69b4192e538
   Name: new-ec2-sg-20251107144551
@@ -634,17 +604,71 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: available
   Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107144551, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-00a6aa69b4192e538, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
-- ID: sg-029d5c2cc4c9b8e8f
-  Name: new-ec2-sg-20251107134846
-  Type: aws_security_group
-  Status: available
-  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107134846, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-029d5c2cc4c9b8e8f, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
-  Tags: {}
 - ID: sg-061d05198d0f11281
   Name: my-crai-web-sg-20251107082047
   Type: aws_security_group
   Status: available
   Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107082047, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-061d05198d0f11281, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-08ae81bacd3d54cc5
+  Name: my-crai-web-sg-20251114072319
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251114072319, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-08ae81bacd3d54cc5, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-0c2f557d2466070f9
+  Name: my-crai-web-sg-20251107082255
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107082255, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0c2f557d2466070f9, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-0ccbeb29a363715fb
+  Name: new-ec2-sg-20251107130959
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107130959, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0ccbeb29a363715fb, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-0c988da22eaf384ff
+  Name: my-test-alb-sg-20251106083254
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for my-test-alb, allowing HTTP and HTTPS traffic, GroupName:my-test-alb-sg-20251106083254, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 443, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 443, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0c988da22eaf384ff, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-06616cbbc7fd2d7ef
+  Name: my-crai-web-sg-20251107081815
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107081815, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-06616cbbc7fd2d7ef, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-0e1be0bb51ae3f91d
+  Name: my-crai-web-server-sg-20251114073604
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-server-sg-20251114073604, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0e1be0bb51ae3f91d, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-026dab4b046b0c6c4
+  Name: default
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-026dab4b046b0c6c4', 'UserId': '782859940219'}]}], OwnerId:782859940219, GroupId:sg-026dab4b046b0c6c4, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-02beadf053a1b44ac}
+  Tags: {}
+- ID: sg-0fad12cbbb20c508b
+  Name: new-ec2-sg-20251107135255
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107135255, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0fad12cbbb20c508b, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-03e938c6a9c16676d
+  Name: new-ec2-sg-20251107135136
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107135136, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-03e938c6a9c16676d, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-029d5c2cc4c9b8e8f
+  Name: new-ec2-sg-20251107134846
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107134846, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-029d5c2cc4c9b8e8f, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
 - ID: sg-0c4b2068327640805
   Name: new-ec2-sg-20251107134744

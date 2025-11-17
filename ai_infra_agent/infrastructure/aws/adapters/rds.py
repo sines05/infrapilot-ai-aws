@@ -18,7 +18,7 @@ class RdsAdapter(AWSAdapterBase):
             settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
         """
-        super().__init__(service_name="rds", settings=settings, logger=logger)
+        super().__init__(service_name="rds", logger=logger, aws_config=None, settings=settings)
 
     def describe_db_instances(self, db_instance_identifier: Optional[str] = None) -> Dict[str, Any]:
         """

@@ -3,11 +3,14 @@
 import { AIResponse, ExecutionPlanStep } from "@/types/data";
 
 /**
- * Gửi yêu cầu đến backend và chuẩn hóa phản hồi cho frontend.
+ * Gửi yêu cầu đến backend qua API proxy và chuẩn hóa phản hồi cho frontend.
+ * API proxy sẽ xử lý authentication token từ NextAuth session.
  */
 export async function processAgentRequest(prompt: string, dryRunMode: boolean): Promise<AIResponse> {
   
-  const response = await fetch("http://localhost:8000/api/v1/agent/process", {
+  // Gọi API proxy trong Next.js thay vì gọi trực tiếp backend
+  // API proxy sẽ lấy token từ NextAuth session và forward request đến backend
+  const response = await fetch("/api/agent/process", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ request: prompt }),

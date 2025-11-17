@@ -10,7 +10,7 @@ class KeyPairAdapter(AWSAdapterBase):
     Adapter for interacting with AWS EC2 Key Pairs.
     """
 
-    def __init__(self, settings: AWSSettings, logger: logger):
+    def __init__(self, logger: logger, aws_config: dict = None, settings: AWSSettings = None):
         """
         Initializes the KeyPair adapter. Note that Key Pair resources are managed via the 'ec2' client.
 
@@ -18,7 +18,7 @@ class KeyPairAdapter(AWSAdapterBase):
             settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
         """
-        super().__init__(service_name="ec2", settings=settings, logger=logger)
+        super().__init__(service_name="ec2", logger=logger, aws_config=aws_config, settings=settings)
 
     def create_key_pair(self, key_name: str) -> Dict[str, Any]:
         """

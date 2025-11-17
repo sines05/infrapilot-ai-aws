@@ -89,7 +89,7 @@ export default function ChatPage() {
       
       setStatusMessage("Credentials loaded. Connecting to agent...");
       
-      const ws = executePlan(aiResponse, credentials,
+      const ws = await executePlan(aiResponse, credentials,
         (msg: WebSocketProgressMessage) => { // onProgress
           console.log('[CLIENT] Progress Update:', msg);
 
