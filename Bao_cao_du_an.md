@@ -46,50 +46,35 @@ Người dùng tương tác với hệ thống thông qua một giao diện web 
 Sơ đồ này minh họa các chức năng chính và các tác nhân tương tác với hệ thống InfraPilot AI.
 
 ```
-+--------------------------------+
-|             Actor              |
-|--------------------------------|
-|  DevOps Engineer / Developer   |
-+--------------------------------+
-  |
-  | interacts with
-  v
-+---------------------------------------------------------------------------------+
-|                               InfraPilot AI System                              |
-|---------------------------------------------------------------------------------|
-|                                                                                 |
-|  +---------------------------------------------------------------------------+  |
-|  | <<Use Case: Manage Compute Resources>>                                    |  |
-|  |   - Create/Terminate/Start/Stop EC2 Instance                              |  |
-|  |   - List EC2 Instances                                                    |  |
-|  |   - Get Latest AMI (Amazon Linux, Ubuntu)                                 |  |
-|  +---------------------------------------------------------------------------+  |
-|                                                                                 |
-|  +---------------------------------------------------------------------------+  |
-|  | <<Use Case: Manage Network Resources>>                                    |  |
-|  |   - List/Create VPCs                                                      |  |
-|  |   - List/Create Subnets                                                   |  |
-|  |   - Manage Internet Gateways                                              |  |
-|  +---------------------------------------------------------------------------+  |
-|                                                                                 |
-|  +---------------------------------------------------------------------------+  |
-|  | <<Use Case: Manage Security>>                                             |  |
-|  |   - Create/Delete Security Groups                                         |  |
-|  |   - Add/Remove Ingress/Egress Rules                                       |  |
-|  |   - Manage Key Pairs                                                      |  |
-|  +---------------------------------------------------------------------------+  |
-|                                                                                 |
-|  +---------------------------------------------------------------------------+  |
-|  | <<Use Case: Manage Storage & Database>>                                   |  |
-|  |   - Create S3 Bucket                                                      |  |
-|  |   - Create RDS DB Instance                                                |  |
-|  |   - List RDS Instances                                                    |  |
-|  +---------------------------------------------------------------------------+  |
-|                                                                                 |
-|  <<System Boundary>>                                                            |
-|  (Includes: AI Planner, Tool Executor, State Manager, WebSocket Notifier)     |
-|                                                                                 |
-+---------------------------------------------------------------------------------+
++-----------------------------+
+|            Actor            |
+|-----------------------------|
+| DevOps Engineer / Developer |
++-----------------------------+
+           |
+           | Interacts with
+           |
++----------V--------------------------------------------------------------------+
+|                               InfraPilot AI System                             |
+|--------------------------------------------------------------------------------|
+|                                                                                |
+|  +----------------------------------+    +-----------------------------------+ |
+|  | Manage Compute Resources         |    | Manage Network Resources          | |
+|  |----------------------------------|    |-----------------------------------| |
+|  | - Create/Terminate/Start/Stop EC2|    | - List/Create VPCs                | |
+|  | - List EC2 Instances             |    | - List/Create Subnets             | |
+|  | - Get Latest AMI                 |    | - Manage Internet Gateways        | |
+|  +----------------------------------+    +-----------------------------------+ |
+|                                                                                |
+|  +----------------------------------+    +-----------------------------------+ |
+|  | Manage Security                  |    | Manage Storage & Database         | |
+|  |----------------------------------|    |-----------------------------------| |
+|  | - Create/Delete Security Groups  |    | - Create S3 Bucket                | |
+|  | - Add/Remove Ingress/Egress Rules|    | - Create/List RDS Instances       | |
+|  | - Manage Key Pairs               |    |                                   | |
+|  +----------------------------------+    +-----------------------------------+ |
+|                                                                                |
++--------------------------------------------------------------------------------+
 ```
 
 ### 2.2. Giải thích chi tiết các tính năng
@@ -105,6 +90,41 @@ Sơ đồ này minh họa các chức năng chính và các tác nhân tương t
 3.  **Hệ thống công cụ mở rộng (Extensible Tool System):**
     - Kiến trúc cho phép dễ dàng thêm các "công cụ" mới để tương tác với nhiều dịch vụ AWS khác nhau (EC2, VPC, S3, RDS, IAM...).
     - Mỗi công cụ là một hành động cụ thể (ví dụ: `create-ec2-instance`, `list-vpcs`) mà Agent có thể gọi.
+    - **Danh sách các công cụ hiện có:**
+        - **EC2, AMI & Key Pair:**
+            - `create-ec2-instance`: Tạo một máy ảo EC2 mới.
+            - `list-ec2-instances`: Liệt kê các máy ảo EC2 hiện có.
+            - `terminate-ec2-instance`: Xóa một máy ảo EC2.
+            - `start-ec2-instance`: Khởi động một máy ảo EC2 đã dừng.
+            - `stop-instance`: Dừng một máy ảo EC2 đang chạy.
+            - `create-volume`: Tạo một ổ đĩa EBS mới.
+            - `list-availability-zones`: Liệt kê các Availability Zone khả dụng.
+            - `get-latest-amazon-linux-ami`: Lấy thông tin AMI mới nhất của Amazon Linux.
+            - `get-latest-ubuntu-ami`: Lấy thông tin AMI mới nhất của Ubuntu.
+            - `create-key-pair`: Tạo một key pair mới để truy cập EC2.
+            - `list-key-pairs`: Liệt kê các key pair hiện có.
+        - **VPC (Virtual Private Cloud):**
+            - `get-default-vpc`: Lấy thông tin VPC mặc định.
+            - `list-vpcs`: Liệt kê các VPC.
+            - `create-vpc`: Tạo một VPC mới.
+            - `list-subnets`: Liệt kê các subnet.
+            - `create-public-subnet`: Tạo một subnet công khai.
+            - `create-internet-gateway`: Tạo một Internet Gateway.
+            - `attach-internet-gateway`: Gắn Internet Gateway vào một VPC.
+        - **Security Group:**
+            - `create-security-group`: Tạo một security group mới.
+            - `list-security-groups`: Liệt kê các security group.
+            - `add-security-group-ingress-rule`: Thêm luật cho phép truy cập vào.
+            - `add-security-group-egress-rule`: Thêm luật cho phép truy cập ra ngoài.
+            - `delete-security-group`: Xóa một security group.
+        - **RDS (Relational Database Service):**
+            - `list-rds-instances`: Liệt kê các database instance.
+            - `create-db-instance`: Tạo một database instance mới.
+            - `create-db-subnet-group`: Tạo một nhóm subnet cho database.
+        - **S3 (Simple Storage Service):**
+            - `create-s3-bucket`: Tạo một S3 bucket mới.
+        - **ELB (Elastic Load Balancing):**
+            - `create-load-balancer`: Tạo một Application Load Balancer.
 
 4.  **Quản lý trạng thái (State Management):**
     - Hệ thống tự động quét và duy trì một bản ghi về trạng thái của hạ tầng.
@@ -143,40 +163,47 @@ Dự án được xây dựng với các thành phần và công nghệ chính s
 Sơ đồ dưới đây mô tả kiến trúc triển khai của hệ thống trên nền tảng AWS, tích hợp với các dịch vụ bên thứ ba.
 
 ```
-+------------------+      HTTPS      +-----------------------+
-|                  | <-------------> |                       |
-|       User       |                 |   AWS Amplify (Web    |
-|  (Web Browser)   |                 |      Hosting)         |
-|                  |                 |                       |
-+------------------+                 +-----------+-----------+
-                                                 |
-                                     HTTP/WebSocket|
-                                                 v
-                  +------------------------------+------------------------------+
-                  |                  AWS Cloud (VPC)                            |
-                  |                                                             |
-                  |  +-------------------------------------------------------+  |
-                  |  | AWS Fargate (Serverless Container)                    |  |
-                  |  |                                                       |  |
-                  |  | +---------------------------------------------------+ |  |
-                  |  | |                                                   | |  |
-                  |  | |         FastAPI Backend Container                 | |  |
-                  |  | |                                                   | |  |
-                  |  | +---------------------------------------------------+ |  |
-                  |  |                                                       |  |
-                  |  +------------------+------------------------------------+  |
-                  |                     |                                       |
-                  +---------------------+---------------------------------------+
-                                        |
-+---------------------------------------+---------------------------------------+
-|                                       |                                       |
-v                                       v                                       v
-+------------------+---------+  +-------+----------+-------------+  +-----------+--------------+
-|                              |  |                                |  |                          |
-|   Large Language Models      |  |   Amazon Web Services (AWS)    |  |  Supabase (Auth & DB)    |
-| (Gemini, OpenAI, etc.)       |  |   (User's Target Environment)  |  |                          |
-|                              |  |                                |  |                          |
-+------------------------------+  +--------------------------------+  +--------------------------+
+                               +-----------------+
+                               |      User       |
+                               | (Web Browser)   |
+                               +-----------------+
+                                       |
+                               (HTTPS) |
+                                       v
++-----------------------------------------------------------------------------+
+| AWS Cloud                                                                   |
+|                                                                             |
+|  +-----------------------------------------------------------------------+  |
+|  | AWS Amplify (CI/CD, CDN, Hosting)                                     |  |
+|  | +-------------------------------------------------------------------+ |  |
+|  | |                  Frontend Application (Next.js)                   | |  |
+|  | +-------------------------------------------------------------------+ |  |
+|  +-----------------------------------------------------------------------+  |
+|                                       |                                     |
+|        (HTTPS API Calls)              | (WebSocket Connection)              |
+|                     +-----------------+------------------+                  |
+|                     v                                    v                  |
+|  +-----------------------------------------------------------------------+  |
+|  | VPC (Virtual Private Cloud)                                           |  |
+|  |                                                                       |  |
+|  |  +--------------------------+      +--------------------------------+  |  |
+|  |  | Application Load Balancer|----->|      AWS Fargate Service       |  |  |
+|  |  | (ALB)                    |      | (Running FastAPI Container)   |  |  |
+|  |  +--------------------------+      +---------------+----------------+  |  |
+|  |                                                    |                   |  |
+|  +----------------------------------------------------+-------------------+  |
+|                                                         | (Secure Outbound API Calls)
+|                                                         |
++---------------------------------------------------------+---------------------+
+                                                          |
+                 +----------------------------------------+----------------------------------------+
+                 |                                        |                                        |
+                 v                                        v                                        v
+      +------------------+                +--------------------------------+      +--------------------------+
+      |      LLM         |                |      User's AWS Account        |      |   Supabase               |
+      |   (Gemini, etc.) |                |    (Target for Management)     |      | (Authentication & DB)    |
+      +------------------+                +--------------------------------+      +--------------------------+
+
 ```
 
 **Giải thích:**
@@ -222,10 +249,11 @@ v                                       v                                       
         - Đảm bảo môi trường chạy có quyền truy cập AWS.
 
 - **Giá trị của công việc:**
-    - Công việc không chỉ dừng lại ở việc "viết code".
-    - **Thiết kế giải pháp:** Thiết kế luồng đi từ ngôn ngữ tự nhiên -> kế hoạch JSON -> thực thi là một phần cốt lõi.
-    - **Prompt Engineering:** Xây dựng các prompt hiệu quả để LLM hiểu và trả về kết quả mong muốn là một công việc đòi hỏi nhiều thử nghiệm và tinh chỉnh.
-    - **Kiến trúc hệ thống:** Xây dựng hệ thống theo các pattern (Factory, Adapter) để dễ dàng mở rộng và bảo trì trong tương lai.
+    - **Thiết kế giải pháp (Solution Design):** Giá trị cốt lõi của dự án không nằm ở từng dòng code, mà ở việc thiết kế thành công một hệ thống có khả năng chuyển đổi ngôn ngữ tự nhiên (thứ vốn mơ hồ và dành cho con người) thành các lệnh gọi API chính xác, có cấu trúc và an toàn. Đây là cầu nối giữa ý định của người dùng và việc thực thi trên hạ tầng phức tạp, giúp **giảm rào cản kỹ thuật** và **tăng tốc độ triển khai**.
+    - **Prompt Engineering:** Công việc này là trái tim của sự sáng tạo trong dự án. Bằng cách thiết kế một "bản hợp đồng" (prompt template) chặt chẽ với LLM, chúng tôi đã biến một công nghệ AI có thể khó đoán thành một thành phần phần mềm đáng tin cậy với input/output được chuẩn hóa. Điều này đảm bảo **tính ổn định** và **dự đoán được** của hệ thống, một yếu tố sống còn trong môi trường production.
+    - **Kiến trúc hệ thống (System Architecture):** Việc áp dụng các pattern như Adapter, Factory, và Dependency Injection không phải là một bài tập lý thuyết. Nó trực tiếp mang lại **giá trị kinh doanh** rõ rệt:
+        - **Tốc độ phát triển (Velocity):** Kiến trúc module hóa cho phép nhóm **dễ dàng mở rộng** sản phẩm để hỗ trợ các dịch vụ AWS mới. Việc thêm một tool mới chỉ mất vài giờ thay vì vài ngày, giúp sản phẩm nhanh chóng thích ứng với nhu-cầu-mới.
+        - **Chất lượng & Bảo trì (Quality & Maintainability):** Sự tách biệt rõ ràng giữa các lớp giúp việc sửa lỗi, nâng cấp và kiểm thử trở nên đơn giản hơn, **giảm chi phí bảo trì** trong dài hạn.
 
 ---
 
