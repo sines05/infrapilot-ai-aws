@@ -87,7 +87,7 @@ def get_user_aws_credentials(user_id: str) -> Dict[str, str]:
                     row = cur.fetchone()
                     if not row:
                         logger.warning(f"No AWS credentials found in database for user {user_id}")
-                        raise RuntimeError("No AWS credentials found for user")
+                        return {}
                     logger.info(f"Successfully fetched AWS credentials via PostgreSQL for user {user_id}")
                     return {
                         "access_key_id": row.get("aws_access_key"),
@@ -110,7 +110,7 @@ def get_user_aws_credentials(user_id: str) -> Dict[str, str]:
         data = getattr(resp, "data", None) or (resp and resp.get("data"))
         if not data:
             logger.warning(f"No AWS credentials found in database for user {user_id}")
-            raise RuntimeError("No AWS credentials found for user")
+            return {}
         logger.debug(f"Successfully fetched AWS credentials for user {user_id}")
         return {
             "access_key_id": data.get("aws_access_key"),

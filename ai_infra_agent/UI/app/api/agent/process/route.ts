@@ -8,7 +8,20 @@ import jwt from "jsonwebtoken";
  * Lấy user_id từ NextAuth session và tạo Supabase JWT token
  */
 export async function POST(request: NextRequest) {
+  console.log("NEXT_PUBLIC_SUPABASE_URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+
+  // --- DEBUGGING: Read body as text first ---
+  const bodyAsText = await request.text();
+  console.log("Request body as text:", bodyAsText);
+  // --- END DEBUGGING ---
+
   try {
+    const body = bodyAsText ? JSON.parse(bodyAsText) : null;
+    
+    if (!body) {
+      return NextResponse.json({ detail: "Request body is empty or invalid" }, { status: 400 });
+    }
+
     // Lấy NextAuth session
     const session = await getServerSession(authOptions);
     
@@ -21,9 +34,6 @@ export async function POST(request: NextRequest) {
 
     const userId = (session.user as any).id;
     const userEmail = session.user.email || "";
-    
-    // Lấy request body từ client
-    const body = await request.json();
     
     // Tạo Supabase JWT token từ user_id
     const supabaseJwtSecret = process.env.SUPABASE_JWT_SECRET;

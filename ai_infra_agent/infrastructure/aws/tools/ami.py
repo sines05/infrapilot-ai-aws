@@ -32,7 +32,7 @@ class GetLatestAmazonLinuxAMITool(BaseTool):
             )
             self.logger.info(f"Found latest Amazon Linux 2023 AMI: {ami_info['ImageId']}")
             return {
-                "amiId": ami_info.get("ImageId"),
+                "ami_id": ami_info.get("ImageId"),
                 "description": ami_info.get("Description"),
                 "name": ami_info.get("Name"),
             }
