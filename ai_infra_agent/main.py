@@ -1,6 +1,7 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
+import asyncio
 
 # Import router from the new API structure
 from ai_infra_agent.api.v1 import agent_router
@@ -105,6 +106,7 @@ async def websocket_execute_plan(websocket: WebSocket, token: str = Query(None),
         log.error(f"An unexpected error occurred in the WebSocket handler: {e}", exc_info=True)
         await websocket.send_json({"status": "error", "message": str(e)})
     finally:
+        await asyncio.sleep(1) # Add a small delay
         await websocket.close()
         log.info("WebSocket connection closed.")
     

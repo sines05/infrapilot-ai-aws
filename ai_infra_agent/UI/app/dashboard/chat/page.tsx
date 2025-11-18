@@ -171,6 +171,7 @@ export default function ChatPage() {
 
         // onComplete
         async (result?: ExecutionResult) => {
+          console.log('[CLIENT] onComplete callback triggered. Result:', result);
           console.log('[CLIENT] Execution Completed. Result:', result);
           setIsExecuting(false);
           setIsExecutionComplete(true);

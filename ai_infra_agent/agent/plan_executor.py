@@ -287,8 +287,12 @@ class PlanExecutor:
                 # Re-raise the exception to stop the entire plan execution
                 raise
 
-        await self._send_update({
-            "status": "Execution Completed Successfully",
-            "message": "All plan steps executed successfully."
-        })
-        self.logger.info("Plan execution finished successfully.")
+        # Construct the final, formal completion message
+        final_result = {
+            "type": "execution_completed",
+            "status": "success",
+            "message": "All plan steps executed successfully.",
+            "outputs": self.context  # Include all step results
+        }
+        await self._send_update(final_result)
+        self.logger.info("Plan execution finished successfully and final result sent.")
