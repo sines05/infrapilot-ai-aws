@@ -520,29 +520,17 @@ Requires: VPC, CIDR Block, Availability Zone
 ═══════════════════════════════════════════════════════════════════
 🏗️ MANAGED RESOURCES (CURRENT AVAILABLE STATE ON AWS ACCOUNT)
 ═══════════════════════════════════════════════════════════════════
-- ID: i-0c67c0d838b04a2bd
-  Name: new-ec2-instance-20251115130403
-  Type: aws_ec2_instance
-  Status: running
-  Properties: {AmiLaunchIndex:0, ImageId:ami-0d7069e98d190f5ce, InstanceId:i-0c67c0d838b04a2bd, InstanceType:t3.micro, KeyName:new-ec2-key-20251115130403, LaunchTime:2025-11-15 13:04:05+00:00, Monitoring:{'State': 'disabled'}, Placement:{'AvailabilityZone': 'sa-east-1b', 'GroupName': '', 'Tenancy': 'default'}, PrivateDnsName:ip-172-31-16-36.sa-east-1.compute.internal, PrivateIpAddress:172.31.16.36, ProductCodes:[], PublicDnsName:ec2-15-228-121-183.sa-east-1.compute.amazonaws.com, PublicIpAddress:15.228.121.183, State:{'Code': 16, 'Name': 'running'}, StateTransitionReason:, SubnetId:subnet-007a2aca7a6c9a0c7, VpcId:vpc-0054bcca2ef516ccc, Architecture:x86_64, BlockDeviceMappings:[{'DeviceName': '/dev/sda1', 'Ebs': {'AttachTime': datetime.datetime(2025, 11, 15, 13, 4, 6, tzinfo=tzutc()), 'DeleteOnTermination': True, 'Status': 'attached', 'VolumeId': 'vol-0e7b79bcbfef856c6'}}], ClientToken:9f882ca1-47fd-4abc-9b19-4b13a34017b7, EbsOptimized:False, EnaSupport:True, Hypervisor:xen, NetworkInterfaces:[{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-15-228-121-183.sa-east-1.compute.amazonaws.com', 'PublicIp': '15.228.121.183'}, 'Attachment': {'AttachTime': datetime.datetime(2025, 11, 15, 13, 4, 5, tzinfo=tzutc()), 'AttachmentId': 'eni-attach-06edb618199a9b58a', 'DeleteOnTermination': True, 'DeviceIndex': 0, 'Status': 'attached', 'NetworkCardIndex': 0}, 'Description': '', 'Groups': [{'GroupName': 'web-sg', 'GroupId': 'sg-0ffb09ae78847f064'}], 'Ipv6Addresses': [], 'MacAddress': '06:2f:72:65:c6:53', 'NetworkInterfaceId': 'eni-091bb70543eb48144', 'OwnerId': '782859940219', 'PrivateDnsName': 'ip-172-31-16-36.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.16.36', 'PrivateIpAddresses': [{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-15-228-121-183.sa-east-1.compute.amazonaws.com', 'PublicIp': '15.228.121.183'}, 'Primary': True, 'PrivateDnsName': 'ip-172-31-16-36.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.16.36'}], 'SourceDestCheck': True, 'Status': 'in-use', 'SubnetId': 'subnet-007a2aca7a6c9a0c7', 'VpcId': 'vpc-0054bcca2ef516ccc', 'InterfaceType': 'interface'}], RootDeviceName:/dev/sda1, RootDeviceType:ebs, SecurityGroups:[{'GroupName': 'web-sg', 'GroupId': 'sg-0ffb09ae78847f064'}], SourceDestCheck:True, VirtualizationType:hvm, CpuOptions:{'CoreCount': 1, 'ThreadsPerCore': 2}, CapacityReservationSpecification:{'CapacityReservationPreference': 'open'}, HibernationOptions:{'Configured': False}, MetadataOptions:{'State': 'applied', 'HttpTokens': 'optional', 'HttpPutResponseHopLimit': 1, 'HttpEndpoint': 'enabled', 'HttpProtocolIpv6': 'disabled', 'InstanceMetadataTags': 'disabled'}, EnclaveOptions:{'Enabled': False}, BootMode:uefi-preferred, PlatformDetails:Linux/UNIX, UsageOperation:RunInstances, UsageOperationUpdateTime:2025-11-15 13:04:05+00:00, PrivateDnsNameOptions:{'HostnameType': 'ip-name', 'EnableResourceNameDnsARecord': False, 'EnableResourceNameDnsAAAARecord': False}, MaintenanceOptions:{'AutoRecovery': 'default'}, CurrentInstanceBootMode:uefi}
-  Tags: {Name:new-ec2-instance-20251115130403}
-- ID: i-073203f35738f96b3
-  Name: new-ec2-instance-20251115134320
-  Type: aws_ec2_instance
-  Status: running
-  Properties: {AmiLaunchIndex:0, ImageId:ami-0d7069e98d190f5ce, InstanceId:i-073203f35738f96b3, InstanceType:t3.micro, KeyName:new-ec2-key-20251115134318, LaunchTime:2025-11-15 13:43:21+00:00, Monitoring:{'State': 'disabled'}, Placement:{'AvailabilityZone': 'sa-east-1b', 'GroupName': '', 'Tenancy': 'default'}, PrivateDnsName:ip-172-31-31-231.sa-east-1.compute.internal, PrivateIpAddress:172.31.31.231, ProductCodes:[], PublicDnsName:ec2-56-125-79-156.sa-east-1.compute.amazonaws.com, PublicIpAddress:56.125.79.156, State:{'Code': 16, 'Name': 'running'}, StateTransitionReason:, SubnetId:subnet-007a2aca7a6c9a0c7, VpcId:vpc-0054bcca2ef516ccc, Architecture:x86_64, BlockDeviceMappings:[{'DeviceName': '/dev/sda1', 'Ebs': {'AttachTime': datetime.datetime(2025, 11, 15, 13, 43, 22, tzinfo=tzutc()), 'DeleteOnTermination': True, 'Status': 'attached', 'VolumeId': 'vol-0c18de928e9b37c27'}}], ClientToken:79f6421f-a63d-479c-86ad-eb263edb9942, EbsOptimized:False, EnaSupport:True, Hypervisor:xen, NetworkInterfaces:[{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-56-125-79-156.sa-east-1.compute.amazonaws.com', 'PublicIp': '56.125.79.156'}, 'Attachment': {'AttachTime': datetime.datetime(2025, 11, 15, 13, 43, 21, tzinfo=tzutc()), 'AttachmentId': 'eni-attach-07aca1f8c78c399d3', 'DeleteOnTermination': True, 'DeviceIndex': 0, 'Status': 'attached', 'NetworkCardIndex': 0}, 'Description': '', 'Groups': [{'GroupName': 'web-sg', 'GroupId': 'sg-0ffb09ae78847f064'}], 'Ipv6Addresses': [], 'MacAddress': '06:78:99:39:a7:87', 'NetworkInterfaceId': 'eni-07e3e1fc76125fa1a', 'OwnerId': '782859940219', 'PrivateDnsName': 'ip-172-31-31-231.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.31.231', 'PrivateIpAddresses': [{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-56-125-79-156.sa-east-1.compute.amazonaws.com', 'PublicIp': '56.125.79.156'}, 'Primary': True, 'PrivateDnsName': 'ip-172-31-31-231.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.31.231'}], 'SourceDestCheck': True, 'Status': 'in-use', 'SubnetId': 'subnet-007a2aca7a6c9a0c7', 'VpcId': 'vpc-0054bcca2ef516ccc', 'InterfaceType': 'interface'}], RootDeviceName:/dev/sda1, RootDeviceType:ebs, SecurityGroups:[{'GroupName': 'web-sg', 'GroupId': 'sg-0ffb09ae78847f064'}], SourceDestCheck:True, VirtualizationType:hvm, CpuOptions:{'CoreCount': 1, 'ThreadsPerCore': 2}, CapacityReservationSpecification:{'CapacityReservationPreference': 'open'}, HibernationOptions:{'Configured': False}, MetadataOptions:{'State': 'applied', 'HttpTokens': 'optional', 'HttpPutResponseHopLimit': 1, 'HttpEndpoint': 'enabled', 'HttpProtocolIpv6': 'disabled', 'InstanceMetadataTags': 'disabled'}, EnclaveOptions:{'Enabled': False}, BootMode:uefi-preferred, PlatformDetails:Linux/UNIX, UsageOperation:RunInstances, UsageOperationUpdateTime:2025-11-15 13:43:21+00:00, PrivateDnsNameOptions:{'HostnameType': 'ip-name', 'EnableResourceNameDnsARecord': False, 'EnableResourceNameDnsAAAARecord': False}, MaintenanceOptions:{'AutoRecovery': 'default'}, CurrentInstanceBootMode:uefi}
-  Tags: {Name:new-ec2-instance-20251115134320}
-- ID: i-09420c0a3d2498e0e
-  Name: new-ec2-instance-20251115132611
-  Type: aws_ec2_instance
-  Status: running
-  Properties: {AmiLaunchIndex:0, ImageId:ami-0d7069e98d190f5ce, InstanceId:i-09420c0a3d2498e0e, InstanceType:t3.micro, KeyName:new-ec2-key-20251115132609, LaunchTime:2025-11-15 13:26:12+00:00, Monitoring:{'State': 'disabled'}, Placement:{'AvailabilityZone': 'sa-east-1b', 'GroupName': '', 'Tenancy': 'default'}, PrivateDnsName:ip-172-31-28-148.sa-east-1.compute.internal, PrivateIpAddress:172.31.28.148, ProductCodes:[], PublicDnsName:ec2-15-229-21-13.sa-east-1.compute.amazonaws.com, PublicIpAddress:15.229.21.13, State:{'Code': 16, 'Name': 'running'}, StateTransitionReason:, SubnetId:subnet-007a2aca7a6c9a0c7, VpcId:vpc-0054bcca2ef516ccc, Architecture:x86_64, BlockDeviceMappings:[{'DeviceName': '/dev/sda1', 'Ebs': {'AttachTime': datetime.datetime(2025, 11, 15, 13, 26, 13, tzinfo=tzutc()), 'DeleteOnTermination': True, 'Status': 'attached', 'VolumeId': 'vol-0404c09600fec131d'}}], ClientToken:5a48a98b-8078-4690-bc67-c37d18de737d, EbsOptimized:False, EnaSupport:True, Hypervisor:xen, NetworkInterfaces:[{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-15-229-21-13.sa-east-1.compute.amazonaws.com', 'PublicIp': '15.229.21.13'}, 'Attachment': {'AttachTime': datetime.datetime(2025, 11, 15, 13, 26, 12, tzinfo=tzutc()), 'AttachmentId': 'eni-attach-08e19eccd955a978c', 'DeleteOnTermination': True, 'DeviceIndex': 0, 'Status': 'attached', 'NetworkCardIndex': 0}, 'Description': '', 'Groups': [{'GroupName': 'web-sg', 'GroupId': 'sg-0ffb09ae78847f064'}], 'Ipv6Addresses': [], 'MacAddress': '06:fb:eb:00:5d:05', 'NetworkInterfaceId': 'eni-0e9acd3bd74342c11', 'OwnerId': '782859940219', 'PrivateDnsName': 'ip-172-31-28-148.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.28.148', 'PrivateIpAddresses': [{'Association': {'IpOwnerId': 'amazon', 'PublicDnsName': 'ec2-15-229-21-13.sa-east-1.compute.amazonaws.com', 'PublicIp': '15.229.21.13'}, 'Primary': True, 'PrivateDnsName': 'ip-172-31-28-148.sa-east-1.compute.internal', 'PrivateIpAddress': '172.31.28.148'}], 'SourceDestCheck': True, 'Status': 'in-use', 'SubnetId': 'subnet-007a2aca7a6c9a0c7', 'VpcId': 'vpc-0054bcca2ef516ccc', 'InterfaceType': 'interface'}], RootDeviceName:/dev/sda1, RootDeviceType:ebs, SecurityGroups:[{'GroupName': 'web-sg', 'GroupId': 'sg-0ffb09ae78847f064'}], SourceDestCheck:True, VirtualizationType:hvm, CpuOptions:{'CoreCount': 1, 'ThreadsPerCore': 2}, CapacityReservationSpecification:{'CapacityReservationPreference': 'open'}, HibernationOptions:{'Configured': False}, MetadataOptions:{'State': 'applied', 'HttpTokens': 'optional', 'HttpPutResponseHopLimit': 1, 'HttpEndpoint': 'enabled', 'HttpProtocolIpv6': 'disabled', 'InstanceMetadataTags': 'disabled'}, EnclaveOptions:{'Enabled': False}, BootMode:uefi-preferred, PlatformDetails:Linux/UNIX, UsageOperation:RunInstances, UsageOperationUpdateTime:2025-11-15 13:26:12+00:00, PrivateDnsNameOptions:{'HostnameType': 'ip-name', 'EnableResourceNameDnsARecord': False, 'EnableResourceNameDnsAAAARecord': False}, MaintenanceOptions:{'AutoRecovery': 'default'}, CurrentInstanceBootMode:uefi}
-  Tags: {Name:new-ec2-instance-20251115132611}
-- ID: vpc-04f3179fa96b62b0d
-  Name: vpc-04f3179fa96b62b0d
+- ID: vpc-0baad95251f43f4c1
+  Name: vpc-0baad95251f43f4c1
   Type: aws_vpc
   Status: available
-  Properties: {CidrBlock:10.0.0.0/16, DhcpOptionsId:dopt-0c7273ae4ab6b762e, State:available, VpcId:vpc-04f3179fa96b62b0d, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-096b9de48e3009720', 'CidrBlock': '10.0.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:False}
+  Properties: {CidrBlock:10.0.0.0/16, DhcpOptionsId:dopt-0c7273ae4ab6b762e, State:available, VpcId:vpc-0baad95251f43f4c1, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-0fdd0ab51b51604d7', 'CidrBlock': '10.0.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:False}
+  Tags: {}
+- ID: vpc-0c499c04c4a0ca14b
+  Name: vpc-0c499c04c4a0ca14b
+  Type: aws_vpc
+  Status: available
+  Properties: {CidrBlock:10.1.0.0/16, DhcpOptionsId:dopt-0c7273ae4ab6b762e, State:available, VpcId:vpc-0c499c04c4a0ca14b, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-04b23f4c0fc7ad5ac', 'CidrBlock': '10.1.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:False}
   Tags: {}
 - ID: vpc-0054bcca2ef516ccc
   Name: vpc-0054bcca2ef516ccc
@@ -550,17 +538,17 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: available
   Properties: {CidrBlock:172.31.0.0/16, DhcpOptionsId:dopt-0c7273ae4ab6b762e, State:available, VpcId:vpc-0054bcca2ef516ccc, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-06fc4675b8c7ab62e', 'CidrBlock': '172.31.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:True}
   Tags: {}
-- ID: vpc-02beadf053a1b44ac
-  Name: vpc-02beadf053a1b44ac
-  Type: aws_vpc
-  Status: available
-  Properties: {CidrBlock:10.1.0.0/16, DhcpOptionsId:dopt-0c7273ae4ab6b762e, State:available, VpcId:vpc-02beadf053a1b44ac, OwnerId:782859940219, InstanceTenancy:default, CidrBlockAssociationSet:[{'AssociationId': 'vpc-cidr-assoc-04b86494a0ecff552', 'CidrBlock': '10.1.0.0/16', 'CidrBlockState': {'State': 'associated'}}], IsDefault:False}
-  Tags: {}
 - ID: sg-0047e87d8873212da
   Name: default
   Type: aws_security_group
   Status: available
   Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-0047e87d8873212da', 'UserId': '782859940219'}]}, {'FromPort': 443, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 443, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0047e87d8873212da, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-0028a19afa3d2fbb1
+  Name: new-ec2-sg-20251117205205
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251117205205, IpPermissions:[], OwnerId:782859940219, GroupId:sg-0028a19afa3d2fbb1, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
 - ID: sg-0c084deb9e082880f
   Name: my-crai-web-sg-20251107081627
@@ -568,11 +556,11 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: available
   Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107081627, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0c084deb9e082880f, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
-- ID: sg-04ba6e08f29ab2055
-  Name: default
+- ID: sg-03821d595e0dc60e9
+  Name: new-ec2-sg-20251117203954
   Type: aws_security_group
   Status: available
-  Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-04ba6e08f29ab2055', 'UserId': '782859940219'}]}], OwnerId:782859940219, GroupId:sg-04ba6e08f29ab2055, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-04f3179fa96b62b0d}
+  Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251117203954, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-03821d595e0dc60e9, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
 - ID: sg-0e61931d2add14094
   Name: my-crai-web-sg-20251107082525
@@ -598,6 +586,12 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: available
   Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107134934, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0e3cf3485ced831f6, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
+- ID: sg-00a79dba54a390662
+  Name: new-web-sg-20251117201850
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for web access (SSH and HTTP), GroupName:new-web-sg-20251117201850, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-00a79dba54a390662, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
 - ID: sg-00a6aa69b4192e538
   Name: new-ec2-sg-20251107144551
   Type: aws_security_group
@@ -622,6 +616,12 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: available
   Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-sg-20251107082255, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0c2f557d2466070f9, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
+- ID: sg-0da53cb9399214155
+  Name: my-new-web-sg-20251117204921
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:Security group for web access (SSH and HTTP), GroupName:my-new-web-sg-20251117204921, IpPermissions:[], OwnerId:782859940219, GroupId:sg-0da53cb9399214155, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
 - ID: sg-0ccbeb29a363715fb
   Name: new-ec2-sg-20251107130959
   Type: aws_security_group
@@ -633,6 +633,12 @@ Requires: VPC, CIDR Block, Availability Zone
   Type: aws_security_group
   Status: available
   Properties: {Description:Security group for my-test-alb, allowing HTTP and HTTPS traffic, GroupName:my-test-alb-sg-20251106083254, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 443, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 443, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0c988da22eaf384ff, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-093ee7dd0da7e7407
+  Name: default
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-093ee7dd0da7e7407', 'UserId': '782859940219'}]}], OwnerId:782859940219, GroupId:sg-093ee7dd0da7e7407, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0baad95251f43f4c1}
   Tags: {}
 - ID: sg-06616cbbc7fd2d7ef
   Name: my-crai-web-sg-20251107081815
@@ -646,11 +652,11 @@ Requires: VPC, CIDR Block, Availability Zone
   Status: available
   Properties: {Description:Security group for my-crai-web-server, allowing HTTP and SSH, GroupName:my-crai-web-server-sg-20251114073604, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0e1be0bb51ae3f91d, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
-- ID: sg-026dab4b046b0c6c4
-  Name: default
+- ID: sg-0bfe17e9f1b3dc8c5
+  Name: new-general-sg-20251117203345
   Type: aws_security_group
   Status: available
-  Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-026dab4b046b0c6c4', 'UserId': '782859940219'}]}], OwnerId:782859940219, GroupId:sg-026dab4b046b0c6c4, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-02beadf053a1b44ac}
+  Properties: {Description:Security group for general access (SSH and HTTP), GroupName:new-general-sg-20251117203345, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-0bfe17e9f1b3dc8c5, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
   Tags: {}
 - ID: sg-0fad12cbbb20c508b
   Name: new-ec2-sg-20251107135255
@@ -705,6 +711,12 @@ Requires: VPC, CIDR Block, Availability Zone
   Type: aws_security_group
   Status: available
   Properties: {Description:Security group for new EC2 instance, allowing HTTP and SSH, GroupName:new-ec2-sg-20251107135554, IpPermissions:[{'FromPort': 80, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 80, 'UserIdGroupPairs': []}, {'FromPort': 22, 'IpProtocol': 'tcp', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'ToPort': 22, 'UserIdGroupPairs': []}], OwnerId:782859940219, GroupId:sg-06264b7afa994489f, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0054bcca2ef516ccc}
+  Tags: {}
+- ID: sg-086a5e16c6d928040
+  Name: default
+  Type: aws_security_group
+  Status: available
+  Properties: {Description:default VPC security group, GroupName:default, IpPermissions:[{'IpProtocol': '-1', 'IpRanges': [], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': [{'GroupId': 'sg-086a5e16c6d928040', 'UserId': '782859940219'}]}], OwnerId:782859940219, GroupId:sg-086a5e16c6d928040, IpPermissionsEgress:[{'IpProtocol': '-1', 'IpRanges': [{'CidrIp': '0.0.0.0/0'}], 'Ipv6Ranges': [], 'PrefixListIds': [], 'UserIdGroupPairs': []}], VpcId:vpc-0c499c04c4a0ca14b}
   Tags: {}
 - ID: my-db-subnet-group
   Name: my-db-subnet-group
@@ -976,4 +988,104 @@ TOOL OUTPUT FIELD NAMES:
 • list-security-groups: "security_groups" (list of objects, each with "group_id") (e.g., {step-discover-sg.security_groups[0].group_id})
 • create-ec2-instance: Requires "key_name" (e.g., "my-key-{timestamp}")
 
-BEGIN YOUR ANALYSIS AND PROVIDE YOUR JSON RESPONSE:
+BEGIN YOUR ANALYSIS AND PROVIDE YOUR JSON RESPONSE:Sending prompt to LLM...
+WebSocket authenticated via user_id parameter: 7066c4ec-93ae-4814-b43d-8c8ea47b3733
+Failed to fetch user email: {'message': 'Missing response', 'code': '204', 'hint': 'Please check traceback of the code', 'details': "Postgrest couldn't retrieve response, please check traceback of the code. Please create an issue in `supabase-community/postgrest-py` if needed."}
+Attempting direct PostgreSQL connection for user_id: 7066c4ec-93ae-4814-b43d-8c8ea47b3733
+Successfully fetched AWS credentials via PostgreSQL for user 7066c4ec-93ae-4814-b43d-8c8ea47b3733
+LLM Provider configured: gemini
+LLM Model configured: gemini-2.5-flash
+ToolFactory initialized. Registering tools...
+Creating boto3 client for service 'ec2' in region 'sa-east-1'
+Successfully created boto3 client for 'ec2'.
+Creating boto3 client for service 'ec2' in region 'sa-east-1'
+Successfully created boto3 client for 'ec2'.
+Creating boto3 client for service 'ec2' in region 'sa-east-1'
+Successfully created boto3 client for 'ec2'.
+Creating boto3 client for service 'rds' in region 'sa-east-1'
+Successfully created boto3 client for 'rds'.
+Creating boto3 client for service 'ec2' in region 'sa-east-1'
+Successfully created boto3 client for 'ec2'.
+Creating boto3 client for service 'elbv2' in region 'sa-east-1'
+Successfully created boto3 client for 'elbv2'.
+Creating boto3 client for service 's3' in region 'sa-east-1'
+Successfully created boto3 client for 's3'.
+Registering tool: create-ec2-instance
+Registering tool: list-ec2-instances
+Registering tool: terminate-ec2-instance
+Registering tool: start-ec2-instance
+Registering tool: stop-instance
+Registering tool: create-volume
+Registering tool: list-availability-zones
+Registering tool: get-latest-amazon-linux-ami
+Registering tool: get-latest-ubuntu-ami
+Registering tool: create-key-pair
+Registering tool: list-key-pairs
+Registering tool: get-default-vpc
+Registering tool: list-subnets
+Registering tool: list-vpcs
+Registering tool: create-vpc
+Registering tool: list-subnets-for-alb
+Registering tool: create-internet-gateway
+Registering tool: attach-internet-gateway
+Registering tool: create-public-subnet
+Registering tool: list-rds-instances
+Registering tool: create-db-subnet-group
+Registering tool: create-db-instance
+Registering tool: create-security-group
+Registering tool: add-security-group-ingress-rule
+Registering tool: list-security-groups
+Registering tool: add-security-group-egress-rule
+Registering tool: delete-security-group
+Registering tool: get-security-group-rules
+Registering tool: create-load-balancer
+Registering tool: create-s3-bucket
+Registered 30 tools.
+StateAwareAgent initialized.
+WebSocket connection accepted for user 7066c4ec-93ae-4814-b43d-8c8ea47b3733
+Plan execution started. Processing steps...
+--- Preparing to execute step: 'Unnamed Step' (ID: step-get-ubuntu-ami) ---
+Executing tool 'get-latest-ubuntu-ami' with resolved params: {'architecture': 'x86_64', 'release_version': '22.04'}
+Executing tool 'get-latest-ubuntu-ami' with params: {'architecture': 'x86_64', 'release_version': '22.04'}
+Getting latest Ubuntu AMI...
+Searching for latest Ubuntu Server 22.04 LTS AMI...
+Found latest Ubuntu AMI: ami-0d7069e98d190f5ce
+Tool 'get-latest-ubuntu-ami' executed successfully.
+Step 'Unnamed Step' completed. Result stored in context for ID 'step-get-ubuntu-ami'.
+--- Preparing to execute step: 'Unnamed Step' (ID: step-list-subnets) ---
+Executing tool 'list-subnets' with resolved params: {'vpc_id': 'vpc-0054bcca2ef516ccc'}
+Executing tool 'list-subnets' with params: {'vpc_id': 'vpc-0054bcca2ef516ccc'}
+Creating boto3 client for service 'ec2' in region 'sa-east-1'
+Successfully created boto3 client for 'ec2'.
+Listing subnets for VPC ID: vpc-0054bcca2ef516ccc
+Listing subnets for VPC ID: vpc-0054bcca2ef516ccc
+Found 3 subnets in VPC vpc-0054bcca2ef516ccc.
+Tool 'list-subnets' executed successfully.
+Step 'Unnamed Step' completed. Result stored in context for ID 'step-list-subnets'.
+--- Preparing to execute step: 'Unnamed Step' (ID: step-list-key-pairs) ---
+Executing tool 'list-key-pairs' with resolved params: {}
+Executing tool 'list-key-pairs' with params: {}
+Executing ListKeyPairsTool
+Listing all key pairs
+Tool 'list-key-pairs' executed successfully.
+Step 'Unnamed Step' completed. Result stored in context for ID 'step-list-key-pairs'.
+--- Preparing to execute step: 'Unnamed Step' (ID: step-create-key-pair) ---
+Executing tool 'create-key-pair' with resolved params: {'key_name': 'ec2-key-pair-20251118110330'}
+Executing tool 'create-key-pair' with params: {'key_name': 'ec2-key-pair-20251118110330'}
+Creating boto3 client for service 'ec2' in region 'sa-east-1'
+Successfully created boto3 client for 'ec2'.
+Executing CreateKeyPairTool with key_name: ec2-key-pair-20251118110330
+Creating key pair: ec2-key-pair-20251118110330
+Tool 'create-key-pair' executed successfully.
+Step 'Unnamed Step' completed. Result stored in context for ID 'step-create-key-pair'.
+--- Preparing to execute step: 'Unnamed Step' (ID: step-create-ec2-instance) ---
+Executing tool 'create-ec2-instance' with resolved params: {'image_id': 'ami-0d7069e98d190f5ce', 'instance_type': 't3.micro', 'key_name': 'ec2-key-pair-20251118110330', 'subnet_id': 'subnet-007a2aca7a6c9a0c7', 'security_group_ids': ['sg-0ffb09ae78847f064'], 'tags': [{'Key': 'Name', 'Value': 'new-ec2-instance-20251118110332'}]}
+Executing tool 'create-ec2-instance' with params: {'image_id': 'ami-0d7069e98d190f5ce', 'instance_type': 't3.micro', 'key_name': 'ec2-key-pair-20251118110330', 'subnet_id': 'subnet-007a2aca7a6c9a0c7', 'security_group_ids': ['sg-0ffb09ae78847f064'], 'tags': [{'Key': 'Name', 'Value': 'new-ec2-instance-20251118110332'}]}
+Creating boto3 client for service 'ec2' in region 'sa-east-1'
+Successfully created boto3 client for 'ec2'.
+Executing tool: create-ec2-instance
+Creating EC2 instance with image 'ami-0d7069e98d190f5ce' and type 't3.micro'
+Tool 'create-ec2-instance' executed successfully.
+Step 'Unnamed Step' completed. Result stored in context for ID 'step-create-ec2-instance'.
+Plan execution finished successfully.
+WebSocket connection closed.
