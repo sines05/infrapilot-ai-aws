@@ -41,11 +41,12 @@ export async function POST(req: Request) {
       }
 
       // INSERT trực tiếp password (KHÔNG HASH)
+      // Thêm giá trị mặc định cho aws_access_key và aws_secret_key
       const { rows } = await client.query(
-        `INSERT INTO users (name, email, password, created_at)
-         VALUES ($1, $2, $3, NOW())
+        `INSERT INTO users (name, email, password, aws_access_key, aws_secret_key, created_at)
+         VALUES ($1, $2, $3, $4, $5, NOW())
          RETURNING id, name, email`,
-        [name, email, password]
+        [name, email, password, "", ""]
       );
 
       return NextResponse.json({ user: rows[0] }, { status: 201 });
