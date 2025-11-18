@@ -1,8 +1,8 @@
-import NextAuth, { NextAuthOptions } from 'next-auth';
+// app/api/auth/[...nextauth]/route.ts
+import NextAuth, { NextAuthOptions, User } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { Pool } from 'pg';
 
-// Tạo connection pool đến Supabase / PostgreSQL
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -25,27 +25,30 @@ export const authOptions: NextAuthOptions = {
 
         const client = await pool.connect();
         try {
-          // Tìm user theo email
           const query = 'SELECT * FROM users WHERE email = $1';
           const { rows } = await client.query(query, [credentials.email]);
           const user = rows[0];
 
           if (!user) return null;
 
-          // So sánh mật khẩu (cảnh báo: plain text, nên dùng bcrypt)
           const isPasswordCorrect = credentials.password === user.password;
           if (!isPasswordCorrect) return null;
+          
+          const hasCredentials = !!(user.aws_access_key && user.aws_secret_key && user.google_api_key && user.aws_region);
 
-          // Trả về object user
+          // --- SỬA LỖI TẠI ĐÂY ---
+          // Trả về một đối tượng đầy đủ, khớp với `interface User` trong file types/next-auth.d.ts
           return {
             id: user.id,
             name: user.name,
             email: user.email,
             aws_access_key: user.aws_access_key,
             aws_secret_key: user.aws_secret_key,
-            aws_region: user.aws_region,       
+            aws_region: user.aws_region,
             google_api_key: user.google_api_key,
-          };
+            is_demo: user.is_demo,
+            hasCredentials,
+          } as User; // Dùng as User để TypeScript xác nhận
 
         } catch (error) {
           console.error('Lỗi khi xác thực:', error);
@@ -57,25 +60,39 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    // Callback `jwt` nhận `user` object từ `authorize` trong lần đăng nhập đầu tiên
+    async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.id = user.id;
-        token.name = user.name;               
-        token.aws_access_key = (user as any).aws_access_key;
-        token.aws_secret_key = (user as any).aws_secret_key;
-        token.aws_region = (user as any).aws_region;  
-        token.google_api_key = (user as any).google_api_key;
+        // Truyền tất cả các trường từ `user` object vào `token`
+        const u = user as any; // Ép kiểu để dễ truy cập
+        token.id = u.id;
+        token.aws_access_key = u.aws_access_key;
+        token.aws_secret_key = u.aws_secret_key;
+        token.aws_region = u.aws_region;
+        token.google_api_key = u.google_api_key;
+        token.is_demo = u.is_demo;
+        token.hasCredentials = u.hasCredentials;
       }
+      
+      // Khi session được cập nhật từ client (sau khi lưu credentials)
+      if (trigger === "update" && session?.hasCredentials) {
+         token.hasCredentials = session.hasCredentials;
+      }
+
       return token;
     },
-    session({ session, token }) {
+    // Callback `session` nhận dữ liệu từ `token` để gửi đến client
+    async session({ session, token }) {
       if (token && session.user) {
-        (session.user as any).id = token.id;
-        (session.user as any).name = token.name;          
-        (session.user as any).aws_access_key = token.aws_access_key;
-        (session.user as any).aws_secret_key = token.aws_secret_key;
-        (session.user as any).aws_region = token.aws_region; 
-        (session.user as any).google_api_key = token.google_api_key;
+        // Gán tất cả các trường từ `token` vào `session.user`
+        const u = session.user as any; // Ép kiểu để dễ gán
+        u.id = token.id;
+        u.aws_access_key = token.aws_access_key;
+        u.aws_secret_key = token.aws_secret_key;
+        u.aws_region = token.aws_region;
+        u.google_api_key = token.google_api_key;
+        u.is_demo = token.is_demo;
+        u.hasCredentials = token.hasCredentials;
       }
       return session;
     },

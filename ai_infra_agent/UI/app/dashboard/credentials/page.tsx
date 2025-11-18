@@ -21,8 +21,9 @@ import { DashboardLayout } from "@/components/dashboard-layout";
 import { Eye, EyeOff, Copy, Loader2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import supabase from "@/lib/supabase/client";
-// import toast from "react-hot-toast";
+// import toast from "react-hot-toast"; // Bỏ comment nếu bạn muốn dùng toast notifications
 
+// Danh sách các AWS Regions
 const awsRegions = [
   { code: "us-east-1", name: "US East (N. Virginia)" },
   { code: "us-east-2", name: "US East (Ohio)" },
@@ -64,18 +65,17 @@ const emptyCredentials: CredentialFormState = {
 export default function CredentialsPage() {
   const [showAwsSecret, setShowAwsSecret] = useState(false);
   const [showGoogleKey, setShowGoogleKey] = useState(false);
-  const [credentials, setCredentials] =
-    useState<CredentialFormState>(emptyCredentials);
-  const [persistedCredentials, setPersistedCredentials] =
-    useState<CredentialFormState>(emptyCredentials);
+  const [credentials, setCredentials] = useState<CredentialFormState>(emptyCredentials);
+  const [persistedCredentials, setPersistedCredentials] = useState<CredentialFormState>(emptyCredentials);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const { data: session, status } = useSession();
 
-  const userId = (session?.user as { id?: string } | undefined)?.id;
+  // Lấy session, status và hàm update từ NextAuth
+  const { data: session, status, update } = useSession();
+  const userId = session?.user?.id;
 
-  // ... useEffect để load dữ liệu vẫn giữ nguyên ...
+  // Effect để tải credentials từ CSDL khi component mount hoặc user thay đổi
   useEffect(() => {
     if (status === "loading") return;
 
@@ -102,8 +102,10 @@ export default function CredentialsPage() {
 
         if (!isMounted) return;
 
+        // Mã PGRST116 chỉ có nghĩa là không tìm thấy dòng nào, đây không phải là lỗi
         if (error && error.code !== "PGRST116") {
           console.error("Failed to load credentials:", error.message);
+          // toast.error("Failed to load credentials.");
           return;
         }
 
@@ -116,10 +118,11 @@ export default function CredentialsPage() {
 
         setCredentials(mapped);
         setPersistedCredentials(mapped);
-        setIsEditing(false);
+        setIsEditing(false); // Bắt đầu ở chế độ read-only
       } catch (fetchError) {
         if (isMounted) {
           console.error("Unexpected error loading credentials:", fetchError);
+          // toast.error("An unexpected error occurred.");
         }
       } finally {
         if (isMounted) {
@@ -131,32 +134,29 @@ export default function CredentialsPage() {
     loadCredentials();
 
     return () => {
-      isMounted = false;
+      isMounted = false; // Cleanup để tránh cập nhật state trên component đã unmount
     };
   }, [status, userId]);
 
-
+  // Kiểm tra xem có thay đổi nào chưa được lưu không
   const hasChanges =
     credentials.awsAccessKey !== persistedCredentials.awsAccessKey ||
     credentials.awsSecretKey !== persistedCredentials.awsSecretKey ||
     credentials.googleAiKey !== persistedCredentials.googleAiKey ||
     credentials.awsRegion !== persistedCredentials.awsRegion;
 
-  const handleInputChange = (
-    field: keyof Omit<CredentialFormState, "awsRegion">,
-    value: string
-  ) => {
+  const handleInputChange = (field: keyof Omit<CredentialFormState, "awsRegion">, value: string) => {
     setCredentials((prev) => ({ ...prev, [field]: value }));
   };
   
   const handleRegionChange = (value: string) => {
-    setCredentials((prev) => ({...prev, awsRegion: value}));
+    setCredentials((prev) => ({ ...prev, awsRegion: value }));
   };
 
   const handleEditClick = () => setIsEditing(true);
 
   const handleCancelClick = () => {
-    setCredentials(persistedCredentials);
+    setCredentials(persistedCredentials); // Hoàn tác lại các thay đổi
     setIsEditing(false);
   };
   
@@ -172,13 +172,10 @@ export default function CredentialsPage() {
         aws_region: credentials.awsRegion || null,
       };
 
-      // --- THAY ĐỔI QUAN TRỌNG: DÙNG .update() THAY VÌ .upsert() ---
-      // Điều này thể hiện đúng ý định là "chỉ cập nhật" và tránh lỗi NOT NULL
-      // khi vô tình tạo mới một user mà không có `name` hay `email`.
       const { error } = await supabase
         .from("users")
         .update(sanitized)
-        .eq("id", userId); // Chỉ định rõ dòng nào cần update
+        .eq("id", userId);
 
       if (error) {
         console.error("Failed to save credentials:", error.message);
@@ -187,7 +184,6 @@ export default function CredentialsPage() {
       }
 
       // toast.success("Credentials saved successfully!");
-
       const newPersistedState = {
         awsAccessKey: sanitized.aws_access_key ?? "",
         awsSecretKey: sanitized.aws_secret_key ?? "",
@@ -197,6 +193,12 @@ export default function CredentialsPage() {
       setCredentials(newPersistedState);
       setPersistedCredentials(newPersistedState);
       setIsEditing(false);
+
+      // --- 🎯 QUAN TRỌNG: CẬP NHẬT SESSION ---
+      // Báo cho NextAuth biết người dùng hiện đã có credentials.
+      // Điều này sẽ kích hoạt logic mở khóa sidebar trong DashboardLayout.
+      await update({ hasCredentials: true });
+
     } catch (saveError) {
       console.error("Unexpected error saving credentials:", saveError);
       // toast.error("An unexpected error occurred.");
@@ -219,17 +221,14 @@ export default function CredentialsPage() {
           <CardHeader>
             <CardTitle>API Credentials</CardTitle>
             <CardDescription>
-              Enter and manage the API keys for required services.
+              Enter and manage the API keys for required services. Your keys are stored securely.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               {/* AWS Access Key ID */}
               <div>
-                <label
-                  htmlFor="aws-access-key"
-                  className="text-sm font-medium text-muted-foreground"
-                >
+                <label htmlFor="aws-access-key" className="text-sm font-medium text-muted-foreground">
                   AWS Access Key ID
                 </label>
                 <div className="flex gap-2 mt-2">
@@ -238,10 +237,9 @@ export default function CredentialsPage() {
                     value={credentials.awsAccessKey}
                     readOnly={!isEditing}
                     disabled={isLoading || status !== "authenticated"}
-                    onChange={(event) =>
-                      handleInputChange("awsAccessKey", event.target.value)
-                    }
+                    onChange={(e) => handleInputChange("awsAccessKey", e.target.value)}
                     className="flex-1 font-mono text-sm"
+                    placeholder={isLoading ? "Loading..." : "AKIA..."}
                   />
                   <Button size="icon" variant="outline" onClick={() => navigator.clipboard.writeText(credentials.awsAccessKey)} disabled={!credentials.awsAccessKey}>
                     <Copy className="w-4 h-4" />
@@ -251,10 +249,7 @@ export default function CredentialsPage() {
 
               {/* AWS Secret Access Key */}
               <div>
-                <label
-                  htmlFor="aws-secret-key"
-                  className="text-sm font-medium text-muted-foreground"
-                >
+                <label htmlFor="aws-secret-key" className="text-sm font-medium text-muted-foreground">
                   AWS Secret Access Key
                 </label>
                 <div className="flex gap-2 mt-2">
@@ -264,10 +259,9 @@ export default function CredentialsPage() {
                     value={credentials.awsSecretKey}
                     readOnly={!isEditing}
                     disabled={isLoading || status !== "authenticated"}
-                    onChange={(event) =>
-                      handleInputChange("awsSecretKey", event.target.value)
-                    }
+                    onChange={(e) => handleInputChange("awsSecretKey", e.target.value)}
                     className="flex-1 font-mono text-sm"
+                    placeholder="****************************************"
                   />
                   <Button size="icon" variant="outline" onClick={() => setShowAwsSecret((prev) => !prev)}>
                     {showAwsSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -275,7 +269,7 @@ export default function CredentialsPage() {
                 </div>
               </div>
 
-              {/* Select component for AWS Region */}
+              {/* AWS Region */}
               <div>
                 <label htmlFor="aws-region" className="text-sm font-medium text-muted-foreground">
                   AWS Region
@@ -300,10 +294,7 @@ export default function CredentialsPage() {
 
               {/* Google AI Key */}
               <div>
-                <label
-                  htmlFor="google-ai-key"
-                  className="text-sm font-medium text-muted-foreground"
-                >
+                <label htmlFor="google-ai-key" className="text-sm font-medium text-muted-foreground">
                   Google AI API Key
                 </label>
                 <div className="flex gap-2 mt-2">
@@ -313,10 +304,9 @@ export default function CredentialsPage() {
                     value={credentials.googleAiKey}
                     readOnly={!isEditing}
                     disabled={isLoading || status !== "authenticated"}
-                    onChange={(event) =>
-                      handleInputChange("googleAiKey", event.target.value)
-                    }
+                    onChange={(e) => handleInputChange("googleAiKey", e.target.value)}
                     className="flex-1 font-mono text-sm"
+                    placeholder="***************************************"
                   />
                   <Button size="icon" variant="outline" onClick={() => setShowGoogleKey((prev) => !prev)}>
                     {showGoogleKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
