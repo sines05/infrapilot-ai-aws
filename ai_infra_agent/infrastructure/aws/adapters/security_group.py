@@ -11,7 +11,7 @@ class SecurityGroupAdapter(AWSAdapterBase):
     """
 
     def __init__(self, settings: AWSSettings, logger: logger):
-        super().__init__("ec2", settings, logger)
+        super().__init__("ec2", logger, aws_config=None, settings=settings)
 
     def create_security_group(self, group_name: str, description: str, vpc_id: str) -> Dict[str, Any]:
         """

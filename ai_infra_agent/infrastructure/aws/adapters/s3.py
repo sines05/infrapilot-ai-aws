@@ -18,7 +18,7 @@ class S3Adapter(AWSAdapterBase):
             settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
         """
-        super().__init__(service_name="s3", settings=settings, logger=logger)
+        super().__init__(service_name="s3", logger=logger, aws_config=None, settings=settings)
 
     def create_bucket(self, bucket_name: str, region: Optional[str] = None, tags: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         """

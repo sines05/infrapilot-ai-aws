@@ -1,10 +1,11 @@
 export interface ExecutionPlanStep {
+  result: any;
   stepId: string;
   stepName: string;
   description: string;
   duration: string;
   status: "pending" | "in_progress" | "completed" | "failed";
-  details: Record<string, string>;
+  details: Record<string, any>; // Sửa thành `any` để linh hoạt hơn
   mcpTool?: string;
   toolParameters ?: Record<string, any>;
 }
@@ -12,7 +13,7 @@ export interface ExecutionPlanStep {
 export interface ExecuteStep {
   id: string
   mcpTool: string
-  toolParameters: Record<string, string>
+  toolParameters: Record<string, any>; // Sửa thành `any`
   dependsOn: string[]
 }
 
@@ -26,6 +27,7 @@ export interface AIResponse {
 }
 
 export interface WebSocketProgressMessage {
+  result?: any; // Sửa thành optional
   type: string;
   stepId?: string;
   status?: "in_progress" | "completed" | "failed";
@@ -38,4 +40,19 @@ export interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
+}
+
+export interface ExecutionResult {
+  executionId: string;
+  status: "success" | "failed" | "in_progress";
+  architecture?: Record<string, any>;
+  outputs?: Record<string, any>;
+  message?: string;
+  timestamp?: string;
+}
+
+export interface UserCredentials {
+  awsAccessKey: string | null;
+  awsSecretKey: string | null;
+  googleApiKey: string | null;
 }

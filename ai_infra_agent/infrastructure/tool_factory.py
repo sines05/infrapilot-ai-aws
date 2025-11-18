@@ -60,6 +60,8 @@ class ToolFactory:
         """
         self.logger = logger
         self._tools: Dict[str, BaseTool] = {}
+        # Optional per-user AWS config (dict with access_key_id, secret_access_key, region)
+        self.aws_config = None
         self.logger.info("ToolFactory initialized. Registering tools...")
         self._register_all_tools()
 
@@ -148,8 +150,36 @@ class ToolFactory:
         Retrieves a registered tool instance.
         """
         self.logger.debug(f"Attempting to create tool: {tool_name}")
+        # If a per-user aws_config is set, construct a fresh tool instance wired to adapters using that config.
+        if self.aws_config:
+            # Create tool instances on-the-fly using aws_config where applicable.
+            if tool_name == "create-ec2-instance":
+                from ai_infra_agent.infrastructure.aws.adapters.ec2 import EC2Adapter
+                from ai_infra_agent.infrastructure.aws.tools.ec2 import CreateEC2InstanceTool
+                adapter = EC2Adapter(logger=self.logger, aws_config=self.aws_config)
+                return CreateEC2InstanceTool(self.logger, adapter)
+            if tool_name in ("create-key-pair", "create-keypair"):
+                from ai_infra_agent.infrastructure.aws.adapters.key_pair import KeyPairAdapter
+                from ai_infra_agent.infrastructure.aws.tools.keypair import CreateKeyPairTool
+                adapter = KeyPairAdapter(logger=self.logger, aws_config=self.aws_config)
+                return CreateKeyPairTool(self.logger, adapter)
+            if tool_name == "list-subnets":
+                from ai_infra_agent.infrastructure.aws.adapters.vpc import VpcAdapter
+                from ai_infra_agent.infrastructure.aws.tools.vpc import ListSubnetsTool
+                adapter = VpcAdapter(logger=self.logger, aws_config=self.aws_config)
+                return ListSubnetsTool(self.logger, adapter)
+            # Add more on-the-fly creations as needed for other tools.
+
         tool = self._tools.get(tool_name)
         if not tool:
             self.logger.error(f"Tool '{tool_name}' not found.")
             raise ValueError(f"Tool '{tool_name}' not found.")
         return tool
+
+    def set_aws_config(self, aws_config: dict):
+        """Set per-user AWS configuration to be used when creating tools on-the-fly.
+
+        aws_config should be a dict with keys: access_key_id, secret_access_key, region, etc.
+        """
+        self.aws_config = aws_config
+        self.logger.debug(f"ToolFactory AWS config set: region={aws_config.get('region') if aws_config else None}")

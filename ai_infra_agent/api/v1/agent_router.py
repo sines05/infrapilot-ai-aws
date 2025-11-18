@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 from ai_infra_agent.agent.agent import StateAwareAgent
 from ai_infra_agent.state.manager import StateManager
-from ai_infra_agent.api.dependencies import get_agent, get_state_manager, get_scanner
+from ai_infra_agent.api.dependencies import get_agent, get_state_manager, get_scanner, get_user_credentials
 from ai_infra_agent.services.discovery.scanner import DiscoveryScanner
 
 # Create a new router instance. This will be included in the main FastAPI app.
@@ -20,7 +20,7 @@ async def process_request(
         ...,
         example={"request": "create a t3.micro ec2 instance"},
     ),
-    agent: StateAwareAgent = Depends(get_agent),
+    user_creds: dict = Depends(get_user_credentials),
 ):
     """
     Receives a user request in natural language, processes it through the AI Agent,
@@ -37,15 +37,21 @@ async def process_request(
         )
 
     try:
+        agent = get_agent(user_creds)
         plan = await agent.process_request(user_request)
         if "error" in plan:
             # If the plan itself contains an error (e.g., JSON parsing failed)
             raise HTTPException(status_code=500, detail=plan)
         return plan
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is
+        raise
     except Exception as e:
         # Catch unexpected errors during agent processing
         import traceback
-        agent.logger.error(f"Failed to process request: {e}", exc_info=True)
+        from ai_infra_agent.api.dependencies import get_logger
+        log = get_logger()
+        log.error(f"Failed to process request: {e}", exc_info=True)
         print("--- FULL SERVER TRACEBACK ---")
         traceback.print_exc()
         print("-----------------------------")
@@ -62,13 +68,20 @@ async def process_request(
 async def discover_resources(
     state_manager: StateManager = Depends(get_state_manager),
     scanner: DiscoveryScanner = Depends(get_scanner),
+    user_creds: dict = Depends(get_user_credentials),
 ):
     """
     Initiates a scan of the AWS account to discover existing resources.
     The discovered resources are then stored in the StateManager's discovered_state.
     """
     try:
-        discovered_infra_state = await scanner.scan_aws_resources()
+        # Scanner may use default tool factory; to run discovery with user's credentials
+        # create an agent bound to the user's credentials and use its scanner if present.
+        agent = get_agent(user_creds)
+        if hasattr(agent, "scanner") and agent.scanner:
+            discovered_infra_state = await agent.scanner.scan_aws_resources()
+        else:
+            discovered_infra_state = await scanner.scan_aws_resources()
         state_manager.set_discovered_state(discovered_infra_state)
         return discovered_infra_state.dict()
     except Exception as e:
@@ -84,13 +97,15 @@ async def discover_resources(
     response_description="The current combined state of managed and discovered infrastructure as a JSON object.",
 )
 async def get_state(
-    state_manager: StateManager = Depends(get_state_manager)
+    state_manager: StateManager = Depends(get_state_manager),
+    user_creds: dict = Depends(get_user_credentials),
 ):
     """
     Retrieves and returns the current discovered state of the AWS resources.
     """
     try:
-        return state_manager.state.dict()
+        # If you store state per-user, filter here. For now return combined state and user id.
+        return {"user_id": user_creds.get("user_id"), "state": state_manager.state.dict()}
     except Exception as e:
         state_manager.logger.error(f"Failed to get discovered state: {e}", exc_info=True)
         raise HTTPException(

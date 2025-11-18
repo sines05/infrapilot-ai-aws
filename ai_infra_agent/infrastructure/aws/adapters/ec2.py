@@ -10,7 +10,7 @@ class EC2Adapter(AWSAdapterBase):
     Adapter for interacting with the AWS EC2 service.
     """
 
-    def __init__(self, settings: AWSSettings, logger: logger):
+    def __init__(self, logger: logger, aws_config: dict = None, settings: AWSSettings = None):
         """
         Initializes the EC2 adapter.
 
@@ -18,7 +18,7 @@ class EC2Adapter(AWSAdapterBase):
             settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
         """
-        super().__init__(service_name="ec2", settings=settings, logger=logger)
+        super().__init__(service_name="ec2", logger=logger, aws_config=aws_config, settings=settings)
 
     def list_instances(self, instance_ids: List[str] = None) -> Dict[str, Any]:
         """

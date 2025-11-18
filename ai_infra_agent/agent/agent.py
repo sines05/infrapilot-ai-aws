@@ -29,7 +29,7 @@ class StateAwareAgent:
     The AI agent that understands the infrastructure state and processes user requests.
     """
 
-    def __init__(self, settings, state_manager: StateManager, tool_factory: ToolFactory, logger, scanner: DiscoveryScanner, llm: BaseLanguageModel = None):
+    def __init__(self, settings, state_manager: StateManager, tool_factory: ToolFactory, logger, scanner: DiscoveryScanner, user_credentials: Dict[str, Any] = None, llm: BaseLanguageModel = None):
         """
         Initializes the StateAwareAgent.
 
@@ -45,7 +45,16 @@ class StateAwareAgent:
         self.state_manager = state_manager
         self.tool_factory = tool_factory
         self.logger = logger
-        self.scanner = scanner # Store the scanner instance
+        self.scanner = scanner  # Store the scanner instance
+        self.user_credentials = user_credentials or {}
+
+        # Configure tool factory with user's AWS config if present
+        try:
+            aws_conf = self.user_credentials.get("aws") or {}
+            if hasattr(self.tool_factory, "set_aws_config"):
+                self.tool_factory.set_aws_config(aws_conf)
+        except Exception:
+            self.logger.debug("Tool factory does not support set_aws_config or failed to set config")
 
         if llm:
             self.llm = llm
@@ -68,15 +77,22 @@ class StateAwareAgent:
         self.logger.info(f"LLM Model configured: {model_name}")
 
         if provider == "gemini":
-            api_key = os.getenv("GOOGLE_API_KEY")
+            # Prefer per-user Google API key from credentials; fallback to env var
+            api_key = None
+            try:
+                api_key = self.user_credentials.get("google", {}).get("api_key") if self.user_credentials else None
+            except Exception:
+                api_key = None
             if not api_key:
-                self.logger.error("GOOGLE_API_KEY not found in environment variables. Gemini LLM cannot be initialized.")
+                api_key = os.getenv("GOOGLE_API_KEY")
+            if not api_key:
+                self.logger.error("GOOGLE_API_KEY not found in user credentials or environment. Gemini LLM cannot be initialized.")
                 raise ValueError("GOOGLE_API_KEY is required for Gemini provider.")
             return ChatGoogleGenerativeAI(
                 model=model_name,
                 temperature=temperature,
                 max_output_tokens=max_tokens,
-                google_api_key=api_key
+                google_api_key=api_key,
             )
         elif provider == "openai":
             api_key = os.getenv("OPENAI_API_KEY")
@@ -234,8 +250,9 @@ class StateAwareAgent:
         # to avoid blocking the asyncio event loop.
         loop = asyncio.get_event_loop()
         result = await loop.run_in_executor(None, lambda: tool.execute(**resolved_kwargs))
-        if "error" in result:
-            self.logger.error(f"Tool '{tool_name}' execution failed with error: {result["error"]}")
-            raise ValueError(f"Tool '{tool_name}' execution failed: {result["error"]}")
+        if isinstance(result, dict) and "error" in result:
+            err = result.get("error")
+            self.logger.error(f"Tool '{tool_name}' execution failed with error: {err}")
+            raise ValueError(f"Tool '{tool_name}' execution failed: {err}")
         self.logger.info(f"Tool '{tool_name}' executed successfully.")
         return result
