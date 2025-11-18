@@ -10,15 +10,16 @@ class RdsAdapter(AWSAdapterBase):
     Adapter for interacting with the AWS RDS service.
     """
 
-    def __init__(self, settings: AWSSettings, logger: logger):
+    def __init__(self, logger: logger, aws_config: Optional[Dict[str, Any]] = None, settings: Optional[AWSSettings] = None):
         """
         Initializes the RDS adapter.
 
         Args:
-            settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
+            aws_config (dict, optional): User-specific AWS credentials.
+            settings (AWSSettings, optional): Fallback global AWS settings.
         """
-        super().__init__(service_name="rds", logger=logger, aws_config=None, settings=settings)
+        super().__init__(service_name="rds", logger=logger, aws_config=aws_config, settings=settings)
 
     def describe_db_instances(self, db_instance_identifier: Optional[str] = None) -> Dict[str, Any]:
         """

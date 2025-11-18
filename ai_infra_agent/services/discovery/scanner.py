@@ -41,9 +41,14 @@ class DiscoveryScanner:
         for res in sg_resources:
             discovered_resources[res.id] = res
 
-        # Scan RDS DB Subnet Groups (New)
+        # Scan RDS DB Subnet Groups
         rds_db_subnet_group_resources = await self._scan_rds_db_subnet_groups()
         for res in rds_db_subnet_group_resources:
+            discovered_resources[res.id] = res
+
+        # Scan RDS DB Instances (New)
+        rds_db_instance_resources = await self._scan_rds_db_instances()
+        for res in rds_db_instance_resources:
             discovered_resources[res.id] = res
 
         self.logger.info(f"Finished AWS resource discovery. Found {len(discovered_resources)} resources.")
@@ -71,6 +76,38 @@ class DiscoveryScanner:
             self.logger.debug(f"Discovered {len(resources)} RDS DB Subnet Groups.")
         except Exception as e:
             self.logger.error(f"Error scanning RDS DB Subnet Groups: {e}")
+        return resources
+
+    async def _scan_rds_db_instances(self) -> List[ResourceState]:
+        """
+        Scans for RDS DB Instances and converts them to ResourceState objects.
+        """
+        resources: List[ResourceState] = []
+        try:
+            response = self.rds_adapter.describe_db_instances()
+            self.logger.debug(f"Raw RDS describe_db_instances response: {response}")
+
+            for db_instance in response.get('DBInstances', []):
+                instance_id = db_instance.get('DBInstanceIdentifier')
+                instance_name = instance_id
+                # Attempt to get name from tags if available
+                if db_instance.get('TagList'):
+                    for tag in db_instance['TagList']:
+                        if tag.get('Key') == 'Name':
+                            instance_name = tag.get('Value')
+                            break
+
+                resources.append(ResourceState(
+                    id=instance_id,
+                    name=instance_name,
+                    type='aws_rds_instance',
+                    status=db_instance.get('DBInstanceStatus', 'unknown'),
+                    properties=db_instance,
+                    tags={tag['Key']: tag['Value'] for tag in db_instance.get('TagList', []) if 'Key' in tag and 'Value' in tag}
+                ))
+            self.logger.debug(f"Discovered {len(resources)} RDS DB Instances.")
+        except Exception as e:
+            self.logger.error(f"Error scanning RDS DB Instances: {e}")
         return resources
 
     async def _scan_ec2_instances(self) -> List[ResourceState]:

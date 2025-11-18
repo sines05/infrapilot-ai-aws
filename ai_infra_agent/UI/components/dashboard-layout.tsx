@@ -19,6 +19,7 @@ import {
   Bell,
   Key,
   Boxes,
+  Server,
 } from "lucide-react";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
@@ -35,6 +36,11 @@ const sidebarItems: SidebarItem[] = [
     label: "AI Chat",
     href: "/dashboard/chat",
     icon: <MessageSquare className="w-5 h-5" />,
+  },
+  {
+    label: "Infrastructure",
+    href: "/dashboard/infrastructure",
+    icon: <Server className="w-5 h-5" />,
   },
   {
     label: "Projects",
