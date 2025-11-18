@@ -1,27 +1,86 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Eye, EyeOff, Copy, RefreshCw } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff, Loader2 } from "lucide-react"
 import Link from "next/link"
 
-export default function SecuritySettingsPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showApiKey, setShowApiKey] = useState(false)
-  const [apiKey] = useState("sk_live_abc123defg456hij789")
+// Kiểu hiển thị message
+interface Message {
+  type: 'success' | 'error';
+  text: string;
+}
 
-  const sessions = [
-    { id: 1, device: "Chrome on macOS", location: "San Francisco, CA", lastActive: "Just now" },
-    { id: 2, device: "Safari on iPhone", location: "San Francisco, CA", lastActive: "2 hours ago" },
-    { id: 3, device: "Firefox on Windows", location: "New York, NY", lastActive: "1 day ago" },
-  ]
+export default function SecuritySettingsPage() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<Message | null>(null);
+
+  // --------------------
+  // ⚡ NEW: Change password handler
+  // --------------------
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setLoading(true);
+
+    // Validate
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setMessage({ type: "error", text: "Please fill in all fields." });
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setMessage({ type: "error", text: "New password and confirmation do not match." });
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setMessage({ type: "error", text: "Password must be at least 6 characters." });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      // Call API route
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Failed to update password." });
+      } else {
+        setMessage({ type: "success", text: "Password updated successfully!" });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (err: any) {
+      setMessage({ type: "error", text: err.message });
+    }
+
+    setLoading(false);
+  };
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-2xl">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link href="/dashboard/settings">
@@ -35,100 +94,85 @@ export default function SecuritySettingsPage() {
           </div>
         </div>
 
-        {/* Password */}
+        {/* Password Settings */}
         <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Password</h2>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Current Password</label>
-              <div className="relative">
-                <Input type={showPassword ? "text" : "password"} placeholder="Enter current password" />
-                <button
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
+          <form onSubmit={handleUpdatePassword}>
+            <h2 className="text-lg font-semibold mb-4">Password</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+
+              {/* Current password */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">New Password</label>
-                <Input type="password" placeholder="Enter new password" />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Confirm Password</label>
-                <Input type="password" placeholder="Confirm new password" />
-              </div>
-            </div>
-
-            <Button>Update Password</Button>
-          </div>
-        </Card>
-
-        {/* API Keys */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">API Keys</h2>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">Use API keys to authenticate your applications and scripts</p>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Production API Key</label>
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
-                  <Input type={showApiKey ? "text" : "password"} value={apiKey} readOnly />
+                <label className="text-sm font-medium" htmlFor="current-password">
+                  Current Password
+                </label>
+                <div className="relative">
+                  <Input
+                    id="current-password"
+                    type={showPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                  />
                   <button
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowApiKey(!showApiKey)}
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                   >
-                    {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff /> : <Eye />}
                   </button>
                 </div>
-                <Button variant="outline" size="icon" className="flex-shrink-0 bg-transparent">
-                  <Copy className="w-4 h-4" />
-                </Button>
               </div>
-            </div>
 
-            <Button variant="outline" className="gap-2 bg-transparent">
-              <RefreshCw className="w-4 h-4" />
-              Regenerate Key
-            </Button>
-          </div>
-        </Card>
-
-        {/* Active Sessions */}
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Active Sessions</h2>
-          <div className="space-y-3">
-            {sessions.map((session) => (
-              <div key={session.id} className="flex items-center justify-between p-4 rounded-lg border border-border">
-                <div className="flex-1">
-                  <p className="font-medium text-sm">{session.device}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {session.location} • Last active: {session.lastActive}
-                  </p>
+              {/* New password */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="new-password">
+                    New Password
+                  </label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                  />
                 </div>
-                <Button variant="outline" size="sm">
-                  Logout
-                </Button>
-              </div>
-            ))}
-          </div>
-        </Card>
 
-        {/* Two-Factor Authentication */}
-        <Card className="p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold">Two-Factor Authentication</h2>
-              <p className="text-sm text-muted-foreground mt-1">Add an extra layer of security to your account</p>
+                {/* Confirm password */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="confirm-password">
+                    Confirm Password
+                  </label>
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm password"
+                  />
+                </div>
+              </div>
+
+              {/* Message */}
+              {message && (
+                <div className={`text-sm p-3 rounded-md ${
+                  message.type === "error"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-green-100 text-green-700"
+                }`}>
+                  {message.text}
+                </div>
+              )}
+
+              <Button type="submit" disabled={loading}>
+                {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Update Password
+              </Button>
             </div>
-            <Button>Enable 2FA</Button>
-          </div>
+          </form>
         </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

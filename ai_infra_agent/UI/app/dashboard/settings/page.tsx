@@ -1,13 +1,33 @@
+// File: app/dashboard/settings/page.tsx
+
 "use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronRight, Bell, Lock, Database, Zap, Users } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/components/ui/use-toast";
+import { ChevronRight, Lock, Users, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 const settingsSections = [
   {
-    icon: User,
+    icon: Users,
     title: "Profile Settings",
     description: "Update your personal information and profile",
     href: "/dashboard/settings/profile",
@@ -18,25 +38,60 @@ const settingsSections = [
     description: "Manage passwords, API keys, and authentication",
     href: "/dashboard/settings/security",
   },
-  {
-    icon: Bell,
-    title: "Notifications",
-    description: "Configure notification preferences",
-    href: "/dashboard/settings/notifications",
-  },
-  {
-    icon: Users,
-    title: "Team & Billing",
-    description: "Manage team members and billing settings",
-    href: "/dashboard/settings/team",
-  },
 ];
 
-function User(props: any) {
-  return <Users {...props} />;
-}
+const CONFIRMATION_TEXT = "delete";
 
 export default function SettingsPage() {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [confirmationInput, setConfirmationInput] = useState("");
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const handleDeleteAccount = async () => {
+    if (confirmationInput.toLowerCase() !== CONFIRMATION_TEXT) {
+      toast({
+        title: "Error",
+        description: "Confirmation text is incorrect.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // Gọi đến đúng API endpoint đã được sửa
+      const response = await fetch('/api/auth/delete', {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to delete account.');
+      }
+
+      toast({
+        title: "Success",
+        description: "Your account has been successfully deleted.",
+      });
+
+      // Đăng xuất và chuyển hướng về trang chủ
+      await signOut({ redirect: false });
+      router.push('/'); 
+
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      toast({
+        title: "Error",
+        description: (error as Error).message || "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setConfirmationInput("");
+    }
+  };
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -78,14 +133,57 @@ export default function SettingsPage() {
             Danger Zone
           </h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between">
+              <div className="mb-4 sm:mb-0">
                 <h3 className="font-medium">Delete Account</h3>
                 <p className="text-sm text-muted-foreground">
-                  Permanently delete your account and all associated data
+                  Permanently delete your account and all associated data. This action is irreversible.
                 </p>
               </div>
-              <Button variant="destructive">Delete Account</Button>
+
+              <AlertDialog onOpenChange={(open) => !open && setConfirmationInput('')}>
+                <AlertDialogTrigger asChild>
+                  <Button variant="destructive" disabled={isDeleting}>
+                    Delete Account
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. To proceed, please type
+                      <code className="relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold mx-1">
+                        {CONFIRMATION_TEXT}
+                      </code>
+                      in the box below.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="my-4">
+                    <Label htmlFor="confirmation" className="sr-only">
+                      Confirmation
+                    </Label>
+                    <Input
+                      id="confirmation"
+                      value={confirmationInput}
+                      onChange={(e) => setConfirmationInput(e.target.value)}
+                      placeholder={CONFIRMATION_TEXT}
+                      autoComplete="off"
+                      autoFocus
+                    />
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      disabled={isDeleting || confirmationInput.toLowerCase() !== CONFIRMATION_TEXT}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      I understand, delete my account
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </Card>
