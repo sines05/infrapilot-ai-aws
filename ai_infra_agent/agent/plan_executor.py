@@ -153,7 +153,11 @@ class PlanExecutor:
                 if path:
                     try:
                         # If it's a standalone placeholder, return the raw value
-                        return self._get_value_from_context(path)
+                        value = self._get_value_from_context(path)
+                        # If the value is a list with a single item, extract it.
+                        if isinstance(value, list) and len(value) == 1:
+                            return value[0]
+                        return value
                     except (ValueError, KeyError) as e:
                         self.logger.warning(f"Could not resolve placeholder {match.group(0)}: {e}")
                         return data  # Return original placeholder on failure
@@ -163,7 +167,11 @@ class PlanExecutor:
                 path = match_obj.group(1) or match_obj.group(2)
                 if path:
                     try:
-                        return str(self._get_value_from_context(path))
+                        value = self._get_value_from_context(path)
+                        # If the value is a list with a single item, extract it.
+                        if isinstance(value, list) and len(value) == 1:
+                            return str(value[0])
+                        return str(value)
                     except (ValueError, KeyError) as e:
                         self.logger.warning(f"Could not resolve placeholder {match_obj.group(0)}: {e}")
                         return match_obj.group(0)  # Return original placeholder on failure
