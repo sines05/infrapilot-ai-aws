@@ -2,7 +2,6 @@ from typing import Dict, Any, Optional, List
 from loguru import logger
 
 from ai_infra_agent.infrastructure.aws.adapters.base import AWSAdapterBase
-from ai_infra_agent.core.config import AWSSettings
 
 
 class S3Adapter(AWSAdapterBase):
@@ -10,15 +9,15 @@ class S3Adapter(AWSAdapterBase):
     Adapter for interacting with the AWS S3 service.
     """
 
-    def __init__(self, settings: AWSSettings, logger: logger):
+    def __init__(self, logger: logger, aws_config: Dict[str, Any]):
         """
         Initializes the S3 adapter.
 
         Args:
-            settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
+            aws_config (Dict[str, Any]): User-specific AWS credentials.
         """
-        super().__init__(service_name="s3", logger=logger, aws_config=None, settings=settings)
+        super().__init__(service_name="s3", logger=logger, aws_config=aws_config)
 
     def create_bucket(self, bucket_name: str, region: Optional[str] = None, tags: Optional[List[Dict[str, str]]] = None) -> Dict[str, Any]:
         """
@@ -32,11 +31,11 @@ class S3Adapter(AWSAdapterBase):
         Returns:
             Dict[str, Any]: The response from the create_bucket call.
         """
-        self.logger.info(f"Creating S3 bucket: {bucket_name} in region: {region or self.settings.region}")
+        self.logger.info(f"Creating S3 bucket: {bucket_name} in region: {region or self.aws_config.get('region')}")
         try:
             create_bucket_configuration = {}
             if region and region != 'us-east-1': # us-east-1 does not require LocationConstraint
-                create_bucket_configuration['LocationConstraint'] = region
+                create_bucket_configuration['LocationConstraint'] = region or self.aws_config.get('region')
 
             params = {'Bucket': bucket_name}
             if create_bucket_configuration:

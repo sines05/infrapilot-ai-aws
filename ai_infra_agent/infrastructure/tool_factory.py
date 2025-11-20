@@ -1,17 +1,16 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Type, Tuple
 from loguru import logger
 
-# Adapter Imports
+# Adapter Imports (these are now just class references)
 from ai_infra_agent.infrastructure.aws.adapters.ec2 import EC2Adapter
 from ai_infra_agent.infrastructure.aws.adapters.vpc import VpcAdapter
 from ai_infra_agent.infrastructure.aws.adapters.key_pair import KeyPairAdapter
 from ai_infra_agent.infrastructure.aws.adapters.rds import RdsAdapter
 from ai_infra_agent.infrastructure.aws.adapters.security_group import SecurityGroupAdapter
 from ai_infra_agent.infrastructure.aws.adapters.elb import ElbAdapter
-from ai_infra_agent.infrastructure.aws.adapters.s3 import S3Adapter # New
-from ai_infra_agent.core.config import settings
+from ai_infra_agent.infrastructure.aws.adapters.s3 import S3Adapter
 
-# Tool Imports
+# Tool Imports (these are now just class references)
 from ai_infra_agent.infrastructure.aws.tools.base import BaseTool
 from ai_infra_agent.infrastructure.aws.tools.ec2 import (
     CreateEC2InstanceTool,
@@ -20,7 +19,7 @@ from ai_infra_agent.infrastructure.aws.tools.ec2 import (
     StartInstanceTool,
     StopInstanceTool,
     CreateVolumeTool,
-    ListAvailabilityZonesTool, # Added this line
+    ListAvailabilityZonesTool,
 )
 from ai_infra_agent.infrastructure.aws.tools.ami import GetLatestAmazonLinuxAMITool, GetLatestUbuntuAmiTool
 from ai_infra_agent.infrastructure.aws.tools.keypair import CreateKeyPairTool, ListKeyPairsTool
@@ -32,9 +31,9 @@ from ai_infra_agent.infrastructure.aws.tools.vpc import (
     ListSubnetsForAlbTool,
     CreateInternetGatewayTool,
     AttachInternetGatewayTool,
-    CreatePublicSubnetTool, # Added this line
+    CreatePublicSubnetTool,
 )
-from ai_infra_agent.infrastructure.aws.tools.rds import ListRDSInstancesTool, CreateDbSubnetGroupTool, CreateDbInstanceTool
+from ai_infra_agent.infrastructure.aws.tools.rds import ListRDSInstancesTool, CreateDbSubnetGroupTool, CreateDbInstanceTool, ListDbSubnetGroupsTool
 from ai_infra_agent.infrastructure.aws.tools.security_group import (
     CreateSecurityGroupTool,
     AddSecurityGroupIngressRuleTool,
@@ -44,142 +43,135 @@ from ai_infra_agent.infrastructure.aws.tools.security_group import (
     GetSecurityGroupRulesTool,
 )
 from ai_infra_agent.infrastructure.aws.tools.elb import CreateLoadBalancerTool
-from ai_infra_agent.infrastructure.aws.tools.s3 import CreateS3BucketTool # New
+from ai_infra_agent.infrastructure.aws.tools.s3 import CreateS3BucketTool
 
 
 class ToolFactory:
     """
     Factory class to create and manage tools.
-    This factory is responsible for instantiating adapters and tools,
-    and wiring them together.
+    This factory is responsible for mapping tool names to their corresponding
+    Tool and Adapter classes, and for instantiating them with user-specific
+    credentials on demand.
     """
+
+    # Type alias for the tool registry entry
+    ToolRegistryEntry = Tuple[Type[BaseTool], Type[Any], str, str] # ToolClass, AdapterClass, service_name, description
 
     def __init__(self, logger: logger):
         """
-        Initializes the ToolFactory and registers all available tools.
+        Initializes the ToolFactory and registers all available tool classes.
         """
         self.logger = logger
-        self._tools: Dict[str, BaseTool] = {}
-        # Optional per-user AWS config (dict with access_key_id, secret_access_key, region)
-        self.aws_config = None
-        self.logger.info("ToolFactory initialized. Registering tools...")
-        self._register_all_tools()
+        self._tool_registry: Dict[str, ToolRegistryEntry] = {}
+        self.logger.info("ToolFactory initialized. Registering tool classes...")
+        self._init_tool_registry()
 
-    def _register_all_tools(self):
+    def _init_tool_registry(self):
         """
-        Instantiates adapters and registers all tools.
+        Registers all tool classes and their associated adapter classes and service names.
+        Descriptions are hardcoded here for simplicity, or could be fetched from tool classes.
         """
-        # Instantiate Adapters
-        ec2_adapter = EC2Adapter(settings=settings.aws, logger=self.logger)
-        vpc_adapter = VpcAdapter(settings=settings.aws, logger=self.logger)
-        key_pair_adapter = KeyPairAdapter(settings=settings.aws, logger=self.logger)
-        rds_adapter = RdsAdapter(settings=settings.aws, logger=self.logger)
-        sg_adapter = SecurityGroupAdapter(settings=settings.aws, logger=self.logger)
-        elb_adapter = ElbAdapter(settings=settings.aws, logger=self.logger)
-        s3_adapter = S3Adapter(settings=settings.aws, logger=self.logger) # New
+        # --- EC2 Tools ---
+        self._register_tool_class("create-ec2-instance", CreateEC2InstanceTool, EC2Adapter, "ec2", "Creates a new EC2 instance.")
+        self._register_tool_class("list-ec2-instances", ListEC2InstancesTool, EC2Adapter, "ec2", "Lists EC2 instances.")
+        self._register_tool_class("terminate-ec2-instance", TerminateEC2InstanceTool, EC2Adapter, "ec2", "Terminates one or more EC2 instances.")
+        self._register_tool_class("start-ec2-instance", StartInstanceTool, EC2Adapter, "ec2", "Starts an EC2 instance.")
+        self._register_tool_class("stop-instance", StopInstanceTool, EC2Adapter, "ec2", "Stops one or more EC2 instances.")
+        self._register_tool_class("create-volume", CreateVolumeTool, EC2Adapter, "ec2", "Creates a new EBS volume.")
+        self._register_tool_class("list-availability-zones", ListAvailabilityZonesTool, EC2Adapter, "ec2", "Lists all Availability Zones.")
 
-        # --- Register Tools ---
-        # EC2 Tools
-        self.register_tool("create-ec2-instance", CreateEC2InstanceTool(self.logger, ec2_adapter))
-        self.register_tool("list-ec2-instances", ListEC2InstancesTool(self.logger, ec2_adapter))
-        self.register_tool("terminate-ec2-instance", TerminateEC2InstanceTool(self.logger, ec2_adapter))
-        self.register_tool("start-ec2-instance", StartInstanceTool(self.logger, ec2_adapter))
-        self.register_tool("stop-instance", StopInstanceTool(self.logger, ec2_adapter))
-        self.register_tool("create-volume", CreateVolumeTool(self.logger, ec2_adapter))
-        self.register_tool("list-availability-zones", ListAvailabilityZonesTool(self.logger, ec2_adapter)) # Added this line
+        # --- AMI Tools ---
+        self._register_tool_class("get-latest-amazon-linux-ami", GetLatestAmazonLinuxAMITool, EC2Adapter, "ec2", "Gets the latest Amazon Linux AMI.")
+        self._register_tool_class("get-latest-ubuntu-ami", GetLatestUbuntuAmiTool, EC2Adapter, "ec2", "Gets the latest Ubuntu AMI.")
 
-        # AMI Tools
-        self.register_tool("get-latest-amazon-linux-ami", GetLatestAmazonLinuxAMITool(self.logger, ec2_adapter))
-        self.register_tool("get-latest-ubuntu-ami", GetLatestUbuntuAmiTool(self.logger, ec2_adapter))
-
-        # KeyPair Tools
-        self.register_tool("create-key-pair", CreateKeyPairTool(self.logger, key_pair_adapter))
-        self.register_tool("list-key-pairs", ListKeyPairsTool(self.logger, key_pair_adapter))
+        # --- KeyPair Tools ---
+        self._register_tool_class("create-key-pair", CreateKeyPairTool, KeyPairAdapter, "ec2", "Creates a new EC2 key pair.")
+        self._register_tool_class("list-key-pairs", ListKeyPairsTool, KeyPairAdapter, "ec2", "Lists all EC2 key pairs.")
         
-        # VPC Tools
-        self.register_tool("get-default-vpc", GetDefaultVPCTool(self.logger, vpc_adapter))
-        self.register_tool("list-subnets", ListSubnetsTool(self.logger, vpc_adapter))
-        self.register_tool("list-vpcs", ListVpcsTool(self.logger, vpc_adapter))
-        self.register_tool("create-vpc", CreateVpcTool(self.logger, vpc_adapter))
-        self.register_tool("list-subnets-for-alb", ListSubnetsForAlbTool(self.logger, vpc_adapter))
-        self.register_tool("create-internet-gateway", CreateInternetGatewayTool(self.logger, vpc_adapter))
-        self.register_tool("attach-internet-gateway", AttachInternetGatewayTool(self.logger, vpc_adapter))
-        self.register_tool("create-public-subnet", CreatePublicSubnetTool(self.logger, vpc_adapter)) # Added this line
+        # --- VPC Tools ---
+        self._register_tool_class("get-default-vpc", GetDefaultVPCTool, VpcAdapter, "ec2", "Gets the default VPC.")
+        self._register_tool_class("list-subnets", ListSubnetsTool, VpcAdapter, "ec2", "Lists subnets within a specific VPC.")
+        self._register_tool_class("list-vpcs", ListVpcsTool, VpcAdapter, "ec2", "Lists VPCs.")
+        self._register_tool_class("create-vpc", CreateVpcTool, VpcAdapter, "ec2", "Creates a new VPC.")
+        self._register_tool_class("list-subnets-for-alb", ListSubnetsForAlbTool, VpcAdapter, "ec2", "Lists subnets suitable for an ALB.")
+        self._register_tool_class("create-internet-gateway", CreateInternetGatewayTool, VpcAdapter, "ec2", "Creates a new Internet Gateway.")
+        self._register_tool_class("attach-internet-gateway", AttachInternetGatewayTool, VpcAdapter, "ec2", "Attaches an Internet Gateway to a VPC.")
+        self._register_tool_class("create-public-subnet", CreatePublicSubnetTool, VpcAdapter, "ec2", "Creates a public subnet.")
 
-        # RDS Tools
-        self.register_tool("list-rds-instances", ListRDSInstancesTool(self.logger, rds_adapter))
-        self.register_tool("create-db-subnet-group", CreateDbSubnetGroupTool(self.logger, rds_adapter))
-        self.register_tool("create-db-instance", CreateDbInstanceTool(self.logger, rds_adapter))
+        # --- RDS Tools ---
+        self._register_tool_class("list-rds-instances", ListRDSInstancesTool, RdsAdapter, "rds", "Lists all RDS instances.")
+        self._register_tool_class("list-db-subnet-groups", ListDbSubnetGroupsTool, RdsAdapter, "rds", "Lists all RDS DB Subnet Groups.")
+        self._register_tool_class("create-db-subnet-group", CreateDbSubnetGroupTool, RdsAdapter, "rds", "Creates a new DB subnet group.")
+        self._register_tool_class("create-db-instance", CreateDbInstanceTool, RdsAdapter, "rds", "Creates a new DB instance.")
 
-        # Security Group Tools
-        self.register_tool("create-security-group", CreateSecurityGroupTool(self.logger, sg_adapter))
-        self.register_tool("add-security-group-ingress-rule", AddSecurityGroupIngressRuleTool(self.logger, sg_adapter))
-        self.register_tool("list-security-groups", ListSecurityGroupsTool(self.logger, sg_adapter))
-        self.register_tool("add-security-group-egress-rule", AddSecurityGroupEgressRuleTool(self.logger, sg_adapter))
-        self.register_tool("delete-security-group", DeleteSecurityGroupTool(self.logger, sg_adapter))
-        self.register_tool("get-security-group-rules", GetSecurityGroupRulesTool(self.logger, sg_adapter))
+        # --- Security Group Tools ---
+        self._register_tool_class("create-security-group", CreateSecurityGroupTool, SecurityGroupAdapter, "ec2", "Creates a new EC2 security group.")
+        self._register_tool_class("add-security-group-ingress-rule", AddSecurityGroupIngressRuleTool, SecurityGroupAdapter, "ec2", "Adds an ingress rule to a security group.")
+        self._register_tool_class("list-security-groups", ListSecurityGroupsTool, SecurityGroupAdapter, "ec2", "Lists all EC2 security groups.")
+        self._register_tool_class("add-security-group-egress-rule", AddSecurityGroupEgressRuleTool, SecurityGroupAdapter, "ec2", "Adds an egress rule to a security group.")
+        self._register_tool_class("delete-security-group", DeleteSecurityGroupTool, SecurityGroupAdapter, "ec2", "Deletes an EC2 security group.")
+        self._register_tool_class("get-security-group-rules", GetSecurityGroupRulesTool, SecurityGroupAdapter, "ec2", "Retrieves the rules of a security group.")
 
-        # ELB Tools
-        self.register_tool("create-load-balancer", CreateLoadBalancerTool(self.logger, elb_adapter))
+        # --- ELB Tools ---
+        self._register_tool_class("create-load-balancer", CreateLoadBalancerTool, ElbAdapter, "elbv2", "Creates a new Application or Network Load Balancer.")
 
-        # S3 Tools (New)
-        self.register_tool("create-s3-bucket", CreateS3BucketTool(self.logger, s3_adapter))
+        # --- S3 Tools ---
+        self._register_tool_class("create-s3-bucket", CreateS3BucketTool, S3Adapter, "s3", "Creates a new S3 bucket.")
 
-        self.logger.info(f"Registered {len(self._tools)} tools.")
+        self.logger.info(f"Registered {len(self._tool_registry)} tool classes.")
 
-    def register_tool(self, name: str, tool: BaseTool):
-        """Registers a tool instance."""
-        self.logger.info(f"Registering tool: {name}")
-        self._tools[name] = tool
+    def _register_tool_class(self, name: str, tool_class: Type[BaseTool], adapter_class: Type[Any], service_name: str, description: str):
+        """Helper to register a tool class."""
+        self.logger.debug(f"Registering tool class: {name}")
+        self._tool_registry[name] = (tool_class, adapter_class, service_name, description)
 
-    def get_tool_names(self) -> list[str]:
+    def get_tool_names(self) -> List[str]:
         """Returns a list of registered tool names."""
-        return list(self._tools.keys())
+        return list(self._tool_registry.keys())
 
     def get_all_tool_info(self) -> List[Dict[str, Any]]:
         """
         Returns a list of dictionaries, each containing the name and description of a registered tool.
         """
         tool_info_list = []
-        for tool_name, tool_instance in self._tools.items():
-            tool_info_list.append({"name": tool_instance.name, "description": tool_instance.description})
+        for tool_name, (tool_class, _, _, description) in self._tool_registry.items():
+            tool_info_list.append({"name": tool_name, "description": description})
         return tool_info_list
 
-    def create_tool(self, tool_name: str) -> BaseTool:
+    def get_tool(self, tool_name: str, user_aws_config: Dict[str, Any]) -> BaseTool:
         """
-        Retrieves a registered tool instance.
-        """
-        self.logger.debug(f"Attempting to create tool: {tool_name}")
-        # If a per-user aws_config is set, construct a fresh tool instance wired to adapters using that config.
-        if self.aws_config:
-            # Create tool instances on-the-fly using aws_config where applicable.
-            if tool_name == "create-ec2-instance":
-                from ai_infra_agent.infrastructure.aws.adapters.ec2 import EC2Adapter
-                from ai_infra_agent.infrastructure.aws.tools.ec2 import CreateEC2InstanceTool
-                adapter = EC2Adapter(logger=self.logger, aws_config=self.aws_config)
-                return CreateEC2InstanceTool(self.logger, adapter)
-            if tool_name in ("create-key-pair", "create-keypair"):
-                from ai_infra_agent.infrastructure.aws.adapters.key_pair import KeyPairAdapter
-                from ai_infra_agent.infrastructure.aws.tools.keypair import CreateKeyPairTool
-                adapter = KeyPairAdapter(logger=self.logger, aws_config=self.aws_config)
-                return CreateKeyPairTool(self.logger, adapter)
-            if tool_name == "list-subnets":
-                from ai_infra_agent.infrastructure.aws.adapters.vpc import VpcAdapter
-                from ai_infra_agent.infrastructure.aws.tools.vpc import ListSubnetsTool
-                adapter = VpcAdapter(logger=self.logger, aws_config=self.aws_config)
-                return ListSubnetsTool(self.logger, adapter)
-            # Add more on-the-fly creations as needed for other tools.
+        Retrieves and instantiates a tool with user-specific AWS credentials.
 
-        tool = self._tools.get(tool_name)
-        if not tool:
-            self.logger.error(f"Tool '{tool_name}' not found.")
+        Args:
+            tool_name (str): The name of the tool to retrieve.
+            user_aws_config (Dict[str, Any]): The AWS configuration specific to the user.
+
+        Returns:
+            BaseTool: An instantiated tool configured with the user's credentials.
+
+        Raises:
+            ValueError: If the tool name is not found or if aws_config is invalid.
+        """
+        self.logger.debug(f"Attempting to get tool '{tool_name}' with user-specific AWS config.")
+        
+        if tool_name not in self._tool_registry:
+            self.logger.error(f"Tool '{tool_name}' not found in registry.")
             raise ValueError(f"Tool '{tool_name}' not found.")
-        return tool
 
-    def set_aws_config(self, aws_config: dict):
-        """Set per-user AWS configuration to be used when creating tools on-the-fly.
+        tool_class, adapter_class, service_name, _ = self._tool_registry[tool_name]
 
-        aws_config should be a dict with keys: access_key_id, secret_access_key, region, etc.
-        """
-        self.aws_config = aws_config
-        self.logger.debug(f"ToolFactory AWS config set: region={aws_config.get('region') if aws_config else None}")
+        try:
+            # Instantiate the adapter with the user's AWS config
+            adapter_instance = adapter_class(logger=self.logger, aws_config=user_aws_config)
+            
+            # Instantiate the tool with the adapter
+            tool_instance = tool_class(self.logger, adapter_instance)
+            
+            self.logger.debug(f"Successfully created tool '{tool_name}' for user.")
+            return tool_instance
+        except ValueError as ve:
+            self.logger.error(f"Configuration error for tool '{tool_name}': {ve}")
+            raise # Re-raise config errors for user feedback
+        except Exception as e:
+            self.logger.error(f"Failed to instantiate tool '{tool_name}': {e}", exc_info=True)
+            raise RuntimeError(f"Failed to create tool '{tool_name}'.")

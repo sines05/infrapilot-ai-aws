@@ -71,24 +71,18 @@ class ListEC2InstancesTool(BaseTool):
 
     def execute(self, instance_ids: List[str] = None) -> Dict[str, Any]:
         """
-        Executes the tool to list EC2 instances and returns a simplified list of instance IDs.
+        Executes the tool to list EC2 instances and returns the raw response.
 
         Args:
             instance_ids (List[str], optional): A list of instance IDs to filter by. Defaults to None.
 
         Returns:
-            Dict[str, Any]: A dictionary containing a list of instance IDs.
+            Dict[str, Any]: The raw response from the describe_instances API call.
         """
         self.logger.info(f"Executing tool: {self.name}")
         response = self.adapter.list_instances(instance_ids=instance_ids)
         
-        # Extract instance IDs from the nested Reservations structure
-        all_instance_ids = []
-        for reservation in response.get("Reservations", []):
-            for instance in reservation.get("Instances", []):
-                all_instance_ids.append(instance.get("InstanceId"))
-        
-        return {"instance_ids": all_instance_ids}
+        return response
 
 
 class TerminateEC2InstanceTool(BaseTool):

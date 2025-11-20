@@ -37,6 +37,39 @@ class ListRDSInstancesTool(BaseTool):
             self.logger.error(f"Failed to list RDS instances: {e}")
             return {"error": str(e)}
 
+
+class ListDbSubnetGroupsTool(BaseTool):
+    """
+    Tool to list RDS DB Subnet Groups.
+    """
+
+    def __init__(self, logger: logger, adapter: RdsAdapter):
+        """
+        Initializes the ListDbSubnetGroupsTool.
+        """
+        super().__init__(logger=logger, adapter=adapter)
+        self.name = "list-db-subnet-groups"
+        self.description = "Lists all RDS DB Subnet Groups or a specific one if a name is provided."
+
+    def execute(self, db_subnet_group_name: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+        """
+        Executes the tool to list DB subnet groups.
+
+        Args:
+            db_subnet_group_name (Optional[str], optional): The name of a specific DB subnet group to list. Defaults to None (list all).
+
+        Returns:
+            Dict[str, Any]: The response from the adapter's describe_db_subnet_groups call.
+        """
+        self.logger.info(f"Executing ListDbSubnetGroupsTool for name: {db_subnet_group_name}")
+        try:
+            response = self.adapter.describe_db_subnet_groups(db_subnet_group_name=db_subnet_group_name)
+            return response
+        except Exception as e:
+            self.logger.error(f"Failed to list DB subnet groups: {e}")
+            return {"error": str(e)}
+
+
 class CreateDbSubnetGroupTool(BaseTool):
     """
     Tool to create a new RDS DB Subnet Group.
@@ -75,6 +108,7 @@ class CreateDbSubnetGroupTool(BaseTool):
         except Exception as e:
             self.logger.error(f"Failed to create DB subnet group: {e}")
             return {"error": str(e)}
+
 
 class CreateDbInstanceTool(BaseTool):
     """

@@ -1,7 +1,6 @@
 from typing import Dict, Any, List
 from loguru import logger
 
-from ai_infra_agent.core.config import AWSSettings
 from ai_infra_agent.infrastructure.aws.adapters.base import AWSAdapterBase
 
 
@@ -10,8 +9,15 @@ class SecurityGroupAdapter(AWSAdapterBase):
     Adapter for managing EC2 security groups.
     """
 
-    def __init__(self, settings: AWSSettings, logger: logger):
-        super().__init__("ec2", logger, aws_config=None, settings=settings)
+    def __init__(self, logger: logger, aws_config: Dict[str, Any]):
+        """
+        Initializes the SecurityGroup adapter.
+
+        Args:
+            logger (Logger): The logger instance.
+            aws_config (Dict[str, Any]): User-specific AWS credentials.
+        """
+        super().__init__(service_name="ec2", logger=logger, aws_config=aws_config)
 
     def create_security_group(self, group_name: str, description: str, vpc_id: str) -> Dict[str, Any]:
         """

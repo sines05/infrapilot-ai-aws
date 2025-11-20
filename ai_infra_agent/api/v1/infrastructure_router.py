@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Body
-from typing import Dict, Any, List
+from fastapi import APIRouter, Depends, HTTPException, Body, Query
+from typing import Dict, Any, List, Optional
 
 from ai_infra_agent.api.dependencies import get_user_credentials, get_logger, get_agent
 from ai_infra_agent.services.discovery.scanner import DiscoveryScanner
@@ -72,21 +72,45 @@ async def discover_resources(
 @router.get("/", summary="Get discovered infrastructure for the current user")
 async def get_discovered_resources(
     user_creds: dict = Depends(get_user_credentials),
-    logger: Any = Depends(get_logger)
+    logger: Any = Depends(get_logger),
+    region: Optional[str] = Query(None, description="Optional AWS region to filter resources by. Defaults to user's configured region if not provided.")
 ):
     """
-    Retrieves the cached list of discovered resources from the database for the current user.
+    Retrieves the cached list of discovered resources from the database for the current user,
+    optionally filtered by AWS region. If no region is provided, it defaults to the user's
+    configured AWS region.
     """
     user_id = user_creds.get('user_id')
-    logger.info(f"Fetching discovered resources for user {user_id}")
+    
+    # Get user's default AWS region from credentials
+    user_default_aws_region = user_creds.get('aws', {}).get('region')
+    logger.debug(f"User default AWS region from credentials: {user_default_aws_region}")
+    logger.debug(f"Region query parameter received: {region}")
+    
+    # Determine the region to filter by: query parameter takes precedence
+    filter_region = region if region else user_default_aws_region
+    logger.debug(f"Final filter region determined: {filter_region}")
+
+    if not filter_region:
+        logger.warning(f"No valid AWS region found for user {user_id}. Returning empty list.")
+        return [] # Return empty list if no region is configured or provided.
+
+    logger.info(f"Fetching discovered resources for user {user_id} in region {filter_region}")
     
     supabase = get_supabase_client()
-    response = await supabase.from_('discovered_resources').select("*").eq('user_id', user_id).execute()
+    query = supabase.from_('discovered_resources').select("*").eq('user_id', user_id)
+    query = query.eq('region', filter_region) # Always filter by region if filter_region is not None
+
+    response = await query.execute()
 
     if response.error:
         logger.error(f"Failed to fetch resources for user {user_id}: {response.error}")
         raise HTTPException(status_code=500, detail="Failed to retrieve infrastructure data.")
     
+    # Log the number of resources found
+    num_resources = len(response.data) if response.data else 0
+    logger.debug(f"Found {num_resources} resources for user {user_id} in region {filter_region}")
+
     return response.data if response.data else []
 
 @router.post("/action", summary="Perform an action on a resource")

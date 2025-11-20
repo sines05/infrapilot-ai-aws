@@ -2,7 +2,6 @@ from typing import List, Dict, Any, Optional
 from loguru import logger
 
 from ai_infra_agent.infrastructure.aws.adapters.base import AWSAdapterBase
-from ai_infra_agent.core.config import AWSSettings
 
 
 class EC2Adapter(AWSAdapterBase):
@@ -10,15 +9,15 @@ class EC2Adapter(AWSAdapterBase):
     Adapter for interacting with the AWS EC2 service.
     """
 
-    def __init__(self, logger: logger, aws_config: dict = None, settings: AWSSettings = None):
+    def __init__(self, logger: logger, aws_config: Dict[str, Any]):
         """
         Initializes the EC2 adapter.
 
         Args:
-            settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
+            aws_config (Dict[str, Any]): User-specific AWS credentials.
         """
-        super().__init__(service_name="ec2", logger=logger, aws_config=aws_config, settings=settings)
+        super().__init__(service_name="ec2", logger=logger, aws_config=aws_config)
 
     def list_instances(self, instance_ids: List[str] = None) -> Dict[str, Any]:
         """

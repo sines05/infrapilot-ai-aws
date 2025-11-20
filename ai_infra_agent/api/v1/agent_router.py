@@ -1,14 +1,11 @@
-import boto3
 from fastapi import APIRouter, Body, Depends, HTTPException
 from typing import Any, Dict, List
 from datetime import datetime
 
 from ai_infra_agent.agent.agent import StateAwareAgent
-from ai_infra_agent.api.dependencies import get_agent, get_logger, get_user_credentials, get_tool_factory
+from ai_infra_agent.api.dependencies import get_agent, get_logger, get_user_credentials, get_scanner
 from ai_infra_agent.services.discovery.scanner import DiscoveryScanner
-from ai_infra_agent.infrastructure.aws.adapters.rds import RdsAdapter
 from ai_infra_agent.core.supabase_client import get_supabase_client
-from ai_infra_agent.core.config import settings, AWSSettings
 
 # Create a new router instance. This will be included in the main FastAPI app.
 router = APIRouter()
@@ -75,6 +72,7 @@ async def process_request(
 async def discover_resources(
     user_creds: dict = Depends(get_user_credentials),
     logger: Any = Depends(get_logger),
+    scanner: DiscoveryScanner = Depends(get_scanner), # Inject the user-specific scanner
 ):
     """
     Initiates a scan of the user's AWS account to discover existing resources.
@@ -87,34 +85,18 @@ async def discover_resources(
         if not aws_creds or not aws_creds.get("access_key_id"):
             raise HTTPException(status_code=400, detail="AWS credentials are not configured for this user.")
 
-        # 1. Create a session with the user's credentials
-        user_session = boto3.Session(
-            aws_access_key_id=aws_creds.get("access_key_id"),
-            aws_secret_access_key=aws_creds.get("secret_access_key"),
-            region_name=aws_creds.get("region"),
-        )
-        
-        # 2. Create adapters with the user-specific session
-        # This works with the original (non-refactored) adapter code
-        user_aws_settings = AWSSettings(**aws_creds)
-        rds_adapter = RdsAdapter(settings=user_aws_settings, logger=logger)
-        # Ghi đè client mặc định bằng client của người dùng
-        rds_adapter.client = user_session.client("rds")
-
-        # 3. Create scanner and overwrite its session
-        tool_factory = get_tool_factory()
-        scanner = DiscoveryScanner(tool_factory=tool_factory, rds_adapter=rds_adapter)
-        scanner.aws_session = user_session
-
-        # 4. Scan resources
+        # 1. Scan resources using the injected user-specific scanner
         logger.info(f"Scanner configured. Starting scan for user {user_id}.")
         discovered_infra_state = await scanner.scan_aws_resources()
         logger.info(f"Discovery complete for user {user_id}. Found {len(discovered_infra_state.resources)} total resources.")
 
-        # 5. Transform and collect resources for DB
+        # 2. Transform and collect resources for DB
         resources_to_upsert = []
-        aws_region = aws_creds.get("region", "us-east-1")
-        # Correctly iterate over the resources dictionary
+        aws_region = aws_creds.get("region") # Get region directly from user_creds
+        
+        if not aws_region:
+             raise HTTPException(status_code=400, detail="AWS region is not configured for this user. Please update your settings.")
+
         for resource in discovered_infra_state.resources.values():
             resources_to_upsert.append({
                 "user_id": user_id,
@@ -127,19 +109,19 @@ async def discover_resources(
         if not resources_to_upsert:
             return {"message": "Discovery finished. No AWS resources found."}
 
-        # 6. Upsert data into the database
+        # 3. Upsert data into the database
         logger.info(f"Saving {len(resources_to_upsert)} resources to the database...")
         supabase = get_supabase_client()
         response = supabase.from_("discovered_resources").upsert(
             resources_to_upsert, on_conflict="user_id,resource_id"
         ).execute()
 
-
-
         message = f"Discovery successful. Saved or updated {len(resources_to_upsert)} resources."
         logger.info(message)
         return {"message": message}
 
+    except HTTPException:
+        raise # Re-raise HTTPExceptions
     except Exception as e:
         logger.error(f"Failed to discover resources for user {user_id}: {e}", exc_info=True)
         raise HTTPException(

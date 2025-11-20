@@ -258,7 +258,11 @@ class PlanExecutor:
                 self.logger.info(f"Executing tool '{tool_name}' with resolved params: {resolved_params}")
                 
                 # 2. Execute the tool via the agent
-                result = await self.agent.execute_tool(tool_name, **resolved_params)
+                result = await self.agent.execute_tool(
+                    tool_name, 
+                    user_aws_config=self.agent.user_credentials.get("aws"),
+                    **resolved_params
+                )
                 
                 # 3. Store the result in the context for subsequent steps
                 self.context[step_id] = result

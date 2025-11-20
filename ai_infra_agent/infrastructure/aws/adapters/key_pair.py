@@ -2,7 +2,6 @@ from typing import Dict, Any
 from loguru import logger
 
 from ai_infra_agent.infrastructure.aws.adapters.base import AWSAdapterBase
-from ai_infra_agent.core.config import AWSSettings
 
 
 class KeyPairAdapter(AWSAdapterBase):
@@ -10,15 +9,15 @@ class KeyPairAdapter(AWSAdapterBase):
     Adapter for interacting with AWS EC2 Key Pairs.
     """
 
-    def __init__(self, logger: logger, aws_config: dict = None, settings: AWSSettings = None):
+    def __init__(self, logger: logger, aws_config: Dict[str, Any]):
         """
         Initializes the KeyPair adapter. Note that Key Pair resources are managed via the 'ec2' client.
 
         Args:
-            settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
+            aws_config (Dict[str, Any]): User-specific AWS credentials.
         """
-        super().__init__(service_name="ec2", logger=logger, aws_config=aws_config, settings=settings)
+        super().__init__(service_name="ec2", logger=logger, aws_config=aws_config)
 
     def create_key_pair(self, key_name: str) -> Dict[str, Any]:
         """

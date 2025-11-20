@@ -2,7 +2,6 @@ from typing import Dict, Any, Optional, List
 from loguru import logger
 
 from ai_infra_agent.infrastructure.aws.adapters.base import AWSAdapterBase
-from ai_infra_agent.core.config import AWSSettings
 
 
 class RdsAdapter(AWSAdapterBase):
@@ -10,16 +9,15 @@ class RdsAdapter(AWSAdapterBase):
     Adapter for interacting with the AWS RDS service.
     """
 
-    def __init__(self, logger: logger, aws_config: Optional[Dict[str, Any]] = None, settings: Optional[AWSSettings] = None):
+    def __init__(self, logger: logger, aws_config: Dict[str, Any]):
         """
         Initializes the RDS adapter.
 
         Args:
             logger (Logger): The logger instance.
-            aws_config (dict, optional): User-specific AWS credentials.
-            settings (AWSSettings, optional): Fallback global AWS settings.
+            aws_config (Dict[str, Any]): User-specific AWS credentials.
         """
-        super().__init__(service_name="rds", logger=logger, aws_config=aws_config, settings=settings)
+        super().__init__(service_name="rds", logger=logger, aws_config=aws_config)
 
     def describe_db_instances(self, db_instance_identifier: Optional[str] = None) -> Dict[str, Any]:
         """

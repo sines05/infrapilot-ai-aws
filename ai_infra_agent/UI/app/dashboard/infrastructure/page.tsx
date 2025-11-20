@@ -38,6 +38,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+
 // Type for a discovered resource
 interface DiscoveredResource {
   id: string;
@@ -109,7 +110,6 @@ export default function InfrastructurePage() {
     setIsLoading(true);
     setError(null);
     try {
-      // Correct proxy path
       const res = await fetch("/api/agent/resources");
       if (!res.ok) {
         const errData = await res.json().catch(() => ({ detail: "Failed to fetch resources." }));
@@ -134,7 +134,7 @@ export default function InfrastructurePage() {
         const errData = await res.json().catch(() => ({ detail: "Failed to start discovery." }));
         throw new Error(errData.detail);
       }
-      // After discovery, refetch the list
+      // After discovery, refetch the list for the currently selected region
       await fetchResources();
     } catch (e: any) {
       setError(e.message);
@@ -147,7 +147,7 @@ export default function InfrastructurePage() {
     if (status === "authenticated") {
       fetchResources();
     }
-  }, [status]);
+  }, [status]); // Refetch when status changes
   
   useEffect(() => {
     const filtered = resources.filter(r => 
@@ -167,14 +167,16 @@ export default function InfrastructurePage() {
             <h1 className="text-3xl font-bold">Infrastructure Management</h1>
             <p className="text-muted-foreground mt-1">Discover and manage your existing AWS resources.</p>
           </div>
-          <Button onClick={handleDiscover} disabled={isDiscovering}>
-            {isDiscovering ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
-              <RefreshCw className="w-4 h-4 mr-2" />
-            )}
-            {isDiscovering ? "Scanning..." : "Re-Scan Resources"}
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleDiscover} disabled={isDiscovering}>
+              {isDiscovering ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              {isDiscovering ? "Scanning..." : "Re-Scan Resources"}
+            </Button>
+          </div>
         </div>
 
         {error && (
@@ -204,6 +206,8 @@ export default function InfrastructurePage() {
                 <Server className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-4 text-lg font-medium">No Resources Found</h3>
                 <p className="mt-1 text-sm text-muted-foreground">
+                    No resources found.
+                    <br />
                     Click the "Re-Scan Resources" button to discover your AWS infrastructure.
                 </p>
             </Card>

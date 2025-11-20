@@ -1,22 +1,28 @@
-import boto3
 from typing import List, Dict, Any
 from ai_infra_agent.state.schemas import ResourceState, InfrastructureState
 from ai_infra_agent.core.logging import logger
 from ai_infra_agent.infrastructure.tool_factory import ToolFactory
-from ai_infra_agent.core.config import settings # Import settings
 
-from ai_infra_agent.infrastructure.aws.adapters.rds import RdsAdapter # New
+# Import specific tools that the scanner will use
+from ai_infra_agent.infrastructure.aws.tools.ec2 import ListEC2InstancesTool, ListAvailabilityZonesTool # Needed for region
+from ai_infra_agent.infrastructure.aws.tools.vpc import ListVpcsTool
+from ai_infra_agent.infrastructure.aws.tools.security_group import ListSecurityGroupsTool
+from ai_infra_agent.infrastructure.aws.tools.rds import ListRDSInstancesTool, ListDbSubnetGroupsTool
+
 
 class DiscoveryScanner:
     """
     Scans for existing cloud resources to import them into the managed state.
+    All AWS operations use user-specific credentials passed via user_aws_config.
     """
-    def __init__(self, tool_factory: ToolFactory, rds_adapter: RdsAdapter):
+    def __init__(self, tool_factory: ToolFactory, user_aws_config: Dict[str, Any]):
         self.tool_factory = tool_factory
-        self.logger = logger
-        self.rds_adapter = rds_adapter # Store the adapter
-        # Initialize boto3 session with region from settings
-        self.aws_session = boto3.Session(region_name=settings.aws.region)
+        self.user_aws_config = user_aws_config
+        self.logger = logger # Assuming logger is already configured
+
+        # Validate that user_aws_config has at least a region
+        if not self.user_aws_config.get("region"):
+            raise ValueError("user_aws_config must contain a 'region' key for DiscoveryScanner.")
 
     async def scan_aws_resources(self) -> InfrastructureState:
         """
@@ -24,7 +30,9 @@ class DiscoveryScanner:
         """
         discovered_resources: Dict[str, ResourceState] = {}
 
-        self.logger.info("Starting AWS resource discovery...")
+        # Get region from user_aws_config to ensure all operations are in the correct region
+        aws_region = self.user_aws_config["region"]
+        self.logger.info(f"Starting AWS resource discovery in region: {aws_region}...")
 
         # Scan EC2 instances
         ec2_resources = await self._scan_ec2_instances()
@@ -46,7 +54,7 @@ class DiscoveryScanner:
         for res in rds_db_subnet_group_resources:
             discovered_resources[res.id] = res
 
-        # Scan RDS DB Instances (New)
+        # Scan RDS DB Instances
         rds_db_instance_resources = await self._scan_rds_db_instances()
         for res in rds_db_instance_resources:
             discovered_resources[res.id] = res
@@ -60,7 +68,9 @@ class DiscoveryScanner:
         """
         resources: List[ResourceState] = []
         try:
-            response = self.rds_adapter.describe_db_subnet_groups()
+            # Get the RDS adapter from the tool factory
+            describe_db_subnet_groups_tool = self.tool_factory.get_tool("list-db-subnet-groups", self.user_aws_config) # Assuming such a tool exists or RDSAdapter has this directly
+            response = describe_db_subnet_groups_tool.execute() # Assuming execute method
             self.logger.debug(f"Raw RDS describe_db_subnet_groups response: {response}")
 
             for db_subnet_group in response.get('DBSubnetGroups', []):
@@ -84,7 +94,9 @@ class DiscoveryScanner:
         """
         resources: List[ResourceState] = []
         try:
-            response = self.rds_adapter.describe_db_instances()
+            # Get the RDS adapter from the tool factory
+            list_rds_instances_tool = self.tool_factory.get_tool("list-rds-instances", self.user_aws_config)
+            response = list_rds_instances_tool.execute() # Assuming execute method
             self.logger.debug(f"Raw RDS describe_db_instances response: {response}")
 
             for db_instance in response.get('DBInstances', []):
@@ -116,8 +128,9 @@ class DiscoveryScanner:
         """
         resources: List[ResourceState] = []
         try:
-            ec2_client = self.aws_session.client('ec2', region_name=settings.aws.region)
-            response = ec2_client.describe_instances()
+            # Get the ListEC2InstancesTool from the tool factory
+            list_ec2_tool = self.tool_factory.get_tool("list-ec2-instances", self.user_aws_config)
+            response = list_ec2_tool.execute() # Assuming execute method
             self.logger.debug(f"Raw EC2 describe_instances response: {response}")
 
             for reservation in response.get('Reservations', []):
@@ -148,14 +161,15 @@ class DiscoveryScanner:
         """
         resources: List[ResourceState] = []
         try:
-            ec2_client = self.aws_session.client('ec2', region_name=settings.aws.region)
-            response = ec2_client.describe_vpcs()
+            # Get the ListVpcsTool from the tool factory
+            list_vpcs_tool = self.tool_factory.get_tool("list-vpcs", self.user_aws_config)
+            response = list_vpcs_tool.execute() # Assuming execute method
             self.logger.debug(f"Raw VPC describe_vpcs response: {response}")
 
-            for vpc in response.get('Vpcs', []):
-                vpc_id = vpc.get('VpcId')
+            for vpc in response.get('vpcs', []):
+                vpc_id = vpc.get('vpc_id')
                 vpc_name = ''
-                for tag in vpc.get('Tags', []):
+                for tag in vpc.get('tags', []):
                     if tag.get('Key') == 'Name':
                         vpc_name = tag.get('Value')
                         break
@@ -164,9 +178,9 @@ class DiscoveryScanner:
                     id=vpc_id,
                     name=vpc_name if vpc_name else vpc_id,
                     type='aws_vpc',
-                    status=vpc.get('State', 'unknown'),
+                    status=vpc.get('state', 'unknown'),
                     properties=vpc,
-                    tags={tag['Key']: tag['Value'] for tag in vpc.get('Tags', [])}
+                    tags={tag['Key']: tag['Value'] for tag in vpc.get('tags', [])}
                 ))
             self.logger.debug(f"Discovered {len(resources)} VPCs.")
         except Exception as e:
@@ -179,13 +193,14 @@ class DiscoveryScanner:
         """
         resources: List[ResourceState] = []
         try:
-            ec2_client = self.aws_session.client('ec2', region_name=settings.aws.region)
-            response = ec2_client.describe_security_groups()
+            # Get the ListSecurityGroupsTool from the tool factory
+            list_sg_tool = self.tool_factory.get_tool("list-security-groups", self.user_aws_config)
+            response = list_sg_tool.execute() # Assuming execute method
             self.logger.debug(f"Raw Security Group describe_security_groups response: {response}")
 
-            for sg in response.get('SecurityGroups', []):
-                sg_id = sg.get('GroupId')
-                sg_name = sg.get('GroupName')
+            for sg in response.get('security_groups', []):
+                sg_id = sg.get('group_id')
+                sg_name = sg.get('group_name')
                 
                 resources.append(ResourceState(
                     id=sg_id,
@@ -193,7 +208,7 @@ class DiscoveryScanner:
                     type='aws_security_group',
                     status='available', # Security groups don't have a 'state' like instances
                     properties=sg,
-                    tags={tag['Key']: tag['Value'] for tag in sg.get('Tags', []) if 'Key' in tag and 'Value' in tag}
+                    tags={tag['Key']: tag['Value'] for tag in sg.get('tags', []) if 'Key' in tag and 'Value' in tag}
                 ))
             self.logger.debug(f"Discovered {len(resources)} Security Groups.")
         except Exception as e:

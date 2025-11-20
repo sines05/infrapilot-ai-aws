@@ -236,15 +236,20 @@ class StateAwareAgent:
     async def execute_tool(self, tool_name: str, **kwargs) -> Dict[str, Any]:
         """
         Executes a specific tool by name.
+        The user_aws_config is expected to be passed in kwargs.
         """
         self.logger.info(f"Executing tool '{tool_name}' with params: {kwargs}")
         
-        # Resolve placeholders in kwargs before executing the tool
+        user_aws_config = kwargs.pop("user_aws_config", None)
+        if user_aws_config is None:
+            self.logger.error(f"user_aws_config not provided for tool '{tool_name}'")
+            raise ValueError(f"user_aws_config is required for tool '{tool_name}'")
+
+        # Resolve placeholders in remaining kwargs before executing the tool
         resolved_kwargs = self._resolve_placeholders(kwargs)
         self.logger.debug(f"Resolved tool parameters: {resolved_kwargs}")
 
-        tool = self.tool_factory.create_tool(tool_name) # Corrected method call
-        # The create_tool method already raises ValueError if not found, so no need for explicit check here.
+        tool = self.tool_factory.get_tool(tool_name, user_aws_config)
         
         # The tool's execute method is synchronous, so we run it in an executor
         # to avoid blocking the asyncio event loop.

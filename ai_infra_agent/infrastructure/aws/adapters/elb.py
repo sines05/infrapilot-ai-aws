@@ -2,7 +2,6 @@ from typing import Dict, Any, Optional, List
 from loguru import logger
 
 from ai_infra_agent.infrastructure.aws.adapters.base import AWSAdapterBase
-from ai_infra_agent.core.config import AWSSettings
 
 
 class ElbAdapter(AWSAdapterBase):
@@ -10,15 +9,15 @@ class ElbAdapter(AWSAdapterBase):
     Adapter for interacting with the AWS Elastic Load Balancing (ELBv2) service.
     """
 
-    def __init__(self, settings: AWSSettings, logger: logger):
+    def __init__(self, logger: logger, aws_config: Dict[str, Any]):
         """
         Initializes the ELB adapter.
 
         Args:
-            settings (AWSSettings): The AWS configuration settings.
             logger (Logger): The logger instance.
+            aws_config (Dict[str, Any]): User-specific AWS credentials.
         """
-        super().__init__(service_name="elbv2", logger=logger, aws_config=None, settings=settings)
+        super().__init__(service_name="elbv2", logger=logger, aws_config=aws_config)
 
     def create_load_balancer(
         self,

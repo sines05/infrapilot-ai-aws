@@ -1,9 +1,9 @@
 from functools import lru_cache
 from loguru import logger
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 
 # --- Core Imports ---
-from ai_infra_agent.core.config import settings
+from ai_infra_agent.core.config import settings # Keep for settings.agent
 from ai_infra_agent.core.logging import setup_logger
 
 # --- State Imports ---
@@ -23,8 +23,12 @@ from ai_infra_agent.core.supabase_client import (
     get_user_google_credentials,
 )
 
+from fastapi import Depends, HTTPException, Header
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-# Singleton factories (logger, state manager, tool factory, scanner)
+security = HTTPBearer(auto_error=False)
+
+
 @lru_cache(maxsize=None)
 def get_logger() -> logger:
     """Provide a configured logger instance."""
@@ -41,7 +45,10 @@ def get_state_manager() -> StateManager:
 
 @lru_cache(maxsize=None)
 def get_tool_factory() -> ToolFactory:
-    """Provide a singleton ToolFactory instance."""
+    """
+    Provide a singleton ToolFactory instance.
+    This factory only registers tool classes and provides them on demand with user credentials.
+    """
     log = get_logger()
     log.info("Initializing ToolFactory singleton...")
     factory = ToolFactory(logger=log)
@@ -51,26 +58,6 @@ def get_tool_factory() -> ToolFactory:
         count = 0
     log.info(f"ToolFactory initialized with {count} tools.")
     return factory
-
-
-@lru_cache(maxsize=None)
-def get_scanner() -> DiscoveryScanner:
-    """Provide a singleton DiscoveryScanner instance."""
-    log = get_logger()
-    tool_factory = get_tool_factory()
-    # Create RdsAdapter for DiscoveryScanner
-    from ai_infra_agent.infrastructure.aws.adapters.rds import RdsAdapter
-    rds_adapter = RdsAdapter(settings=settings.aws, logger=log)
-    log.info("Initializing DiscoveryScanner singleton...")
-    return DiscoveryScanner(tool_factory=tool_factory, rds_adapter=rds_adapter)
-
-
-# Authentication / per-request dependencies
-from fastapi import Depends, HTTPException, Header
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from typing import Optional
-
-security = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
@@ -146,33 +133,39 @@ def get_user_credentials(user: Dict[str, str] = Depends(get_current_user)) -> Di
         raise HTTPException(status_code=400, detail=str(e))
 
 
-def get_agent(user_creds: Optional[Dict] = None) -> StateAwareAgent:
-    """Create a StateAwareAgent bound to the provided user's credentials.
-
-    If `user_creds` is None this returns a generic singleton agent (legacy support).
+def get_scanner(user_creds: Dict[str, Any] = Depends(get_user_credentials)) -> DiscoveryScanner:
+    """
+    Provide a DiscoveryScanner instance configured with user-specific credentials.
+    This is not a singleton as it's user-specific.
     """
     log = get_logger()
-    if user_creds:
-        log.debug(f"Creating per-request agent for user {user_creds.get('user_id')}")
-        state_mgr = get_state_manager()
-        tool_factory = get_tool_factory()
-        agent = StateAwareAgent(
-            settings=settings.agent,
-            state_manager=state_mgr,
-            tool_factory=tool_factory,
-            logger=log,
-            scanner=get_scanner(),
-            user_credentials=user_creds,
+    aws_creds = user_creds.get("aws")
+    if not aws_creds:
+        raise HTTPException(
+            status_code=400,
+            detail="AWS credentials not found for this user. Please configure your AWS keys in your profile."
         )
-        return agent
+    
+    log.info(f"Creating DiscoveryScanner for user {user_creds.get('user_id')}")
+    tool_factory = get_tool_factory()
+    return DiscoveryScanner(tool_factory=tool_factory, user_aws_config=aws_creds)
 
-    # Fallback singleton agent (for non-auth contexts)
-    log.info("Initializing fallback singleton StateAwareAgent...")
-    return StateAwareAgent(
-        settings=settings.agent,
-        state_manager=get_state_manager(),
-        tool_factory=get_tool_factory(),
+
+def get_agent(user_creds: Dict[str, Any] = Depends(get_user_credentials)) -> StateAwareAgent:
+    """
+    Create a StateAwareAgent bound to the provided user's credentials.
+    This is not a singleton as it's user-specific.
+    """
+    log = get_logger()
+    log.debug(f"Creating per-request agent for user {user_creds.get('user_id')}")
+    state_mgr = get_state_manager()
+    tool_factory = get_tool_factory()
+    agent = StateAwareAgent(
+        settings=settings.agent, # Assuming settings.agent is a global configuration needed by the agent logic
+        state_manager=state_mgr,
+        tool_factory=tool_factory,
         logger=log,
-        scanner=get_scanner(),
-        user_credentials=None,
+        scanner=get_scanner(user_creds=user_creds), # Pass user_creds to get_scanner
+        user_credentials=user_creds,
     )
+    return agent
