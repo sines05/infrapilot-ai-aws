@@ -83,38 +83,17 @@ class PlanExecutor:
                 if isinstance(value, list) and key.isdigit():
                     value = value[int(key)]
                 elif isinstance(value, dict):
-                    try:
-                        value = value[key] # Try direct access first
-                    except KeyError:
-                        self.logger.debug(f"KeyError for key: {key}. Attempting casing conversions.")
-                        # Special handling for image_id/ami_id discrepancy
-                        if key == "image_id" and "ami_id" in value:
-                            value = value["ami_id"]
-                        elif key == "ami_id" and "image_id" in value:
-                            value = value["image_id"]
-                        else:
-                            # Try converting snake_case to PascalCase (e.g., db_subnet_group_name -> DBSubnetGroupName)
-                            pascal_case_from_snake = _snake_to_pascal_case(key)
-                            if pascal_case_from_snake in value:
-                                value = value[pascal_case_from_snake]
-                                self.logger.debug(f"  Found value using PascalCase: {pascal_case_from_snake}")
-                            elif key == "group_id" and "groupId" in value:
-                                value = value["groupId"]
-                                self.logger.debug(f"  Found groupId for key 'group_id'")
-                            elif key == "imageId" and "amiId" in value:
-                                value = value["amiId"]
-                                self.logger.debug(f"  Found amiId for key 'imageId'")
-                            elif key == "db_subnet_group_name" and ("DBSubnetGroupName" in value or "dbSubnetGroupName" in value or "name" in value):
-                                value = value.get("DBSubnetGroupName") or value.get("dbSubnetGroupName") or value.get("name")
-                                self.logger.debug(f"  Found DBSubnetGroupName for key 'db_subnet_group_name'")
-                            elif key == "vpc_security_group_ids" and isinstance(value, list) and all(isinstance(item, dict) and "groupId" in item for item in value):
-                                value = [item["groupId"] for item in value]
-                                self.logger.debug(f"  Extracted groupId from list of security groups for 'vpc_security_group_ids'")
-                            else:
-                                self.logger.debug(f"  snake_to_pascal_case: {key} -> {pascal_case_from_snake}")
-                                self.logger.debug(f"  Value keys: {value.keys()}")
-                                # If still not found, re-raise the KeyError
-                                raise KeyError(f"Key '{key}' not found after casing conversions or special handling.")
+                    # Try case-insensitive key lookup
+                    found = False
+                    normalized_key = key.lower().replace("_", "")
+                    for d_key, d_val in value.items():
+                        if isinstance(d_key, str) and d_key.lower().replace("_", "") == normalized_key:
+                            value = d_val
+                            found = True
+                            self.logger.debug(f"Found match for key '{key}' with dict key '{d_key}'")
+                            break
+                    if not found:
+                        raise KeyError(f"Key '{key}' not found in dict with keys: {list(value.keys())}")
                 else:
                     raise KeyError(f"Cannot access key '{key}' on non-dict/list value.")
             except (KeyError, IndexError, TypeError) as e:
@@ -124,7 +103,6 @@ class PlanExecutor:
                     "failed_key": key,
                     "current_value_type": type(value).__name__,
                     "current_value_keys": list(value.keys()) if isinstance(value, dict) else None,
-                    "attempted_pascal_case": _snake_to_pascal_case(key) if isinstance(value, dict) else None
                 }
                 raise ValueError(f"Could not resolve variable path '{path}' in context. Debug Info: {debug_info}")
         return value
