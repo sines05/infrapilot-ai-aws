@@ -1,0 +1,260 @@
+D:\infrapilot-ai-aws\
+├───.env.example
+├───.gitignore
+├───backend_explanation.md
+├───backend-deployment.zip
+├───Bao_cao_du_an.md
+├───config.yaml
+├───delployment_digram.png
+├───package-lock.json
+├───poetry.lock
+├───pyproject.toml
+├───README.md
+├───requirements.txt
+├───wbs_du_an.csv
+├───workflow.png
+├───__pycache__\
+│   └───.gitkeep
+├───.ebextensions\
+│   └───01_main.config
+├───.git\
+│   └───.gitattributes
+├───ai_infra_agent\
+│   ├───__init__.py
+│   ├───main.py
+│   ├───__pycache__\
+│   │   └───__init__.cpython-39.pyc
+│   ├───agent\
+│   │   ├───__init__.py
+│   │   ├───agent.py
+│   │   ├───plan_executor.py
+│   │   ├───prompt_builder.py
+│   │   ├───__pycache__\
+│   │   │   ├───__init__.cpython-39.pyc
+│   │   │   ├───agent.cpython-39.pyc
+│   │   │   ├───plan_executor.cpython-39.pyc
+│   │   │   └───prompt_builder.cpython-39.pyc
+│   │   └───llms\
+│   │       ├───__init__.py
+│   │       ├───__pycache__\
+│   │       │   └───__init__.cpython-39.pyc
+│   │       └───openai_llm.py
+│   ├───analysis\
+│   │   ├───__init__.py
+│   │   ├───__pycache__\
+│   │   │   └───__init__.cpython-39.pyc
+│   │   └───resource_analyzer.py
+│   ├───api\
+│   │   ├───__init__.py
+│   │   ├───dependencies.py
+│   │   ├───__pycache__\
+│   │   │   ├───__init__.cpython-39.pyc
+│   │   │   └───dependencies.cpython-39.pyc
+│   │   └───v1\
+│   │       ├───__init__.py
+│   │       ├───agent_router.py
+│   │       ├───infrastructure_router.py
+│   │       ├───__pycache__\
+│   │       │   ├───__init__.cpython-39.pyc
+│   │       │   ├───agent_router.cpython-39.pyc
+│   │       │   └───infrastructure_router.cpython-39.pyc
+│   │       └───llm_router.py
+│   ├───core\
+│   │   ├───__init__.py
+│   │   ├───config.py
+│   │   ├───logging.py
+│   │   ├───supabase_client.py
+│   │   └───__pycache__\
+│   │       ├───__init__.cpython-39.pyc
+│   │       ├───config.cpython-39.pyc
+│   │       ├───logging.cpython-39.pyc
+│   │       └───supabase_client.cpython-39.pyc
+│   ├───infrastructure\
+│   │   ├───__init__.py
+│   │   ├───tool_factory.py
+│   │   ├───__pycache__\
+│   │   │   ├───__init__.cpython-39.pyc
+│   │   │   └───tool_factory.cpython-39.pyc
+│   │   └───aws\
+│   │       ├───__init__.py
+│   │       ├───__pycache__\
+│   │       │   └───__init__.cpython-39.pyc
+│   │       ├───adapters\
+│   │       │   ├───__init__.py
+│   │       │   ├───base.py
+│   │       │   ├───ec2.py
+│   │       │   ├───elb.py
+│   │       │   ├───key_pair.py
+│   │       │   ├───rds.py
+│   │       │   ├───s3.py
+│   │       │   ├───security_group.py
+│   │       │   ├───test_credential.py
+│   │       │   ├───vpc.py
+│   │       │   └───__pycache__\
+│   │       │       ├───__init__.cpython-39.pyc
+│   │       │       ├───base.cpython-39.pyc
+│   │       │       ├───ec2.cpython-39.pyc
+│   │       │       ├───elb.cpython-39.pyc
+│   │       │       ├───key_pair.cpython-39.pyc
+│   │       │       ├───rds.cpython-39.pyc
+│   │       │       ├───s3.cpython-39.pyc
+│   │       │       ├───security_group.cpython-39.pyc
+│   │       │       └───vpc.cpython-39.pyc
+│   │       └───tools\
+│   │           ├───__init__.py
+│   │           ├───ami.py
+│   │           ├───base.py
+│   │           ├───debug.py
+│   │           ├───ec2.py
+│   │           ├───elb.py
+│   │           ├───keypair.py
+│   │           ├───rds.py
+│   │           ├───s3.py
+│   │           ├───security_group.py
+│   │           └───vpc.py
+│   │           └───__pycache__\
+│   │               ├───__init__.cpython-39.pyc
+│   │               ├───ami.cpython-39.pyc
+│   │               ├───base.cpython-39.pyc
+│   │               ├───debug.cpython-39.pyc
+│   │               ├───ec2.cpython-39.pyc
+│   │               ├───elb.cpython-39.pyc
+│   │               ├───keypair.cpython-39.pyc
+│   │               ├───rds.cpython-39.pyc
+│   │               ├───s3.cpython-39.pyc
+│   │               ├───security_group.cpython-39.pyc
+│   │               └───vpc.cpython-39.pyc
+│   ├───services\
+│   │   ├───__init__.py
+│   │   ├───__pycache__\
+│   │   │   └───__init__.cpython-39.pyc
+│   │   ├───conflict\
+│   │   │   ├───__init__.py
+│   │   │   └───conflict_resolver.py
+│   │   ├───discovery\
+│   │   │   ├───__init__.py
+│   │   │   ├───scanner.py
+│   │   │   └───__pycache__\
+│   │   │       ├───__init__.cpython-39.pyc
+│   │   │       └───scanner.cpython-39.pyc
+│   │   └───graph\
+│   │       ├───__init__.py
+│   │       └───manager.py
+│   ├───state\
+│   │   ├───__init__.py
+│   │   ├───manager.py
+│   │   ├───schemas.py
+│   │   └───__pycache__\
+│   │       ├───__init__.cpython-39.pyc
+│   │       ├───manager.cpython-39.pyc
+│   │       └───schemas.cpython-39.pyc
+│   └───UI\
+│       ├───.gitignore
+│       ├───ARCHITECTURE_INSERT_SUMMARY.md
+│       ├───components.json
+│       ├───FIX_PROJECTS_PAGE_SUMMARY.md
+│       ├───middleware.ts
+│       ├───next.config.mjs
+│       ├───NEXTAUTH_VS_SUPABASE_AUTH.md
+│       ├───package-lock.json
+│       ├───package.json
+│       ├───pnpm-lock.yaml
+│       ├───pnpm-workspace.yaml
+│       ├───postcss.config.mjs
+│       ├───TLDR_FIX.md
+│       ├───tsconfig.json
+│       ├───.next\
+│       │   └───dev
+│       ├───agent\
+│       │   ├───helper-function\
+│       │   │   └───agent-helper-function.ts
+│       │   ├───progress\
+│       │   │   └───agent-progress.ts
+│       │   ├───utils\
+│       │   │   └───steps.ts
+│       │   └───websocket\
+│       │       └───agent-websocket.ts
+│       ├───app\
+│       │   ├───globals.css
+│       │   ├───layout.tsx
+│       │   ├───page.tsx
+│       │   ├───provider.tsx
+│       │   ├───api\
+│       │   │   ├───agent\
+│       │   │   └───auth\
+│       │   ├───auth\
+│       │   │   ├───signin\
+│       │   │   └───signup\
+│       │   └───dashboard\
+│       │       ├───layout.tsx
+│       │       ├───page.tsx
+│       │       ├───chat\
+│       │       ├───config\
+│       │       ├───credentials\
+│       │       ├───infrastructure\
+│       │       ├───progress\
+│       │       ├───projects\
+│       │       ├───settings\
+│       │       └───suggestions\
+│       ├───components\
+│       │   ├───auth-layout.tsx
+│       │   ├───chat-message.tsx
+│       │   ├───dashboard-layout.tsx
+│       │   ├───theme-provider.tsx
+│       │   ├───auth\
+│       │   │   └───CredentialsNotifier.tsx
+│       │   └───ui\
+│       │       ├───accordion.tsx
+│       │       └───alert-dialog.tsx
+│       ├───hooks\
+│       │   ├───use-mobile.ts
+│       │   └───use-toast.ts
+│       ├───lib\
+│       │   ├───utils.ts
+│       │   ├───actions\
+│       │   └───supabase\
+│       ├───node_modules
+│       ├───public\
+│       │   ├───favicon.ico
+│       │   ├───logo.png
+│       │   ├───placeholder-logo.png
+│       │   ├───placeholder-logo.svg
+│       │   ├───placeholder-user.jpg
+│       │   ├───placeholder.jpg
+│       │   ├───placeholder.svg
+│       │   ├───aws-service-icons\
+│       │   └───logo\
+│       ├───styles\
+│       │   └───globals.css
+│       └───types\
+│           ├───data.ts
+│           └───next-auth.d.ts
+├───settings\
+│   ├───field-mappings-enhanced.yaml
+│   ├───resource-extraction-enhanced.yaml
+│   ├───resource-patterns-enhanced.yaml
+│   └───templates\
+│       ├───decision-plan-prompt-optimized.txt
+│       └───tools-execution-context-optimized.txt
+└───tests\
+    ├───__init__.py
+    ├───__pycache__\
+    │   └───__init__.cpython-39.pyc
+    ├───agent\
+    │   ├───__init__.py
+│   │   ├───test_agent.py
+│   │   └───__pycache__\
+│   │       ├───__init__.cpython-39.pyc
+│   │       └───test_agent.cpython-39.pyc
+│   ├───analysis\
+│   │   ├───__init__.py
+│   │   ├───test_api.py
+│   │   └───__pycache__\
+│   │       ├───__init__.cpython-39.pyc
+│   │       └───test_api.cpython-39.pyc
+│   └───infrastructure\
+│       ├───__init__.py
+│       ├───test_websocket.py
+│       └───__pycache__\
+│           ├───__init__.cpython-39.pyc
+│           └───test_websocket.cpython-39.pyc

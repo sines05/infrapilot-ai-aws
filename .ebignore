@@ -1,0 +1,24 @@
+# Ignore Frontend
+UI/
+frontend/
+.next/
+node_modules/
+
+# Ignore Git and Env
+.git/
+.gitignore
+.env
+.env.example
+
+# Ignore local Python env & cache
+venv/
+__pycache__/
+*.pyc
+poetry.lock
+pyproject.toml
+
+# Ignore docs and diagrams
+*.md
+*.png
+*.csv
+backend-deployment.zip

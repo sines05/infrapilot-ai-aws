@@ -26,3 +26,7 @@ Thumbs.db
 
 llm_request.log
 sample_data.json
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

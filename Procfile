@@ -1,0 +1,1 @@
+web: uvicorn ai_infra_agent.main:app --host 0.0.0.0 --port 8000
