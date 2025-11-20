@@ -84,32 +84,40 @@ async def get_discovered_resources(
     
     # Get user's default AWS region from credentials
     user_default_aws_region = user_creds.get('aws', {}).get('region')
-    logger.debug(f"User default AWS region from credentials: {user_default_aws_region}")
-    logger.debug(f"Region query parameter received: {region}")
+    logger.debug(f"[{user_id}] User default AWS region from credentials: {user_default_aws_region}")
+    logger.debug(f"[{user_id}] Region query parameter received: {region}")
     
     # Determine the region to filter by: query parameter takes precedence
     filter_region = region if region else user_default_aws_region
-    logger.debug(f"Final filter region determined: {filter_region}")
+    logger.debug(f"[{user_id}] Final filter region determined: {filter_region}")
 
     if not filter_region:
-        logger.warning(f"No valid AWS region found for user {user_id}. Returning empty list.")
+        logger.warning(f"[{user_id}] No valid AWS region found. Returning empty list.")
         return [] # Return empty list if no region is configured or provided.
 
-    logger.info(f"Fetching discovered resources for user {user_id} in region {filter_region}")
+    logger.info(f"[{user_id}] Fetching discovered resources in region {filter_region}")
     
     supabase = get_supabase_client()
     query = supabase.from_('discovered_resources').select("*").eq('user_id', user_id)
-    query = query.eq('region', filter_region) # Always filter by region if filter_region is not None
+    
+    logger.debug(f"[{user_id}] Applying region filter: {filter_region}")
+    # Using the explicit filter method to ensure region filter is applied.
+    query = query.filter('region', 'eq', filter_region)
+
+    # For debugging the final URL
+    # This might not work directly as Supabase client builds URL internally.
+    # However, it helps ensure the `eq` call is chained.
+    logger.debug(f"[{user_id}] Supabase query object after region filter (may not be final URL): {query}")
 
     response = await query.execute()
 
     if response.error:
-        logger.error(f"Failed to fetch resources for user {user_id}: {response.error}")
+        logger.error(f"[{user_id}] Failed to fetch resources: {response.error}")
         raise HTTPException(status_code=500, detail="Failed to retrieve infrastructure data.")
     
     # Log the number of resources found
     num_resources = len(response.data) if response.data else 0
-    logger.debug(f"Found {num_resources} resources for user {user_id} in region {filter_region}")
+    logger.debug(f"[{user_id}] Found {num_resources} resources in region {filter_region}")
 
     return response.data if response.data else []
 
@@ -129,7 +137,7 @@ async def perform_resource_action(
     if not tool_name or not parameters:
         raise HTTPException(status_code=400, detail="Missing 'tool_name' or 'parameters' in request body.")
 
-    logger.info(f"User {user_id} is performing action '{tool_name}' with params: {parameters}")
+    logger.info(f"[{user_id}] is performing action '{tool_name}' with params: {parameters}")
     
     try:
         agent = get_agent(user_creds)
@@ -137,5 +145,5 @@ async def perform_resource_action(
         result = await agent.execute_tool(tool_name, **parameters)
         return {"status": "success", "result": result}
     except Exception as e:
-        logger.error(f"Error executing tool '{tool_name}' for user {user_id}: {e}", exc_info=True)
+        logger.error(f"[{user_id}] Error executing tool '{tool_name}': {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
