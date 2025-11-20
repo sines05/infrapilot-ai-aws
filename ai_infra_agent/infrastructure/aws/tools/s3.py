@@ -56,7 +56,7 @@ class CreateS3BucketTool(BaseTool):
         self.logger.info(f"Attempting to create S3 bucket: {final_bucket_name}")
 
         # Determine the effective region for bucket creation
-        effective_region = region if region else self.adapter.settings.region
+        effective_region = region if region else self.adapter.aws_config.get('region')
         self.logger.info(f"Using effective region for S3 bucket creation: {effective_region}")
 
         try:
