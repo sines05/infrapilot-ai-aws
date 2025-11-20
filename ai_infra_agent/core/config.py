@@ -25,7 +25,7 @@ class AWSSettings(BaseSettings):
     """AWS-specific configuration"""
     model_config = SettingsConfigDict(env_prefix='AWS_', env_file=dotenv_path, extra='ignore')
 
-    region: str = Field("us-west-2", description="Default AWS region")
+    region: str = Field("ap-southeast-1", description="Default AWS region")
     access_key_id: Optional[SecretStr] = Field(None, description="AWS Access Key ID")
     secret_access_key: Optional[SecretStr] = Field(None, description="AWS Secret Access Key")
     max_retries: int = Field(5, description="Maximum number of retries for AWS API calls")
